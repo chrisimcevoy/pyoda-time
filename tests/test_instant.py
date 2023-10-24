@@ -10,6 +10,7 @@ from pyoda_time import (
     UNIX_EPOCH,
     TICKS_PER_MILLISECOND,
     TICKS_PER_SECOND,
+    Offset,
 )
 
 
@@ -249,3 +250,31 @@ class TestInstant:
         assert Instant.from_unix_time_milliseconds(largest_valid).is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(largest_valid + 1)
+
+    def test_from_unix_time_seconds_range(self):
+        smallest_valid = towards_zero_division(
+            Instant.min_value().to_unix_time_ticks(), TICKS_PER_SECOND
+        )
+        largest_valid = towards_zero_division(
+            Instant.max_value().to_unix_time_ticks(), TICKS_PER_SECOND
+        )
+        assert Instant.from_unix_time_seconds(smallest_valid).is_valid
+        with pytest.raises(ValueError):
+            Instant.from_unix_time_seconds(smallest_valid - 1)
+        assert Instant.from_unix_time_seconds(largest_valid).is_valid
+        with pytest.raises(ValueError):
+            Instant.from_unix_time_seconds(largest_valid + 1)
+
+    def test_from_ticks_since_unix_epoch_range(self):
+        smallest_valid = Instant.min_value().to_unix_time_ticks()
+        largest_valid = Instant.max_value().to_unix_time_ticks()
+        assert Instant.from_unix_time_ticks(smallest_valid).is_valid
+        with pytest.raises(ValueError):
+            Instant.from_unix_time_ticks(smallest_valid - 1)
+        assert Instant.from_unix_time_ticks(largest_valid).is_valid
+        with pytest.raises(ValueError):
+            Instant.from_unix_time_ticks(largest_valid + 1)
+
+    def test_plus_offset(self):
+        local_instant = UNIX_EPOCH.plus(Offset.from_hours(1))
+        assert local_instant.time_since_local_epoch == Duration.from_hours(1)

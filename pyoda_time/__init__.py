@@ -252,6 +252,47 @@ class Duration:
         nano_of_day = nanoseconds - days * NANOSECONDS_PER_DAY
         return Duration(days, nano_of_day)
 
+    @classmethod
+    def from_hours(cls, hours: int) -> Duration:
+        # TODO this is a shortcut and differs from Noda Time
+        return Duration.from_seconds(hours * SECONDS_PER_HOUR)
+
+    def plus_small_nanoseconds(self, small_nanos):
+        Preconditions.check_argument_range(
+            small_nanos, -NANOSECONDS_PER_DAY, NANOSECONDS_PER_DAY
+        )
+        new_days = self.days
+        new_nanos = self.nano_of_day + small_nanos
+        if new_nanos >= NANOSECONDS_PER_DAY:
+            new_days += 1
+            new_nanos -= NANOSECONDS_PER_DAY
+        elif new_nanos < 0:
+            new_days -= 1
+            new_nanos += NANOSECONDS_PER_DAY
+        return Duration(new_days, new_nanos)
+
+
+class Offset:
+    __MIN_HOURS = -18
+    __MAX_HOURS = 18
+    __MIN_SECONDS = -18 * SECONDS_PER_HOUR
+    __MAX_SECONDS = 18 * SECONDS_PER_HOUR
+
+    def __init__(self, seconds: int):
+        Preconditions.check_argument_range(
+            seconds, self.__MIN_SECONDS, self.__MAX_SECONDS
+        )
+        self.seconds = seconds
+
+    @classmethod
+    def from_hours(cls, hours: int) -> Offset:
+        Preconditions.check_argument_range(hours, cls.__MIN_HOURS, cls.__MAX_HOURS)
+        return cls(hours * SECONDS_PER_HOUR)
+
+    @property
+    def nanoseconds(self) -> int:
+        return self.seconds * NANOSECONDS_PER_SECOND
+
 
 class Instant:
     """Represents an instant on the global timeline, with nanosecond resolution.
@@ -262,15 +303,15 @@ class Instant:
     """
 
     # These correspond to -9998-01-01 and 9999-12-31 respectively.
-    __MIN_DAYS = -4371222
-    __MAX_DAYS = 2932896
+    _MIN_DAYS = -4371222
+    _MAX_DAYS = 2932896
 
-    __MIN_TICKS = __MIN_DAYS * TICKS_PER_DAY
-    __MAX_TICKS = (__MAX_DAYS + 1) * TICKS_PER_DAY - 1
-    __MIN_MILLISECONDS = __MIN_DAYS * MILLISECONDS_PER_DAY
-    __MAX_MILLISECONDS = (__MAX_DAYS + 1) * MILLISECONDS_PER_DAY - 1
-    __MIN_SECONDS = __MIN_DAYS * SECONDS_PER_DAY
-    __MAX_SECONDS = (__MAX_DAYS + 1) * SECONDS_PER_DAY - 1
+    __MIN_TICKS = _MIN_DAYS * TICKS_PER_DAY
+    __MAX_TICKS = (_MAX_DAYS + 1) * TICKS_PER_DAY - 1
+    __MIN_MILLISECONDS = _MIN_DAYS * MILLISECONDS_PER_DAY
+    __MAX_MILLISECONDS = (_MAX_DAYS + 1) * MILLISECONDS_PER_DAY - 1
+    __MIN_SECONDS = _MIN_DAYS * SECONDS_PER_DAY
+    __MAX_SECONDS = (_MAX_DAYS + 1) * SECONDS_PER_DAY - 1
 
     def __init__(self, days: int = 0, nano_of_day: int = 0) -> None:
         self.duration = Duration(days, nano_of_day)
@@ -290,9 +331,19 @@ class Instant:
             return self < other or self == other
         raise TypeError("Unsupported operand type")
 
+    @overload
+    def __add__(self, offset: Offset) -> LocalInstant:
+        ...
+
+    @overload
+    def __add__(self, duration: Duration) -> Instant:
+        ...
+
     def __add__(self, other):
         if isinstance(other, Duration):
             return self._from_untrusted_duration(self.duration + other)
+        if isinstance(other, Offset):
+            return LocalInstant(self.duration.plus_small_nanoseconds(other.nanoseconds))
         raise TypeError("Unsupported operand type")
 
     @overload
@@ -312,11 +363,11 @@ class Instant:
 
     @classmethod
     def min_value(cls) -> Instant:
-        return Instant(cls.__MIN_DAYS, 0)
+        return Instant(cls._MIN_DAYS, 0)
 
     @classmethod
     def max_value(cls) -> Instant:
-        return Instant(cls.__MAX_DAYS, NANOSECONDS_PER_DAY - 1)
+        return Instant(cls._MAX_DAYS, NANOSECONDS_PER_DAY - 1)
 
     @classmethod
     def _before_min_value(cls) -> Self:
@@ -354,7 +405,7 @@ class Instant:
     @classmethod
     def _from_untrusted_duration(cls, duration: Duration) -> Instant:
         days = duration.floor_days
-        if days < cls.__MIN_DAYS or days > cls.__MAX_DAYS:
+        if days < cls._MIN_DAYS or days > cls._MAX_DAYS:
             raise OverflowError("Operation would overflow range of Instant")
         return Instant.from_duration(duration)
 
@@ -436,10 +487,31 @@ class Instant:
 
     @property
     def is_valid(self) -> bool:
-        return self.__MIN_DAYS <= self.days_since_epoch <= self.__MAX_DAYS
+        return self._MIN_DAYS <= self.days_since_epoch <= self._MAX_DAYS
 
-    def plus(self, duration: Duration) -> Self:
-        return self + duration
+    @overload
+    def plus(self, other: Duration) -> Instant:
+        return self + other
+
+    @overload
+    def plus(self, other: Offset) -> LocalInstant:
+        return self + other
+
+    def plus(self, other: Duration | Offset) -> Instant | LocalInstant:
+        return self + other
+
+
+class LocalInstant:
+    def __init__(self, nanoseconds: Duration):
+        days = nanoseconds.floor_days
+        if days < Instant._MIN_DAYS or days > Instant._MAX_DAYS:
+            raise ValueError("Operation would overflow bounds of local date/time")
+        self.duration = nanoseconds
+
+    @property
+    def time_since_local_epoch(self) -> Duration:
+        """Number of nanoseconds since the local unix epoch."""
+        return self.duration
 
 
 class LocalDate:
@@ -543,4 +615,4 @@ class YearMonthDay:
         return (self._value & self.__DAY_MASK) + 1
 
 
-UNIX_EPOCH = Instant.from_unix_time_ticks(0)
+UNIX_EPOCH: Instant = Instant.from_unix_time_ticks(0)
