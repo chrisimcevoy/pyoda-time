@@ -1,0 +1,6 @@
+[tool.ruff]
+line-length = 120
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
