@@ -220,8 +220,6 @@ class TestInstant:
         assert Instant._before_min_value() < Instant.min_value()
 
     def test_plus_duration_overflow(self):
-        Duration.epsilon()
-        -Duration.epsilon()
         with pytest.raises(OverflowError):
             Instant.min_value().plus(-Duration.epsilon())
         with pytest.raises(OverflowError):
