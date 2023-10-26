@@ -310,3 +310,30 @@ class TestInstant:
         )
         actual = start.safe_plus(Offset.from_hours(offset_to_add))
         assert actual == expected
+
+    @pytest.mark.parametrize(
+        "initial_offset,offset_to_add,final_offset",
+        [
+            (None, 0, None),
+            (None, 1, None),
+            (None, -1, None),
+            (-1, 1, 0),
+            (-1, 2, None),
+            (-2, -1, -3),
+        ],
+    )
+    def test_safe_plus_near_end_of_time(
+        self, initial_offset: int | None, offset_to_add: int, final_offset: int | None
+    ):
+        start = (
+            Instant._after_max_value()
+            if initial_offset is None
+            else Instant.max_value() + Duration.from_hours(initial_offset)
+        )
+        expected = (
+            LocalInstant.after_max_value()
+            if final_offset is None
+            else Instant.max_value().plus(Offset.from_hours(final_offset))
+        )
+        actual = start.safe_plus(Offset.from_hours(offset_to_add))
+        assert actual == expected
