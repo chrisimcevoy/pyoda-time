@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from decimal import Decimal, ROUND_DOWN
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import YearMonthDay
+from .utility import towards_zero_division
 
 
 class YearMonthDayCalculator(ABC):
@@ -210,7 +210,7 @@ class GregorianYearMonthDayCalculator(GJYearMonthDayCalculator):
         return self.__is_gregorian_leap_year(year)
 
     def _calculate_start_of_year_days(self, year: int) -> int:
-        leap_years = int((year / Decimal(100)).quantize(0, ROUND_DOWN))
+        leap_years = towards_zero_division(year, 100)
         if year < 0:
             # Add 3 before shifting right since /4 and >>2 behave differently
             # on negative numbers. When the expression is written as

@@ -1,4 +1,4 @@
-from decimal import Decimal, ROUND_DOWN
+from datetime import datetime
 
 
 class Preconditions:
@@ -21,20 +21,7 @@ class TickArithmetic:
             days = int((ticks >> 14) / 52734375)
             tick_of_day = ticks - days * TICKS_PER_DAY
         else:
-            # In C#, the `days` expression forces integer division:
-            #     `int days = (int) ((ticks + 1) / TicksPerDay) - 1;`
-            # Importantly, integer division in C# rounds towards zero.
-            #
-            # In Python, we need to emulate that behaviour by forcing
-            # `Decimal` division and then passing a rounding strategy
-            # to `Decimal.quantize()`. Don't worry, it is "towards zero"
-            # despite the name `ROUND_DOWN`.
-            #
-            # Relevant test:
-            #     `TestInstant.test_unix_conversions_extreme_values`
-            days = int(
-                (((Decimal(ticks) + 1) / TICKS_PER_DAY) - 1).quantize(0, ROUND_DOWN)
-            )
+            days = towards_zero_division(ticks + 1, TICKS_PER_DAY) - 1
             tick_of_day = ticks - (days + 1) * TICKS_PER_DAY + TICKS_PER_DAY
 
         return days, tick_of_day
@@ -44,3 +31,20 @@ class TickArithmetic:
         from pyoda_time import TICKS_PER_DAY
 
         return days * TICKS_PER_DAY + tick_of_day
+
+
+def towards_zero_division(x: int, y: int) -> int:
+    """Divide two integers using "towards zero" rounding.
+    This ensures that integer division produces the same result as it would do in C#.
+    """
+    from decimal import Decimal, ROUND_DOWN
+
+    return int((Decimal(x) / y).quantize(0, ROUND_DOWN))
+
+
+def to_ticks(dt: datetime) -> int:
+    """Get a value akin to C#'s DateTime.Ticks property from a python datetime."""
+    # Gratefully stolen from https://stackoverflow.com/a/29368771
+    import pytz
+
+    return int((dt - datetime(1, 1, 1, tzinfo=pytz.UTC)).total_seconds() * 10000000)

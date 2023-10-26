@@ -10,8 +10,7 @@ from .calendars import (
     GregorianYearMonthDayCalculator,
     EraCalculator,
 )
-from .utility import TickArithmetic, Preconditions
-from .compatibility import to_ticks, towards_zero_division
+from .utility import TickArithmetic, Preconditions, to_ticks, towards_zero_division
 
 HOURS_PER_DAY = 24
 SECONDS_PER_MINUTE = 60

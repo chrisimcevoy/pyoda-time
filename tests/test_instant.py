@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 import pytz
 
-from pyoda_time.compatibility import towards_zero_division
+from pyoda_time.utility import towards_zero_division
 from pyoda_time import (
     Duration,
     Instant,
