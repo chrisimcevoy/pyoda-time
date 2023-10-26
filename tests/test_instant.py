@@ -11,6 +11,7 @@ from pyoda_time import (
     TICKS_PER_MILLISECOND,
     TICKS_PER_SECOND,
     Offset,
+    LocalInstant,
 )
 
 
@@ -278,3 +279,34 @@ class TestInstant:
     def test_plus_offset(self):
         local_instant = UNIX_EPOCH.plus(Offset.from_hours(1))
         assert local_instant.time_since_local_epoch == Duration.from_hours(1)
+
+    def test_safe_plus_normal_time(self):
+        local_instant = UNIX_EPOCH.safe_plus(Offset.from_hours(1))
+        assert local_instant.time_since_local_epoch == Duration.from_hours(1)
+
+    @pytest.mark.parametrize(
+        "initial_offset,offset_to_add,final_offset",
+        [
+            (None, 0, None),
+            (None, 1, None),
+            (None, -1, None),
+            (1, -1, 0),
+            (1, -2, None),
+            (2, 1, 3),
+        ],
+    )
+    def test_safe_plus_near_start_of_time(
+        self, initial_offset: int | None, offset_to_add: int, final_offset: int | None
+    ):
+        start = (
+            Instant._before_min_value()
+            if initial_offset is None
+            else Instant.min_value() + Duration.from_hours(initial_offset)
+        )
+        expected = (
+            LocalInstant.before_min_value()
+            if final_offset is None
+            else Instant.min_value().plus(Offset.from_hours(final_offset))
+        )
+        actual = start.safe_plus(Offset.from_hours(offset_to_add))
+        assert actual == expected

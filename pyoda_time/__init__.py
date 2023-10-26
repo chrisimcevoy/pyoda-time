@@ -500,18 +500,64 @@ class Instant:
     def plus(self, other: Duration | Offset) -> Instant | LocalInstant:
         return self + other
 
+    def safe_plus(self, offset: Offset):
+        days = self.duration.floor_days
+        if self._MIN_DAYS < days < self._MAX_DAYS:
+            return self.plus(offset)
+        if days < self._MIN_DAYS:
+            return LocalInstant.before_min_value()
+        if days > self._MAX_DAYS:
+            return LocalInstant.after_max_value()
+        as_duration = self.duration.plus_small_nanoseconds(offset.nanoseconds)
+        if as_duration.floor_days < self._MIN_DAYS:
+            return LocalInstant.before_min_value()
+        if as_duration.floor_days > self._MAX_DAYS:
+            return LocalInstant.after_max_value()
+        return LocalInstant(as_duration)
+
 
 class LocalInstant:
     def __init__(self, nanoseconds: Duration):
         days = nanoseconds.floor_days
         if days < Instant._MIN_DAYS or days > Instant._MAX_DAYS:
             raise ValueError("Operation would overflow bounds of local date/time")
-        self.duration = nanoseconds
+        self._duration = nanoseconds
+
+    def __eq__(self, other):
+        if isinstance(other, LocalInstant):
+            return self.duration == other.duration
+        TypeError("Unsupported operand type")
+
+    @property
+    def duration(self) -> Duration:
+        return self._duration
 
     @property
     def time_since_local_epoch(self) -> Duration:
         """Number of nanoseconds since the local unix epoch."""
         return self.duration
+
+    @classmethod
+    def before_min_value(cls):
+        return LocalInstant.__invalid_constructor(
+            Instant._before_min_value().days_since_epoch
+        )
+
+    @classmethod
+    def after_max_value(cls):
+        return LocalInstant.__invalid_constructor(
+            Instant._after_max_value().days_since_epoch
+        )
+
+    @classmethod
+    def __invalid_constructor(cls, days: int) -> LocalInstant:
+        """Constructor which should *only* be used to construct the invalid instances."""
+        # Hack:
+        # To emulate the private constructor on this class, here we just instantiate a
+        # valid LocalInstant, then swap out the _duration with a potentially-invalid one.
+        local_instant = LocalInstant(Duration.zero())
+        local_instant._duration = Duration(days)
+        return local_instant
 
 
 class LocalDate:
