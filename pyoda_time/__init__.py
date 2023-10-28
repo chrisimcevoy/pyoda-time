@@ -85,12 +85,8 @@ class CalendarSystem:
         self.year_month_day_calculator = year_month_day_calculator
         self.min_year = year_month_day_calculator._min_year
         self.max_year = year_month_day_calculator._max_year
-        self.min_days = year_month_day_calculator._get_start_of_year_in_days(
-            self.min_year
-        )
-        self.max_days = (
-            year_month_day_calculator._get_start_of_year_in_days(self.max_year + 1) - 1
-        )
+        self.min_days = year_month_day_calculator._get_start_of_year_in_days(self.min_year)
+        self.max_days = year_month_day_calculator._get_start_of_year_in_days(self.max_year + 1) - 1
 
         self.era_calculator = era_calculator
         self.__CALENDAR_BY_ORDINAL[int(ordinal)] = self
@@ -117,9 +113,7 @@ class CalendarSystem:
                 return cls.iso()
             case _:
                 # TODO map all CalendarOrdinals to CalendarSystems and rephrase this error
-                raise ValueError(
-                    f"CalendarOrdinal '{ordinal.name}' not mapped to CalendarSystem yet"
-                )
+                raise ValueError(f"CalendarOrdinal '{ordinal.name}' not mapped to CalendarSystem yet")
 
     @classmethod
     def iso(cls):
@@ -158,9 +152,7 @@ class Duration:
 
     def __lt__(self, other):
         if isinstance(other, Duration):
-            return self.days < other.days or (
-                self.days == other.days and self.nano_of_day < other.nano_of_day
-            )
+            return self.days < other.days or (self.days == other.days and self.nano_of_day < other.nano_of_day)
         raise TypeError("Unsupported operand type")
 
     def __eq__(self, other):
@@ -297,9 +289,7 @@ class Duration:
         """Adds a "small" number of nanoseconds to this duration.
         It is trusted to be less or equal to than 24 hours in magnitude.
         """
-        _Preconditions._check_argument_range(
-            small_nanos, -NANOSECONDS_PER_DAY, NANOSECONDS_PER_DAY
-        )
+        _Preconditions._check_argument_range(small_nanos, -NANOSECONDS_PER_DAY, NANOSECONDS_PER_DAY)
         new_days = self.days
         new_nanos = self.nano_of_day + small_nanos
         if new_nanos >= NANOSECONDS_PER_DAY:
@@ -320,9 +310,7 @@ class Offset:
     __MAX_SECONDS = 18 * SECONDS_PER_HOUR
 
     def __init__(self, seconds: int):
-        _Preconditions._check_argument_range(
-            seconds, self.__MIN_SECONDS, self.__MAX_SECONDS
-        )
+        _Preconditions._check_argument_range(seconds, self.__MIN_SECONDS, self.__MAX_SECONDS)
         self.seconds = seconds
 
     @classmethod
@@ -473,9 +461,7 @@ class Instant:
         """
         return _TickArithmetic.bounded_days_and_tick_of_day_to_ticks(
             self.duration._floor_days,
-            _towards_zero_division(
-                self.duration._nanosecond_of_floor_day, NANOSECONDS_PER_TICK
-            ),
+            _towards_zero_division(self.duration._nanosecond_of_floor_day, NANOSECONDS_PER_TICK),
         )
 
     @classmethod
@@ -483,9 +469,7 @@ class Instant:
         """Initializes a new Instant struct based on a number of milliseconds
         since the Unix epoch of (ISO) January 1st 1970, midnight, UTC.
         """
-        _Preconditions._check_argument_range(
-            milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS
-        )
+        _Preconditions._check_argument_range(milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS)
         return Instant._from_trusted_duration(Duration.from_milliseconds(milliseconds))
 
     @classmethod
@@ -493,9 +477,7 @@ class Instant:
         """Initializes a new Instant based on a number of seconds since the
         Unix epoch of (ISO) January 1st 1970, midnight, UTC.
         """
-        _Preconditions._check_argument_range(
-            seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS
-        )
+        _Preconditions._check_argument_range(seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
         return cls._from_trusted_duration(Duration.from_seconds(seconds))
 
     def to_unix_time_seconds(self):
@@ -514,11 +496,8 @@ class Instant:
         If the number of nanoseconds in this instant is not an exact
         number of milliseconds, the value is truncated towards the start of time.
         """
-        return (
-            self.duration._floor_days * MILLISECONDS_PER_DAY
-            + _towards_zero_division(
-                self.duration._nanosecond_of_floor_day, NANOSECONDS_PER_MILLISECOND
-            )
+        return self.duration._floor_days * MILLISECONDS_PER_DAY + _towards_zero_division(
+            self.duration._nanosecond_of_floor_day, NANOSECONDS_PER_MILLISECOND
         )
 
     @staticmethod
@@ -539,9 +518,7 @@ class Instant:
         # TODO Precondition.CheckArgument
         # TODO Better exceptions?
         # Roughly equivalent to DateTimeKind.Local
-        if (
-            utc_offset := datetime.utcoffset()
-        ) is not None and utc_offset.total_seconds() != 0:
+        if (utc_offset := datetime.utcoffset()) is not None and utc_offset.total_seconds() != 0:
             raise ValueError()
         # Roughly equivalent to DateTimeKind.Unspecified
         if datetime.tzinfo is None:
@@ -630,16 +607,12 @@ class _LocalInstant:
     @classmethod
     def before_min_value(cls):
         # In Noda Time this is a public static readonly field
-        return _LocalInstant.__invalid_constructor(
-            Instant._before_min_value()._days_since_epoch
-        )
+        return _LocalInstant.__invalid_constructor(Instant._before_min_value()._days_since_epoch)
 
     @classmethod
     def after_max_value(cls):
         # In Noda Time this is a public static readonly field
-        return _LocalInstant.__invalid_constructor(
-            Instant._after_max_value()._days_since_epoch
-        )
+        return _LocalInstant.__invalid_constructor(Instant._after_max_value()._days_since_epoch)
 
     @classmethod
     def __invalid_constructor(cls, days: int) -> _LocalInstant:
@@ -657,9 +630,7 @@ class LocalDate:
     with no reference to a particular time zone or time of day."""
 
     def __init__(self, year: int, month: int, day: int):
-        self.__year_month_day_calendar = _YearMonthDayCalendar(
-            year, month, day, CalendarOrdinal.ISO
-        )
+        self.__year_month_day_calendar = _YearMonthDayCalendar(year, month, day, CalendarOrdinal.ISO)
 
     @property
     def __calendar_ordinal(self) -> CalendarOrdinal:
@@ -673,9 +644,7 @@ class LocalDate:
     @property
     def _days_since_epoch(self) -> int:
         """Number of days since the local unix epoch."""
-        return self.calendar._get_days_since_epoch(
-            self.__year_month_day_calendar._to_year_month_day()
-        )
+        return self.calendar._get_days_since_epoch(self.__year_month_day_calendar._to_year_month_day())
 
 
 class LocalTime:
@@ -683,17 +652,10 @@ class LocalTime:
     to a particular calendar, time zone or date."""
 
     def __init__(self, hour: int, minute: int):
-        if (
-            hour < 0
-            or hour > HOURS_PER_DAY - 1
-            or minute < 0
-            or minute > MINUTES_PER_HOUR - 1
-        ):
+        if hour < 0 or hour > HOURS_PER_DAY - 1 or minute < 0 or minute > MINUTES_PER_HOUR - 1:
             _Preconditions._check_argument_range(hour, 0, HOURS_PER_DAY - 1)
             _Preconditions._check_argument_range(minute, 0, MINUTES_PER_HOUR - 1)
-        self.__nanoseconds = (
-            hour * NANOSECONDS_PER_HOUR + minute * NANOSECONDS_PER_MINUTE
-        )
+        self.__nanoseconds = hour * NANOSECONDS_PER_HOUR + minute * NANOSECONDS_PER_MINUTE
 
     @property
     def nanosecond_of_day(self) -> int:
@@ -719,9 +681,7 @@ class _YearMonthDayCalendar:
     __MONTH_MASK = ((1 << _MONTH_BITS) - 1) << __CALENDAR_DAY_BITS
     __YEAR_MASK = ((1 << _YEAR_BITS) - 1) << __CALENDAR_DAY_MONTH_BITS
 
-    def __init__(
-        self, year: int, month: int, day: int, calendar_ordinal: CalendarOrdinal
-    ):
+    def __init__(self, year: int, month: int, day: int, calendar_ordinal: CalendarOrdinal):
         self.__value = (
             ((year - 1) << self.__CALENDAR_DAY_MONTH_BITS)
             | ((month - 1) << self.__CALENDAR_DAY_BITS)
@@ -741,25 +701,18 @@ class _YearMonthDay:
     """A compact representation of a year, month and day in a single 32-bit integer."""
 
     __DAY_MASK = (1 << _YearMonthDayCalendar._DAY_BITS) - 1
-    __MONTH_MASK = (
-        (1 << _YearMonthDayCalendar._MONTH_BITS) - 1
-    ) << _YearMonthDayCalendar._DAY_BITS
+    __MONTH_MASK = ((1 << _YearMonthDayCalendar._MONTH_BITS) - 1) << _YearMonthDayCalendar._DAY_BITS
 
     def __init__(self, raw_value: int):
         self.__value = raw_value
 
     @property
     def _year(self) -> int:
-        return (
-            self.__value
-            >> (_YearMonthDayCalendar._DAY_BITS + _YearMonthDayCalendar._MONTH_BITS)
-        ) + 1
+        return (self.__value >> (_YearMonthDayCalendar._DAY_BITS + _YearMonthDayCalendar._MONTH_BITS)) + 1
 
     @property
     def _month(self) -> int:
-        return (
-            (self.__value & self.__MONTH_MASK) >> _YearMonthDayCalendar._DAY_BITS
-        ) + 1
+        return ((self.__value & self.__MONTH_MASK) >> _YearMonthDayCalendar._DAY_BITS) + 1
 
     @property
     def _day(self) -> int:

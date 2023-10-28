@@ -65,18 +65,13 @@ class _YearMonthDayCalculator(ABC):
         This assumes the parameter have been validated previously."""
         year = year_month_day._year
         start_of_year = self._get_start_of_year_in_days(year)
-        start_of_month = (
-            start_of_year
-            + self._get_days_from_start_of_year_to_start_of_month(
-                year, year_month_day._month
-            )
+        start_of_month = start_of_year + self._get_days_from_start_of_year_to_start_of_month(
+            year, year_month_day._month
         )
         return start_of_month + year_month_day._day - 1
 
     @abstractmethod
-    def _get_days_from_start_of_year_to_start_of_month(
-        self, year: int, month: int
-    ) -> int:
+    def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
         raise NotImplementedError
 
 
@@ -147,9 +142,7 @@ class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, ABC):
         aveage_days_per_10_years: int,
         days_at_start_of_year_1: int,
     ):
-        super().__init__(
-            min_year, max_year, aveage_days_per_10_years, days_at_start_of_year_1
-        )
+        super().__init__(min_year, max_year, aveage_days_per_10_years, days_at_start_of_year_1)
         self.__months_in_year = months_in_year
 
 
@@ -164,9 +157,7 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
             ret.append(ret[i] + month_lengths[i])
         return ret
 
-    __NON_LEAP_TOTAL_DAYS_BY_MONTH = __generate_total_days_by_month(
-        *_NON_LEAP_DAYS_PER_MONTH
-    )
+    __NON_LEAP_TOTAL_DAYS_BY_MONTH = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
     __LEAP_TOTAL_DAYS_BY_MONTH = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
 
     def __init__(
@@ -176,13 +167,9 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
         average_days_per_10_years: int,
         days_at_start_of_year_1: int,
     ):
-        super().__init__(
-            min_year, max_year, 12, average_days_per_10_years, days_at_start_of_year_1
-        )
+        super().__init__(min_year, max_year, 12, average_days_per_10_years, days_at_start_of_year_1)
 
-    def _get_days_from_start_of_year_to_start_of_month(
-        self, year: int, month: int
-    ) -> int:
+    def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
         return (
             self.__LEAP_TOTAL_DAYS_BY_MONTH[month]
             if self._is_leap_year(year)
@@ -209,9 +196,7 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
     __FIRST_OPTIMIZED_YEAR = 1900
     __LAST_OPTIMIZED_YEAR = 2100
 
-    __MONTH_START_DAYS = list(
-        range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1)
-    )
+    __MONTH_START_DAYS = list(range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1))
     __YEAR_START_DAYS = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
 
     __DAYS_FROM_0000_to_1970 = 719527
@@ -285,9 +270,7 @@ class _YearStartCacheEntry:
     __INVALID_ENTRY_YEAR = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
 
     def __init__(self, year: int, days: int) -> None:
-        self.__value = (days << self.__ENTRY_VALIDATION_BITS) | self.__get_validator(
-            year
-        )
+        self.__value = (days << self.__ENTRY_VALIDATION_BITS) | self.__get_validator(year)
 
     @classmethod
     def __get_validator(cls, year: int) -> int:
@@ -316,9 +299,7 @@ class _YearStartCacheEntry:
         """Returns whether this cache entry is valid for the given year, and so is safe to use.  (We assume that we
         have located this entry via the correct cache index.)
         """
-        return self.__get_validator(year) == (
-            self.__value & self.__ENTRY_VALIDATION_MASK
-        )
+        return self.__get_validator(year) == (self.__value & self.__ENTRY_VALIDATION_MASK)
 
     @property
     def _start_of_year_days(self) -> int:

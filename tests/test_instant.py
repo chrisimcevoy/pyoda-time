@@ -103,18 +103,12 @@ class TestInstant:
     def test_unix_conversions_extreme_values(self):
         max_ = Instant.max_value() - Duration.from_seconds(1) + Duration.epsilon()
         assert Instant.from_unix_time_seconds(max_.to_unix_time_seconds()) == max_
-        assert (
-            Instant.from_unix_time_milliseconds(max_.to_unix_time_milliseconds())
-            == max_
-        )
+        assert Instant.from_unix_time_milliseconds(max_.to_unix_time_milliseconds()) == max_
         assert Instant.from_unix_time_ticks(max_.to_unix_time_ticks()) == max_
 
         min_ = Instant.min_value()
         assert Instant.from_unix_time_seconds(min_.to_unix_time_seconds()) == min_
-        assert (
-            Instant.from_unix_time_milliseconds(min_.to_unix_time_milliseconds())
-            == min_
-        )
+        assert Instant.from_unix_time_milliseconds(min_.to_unix_time_milliseconds()) == min_
         assert Instant.from_unix_time_ticks(min_.to_unix_time_ticks()) == min_
 
     def test_in_zone_with_calendar(self):
@@ -130,16 +124,8 @@ class TestInstant:
         assert y == Instant.max(y, x) == max(y, x)
         assert x == Instant.max(x, Instant.min_value()) == max(x, Instant.min_value())
         assert x == Instant.max(Instant.min_value(), x) == max(Instant.min_value(), x)
-        assert (
-            Instant.max_value()
-            == Instant.max(Instant.max_value(), x)
-            == max(Instant.max_value(), x)
-        )
-        assert (
-            Instant.max_value()
-            == Instant.max(x, Instant.max_value())
-            == max(x, Instant.max_value())
-        )
+        assert Instant.max_value() == Instant.max(Instant.max_value(), x) == max(Instant.max_value(), x)
+        assert Instant.max_value() == Instant.max(x, Instant.max_value()) == max(x, Instant.max_value())
 
     def test_min(self):
         """This follows the Noda Time test which covers Instant.Min(), but
@@ -149,16 +135,8 @@ class TestInstant:
         y = Instant.from_unix_time_ticks(200)
         assert x == Instant.min(x, y) == min(x, y)
         assert x == Instant.min(y, x) == min(y, x)
-        assert (
-            Instant.min_value()
-            == Instant.min(x, Instant.min_value())
-            == min(x, Instant.min_value())
-        )
-        assert (
-            Instant.min_value()
-            == Instant.min(Instant.min_value(), x)
-            == min(Instant.min_value(), x)
-        )
+        assert Instant.min_value() == Instant.min(x, Instant.min_value()) == min(x, Instant.min_value())
+        assert Instant.min_value() == Instant.min(Instant.min_value(), x) == min(Instant.min_value(), x)
         assert x == Instant.min(Instant.max_value(), x) == min(Instant.max_value(), x)
         assert x == Instant.min(x, Instant.max_value()) == min(x, Instant.max_value())
 
@@ -239,12 +217,8 @@ class TestInstant:
     # TODO def test_plus_offset_overflow(self):
 
     def test_from_unix_time_milliseconds_range(self):
-        smallest_valid = _towards_zero_division(
-            Instant.min_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND
-        )
-        largest_valid = _towards_zero_division(
-            Instant.max_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND
-        )
+        smallest_valid = _towards_zero_division(Instant.min_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND)
+        largest_valid = _towards_zero_division(Instant.max_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND)
         assert Instant.from_unix_time_milliseconds(smallest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(smallest_valid - 1)
@@ -253,12 +227,8 @@ class TestInstant:
             Instant.from_unix_time_milliseconds(largest_valid + 1)
 
     def test_from_unix_time_seconds_range(self):
-        smallest_valid = _towards_zero_division(
-            Instant.min_value().to_unix_time_ticks(), TICKS_PER_SECOND
-        )
-        largest_valid = _towards_zero_division(
-            Instant.max_value().to_unix_time_ticks(), TICKS_PER_SECOND
-        )
+        smallest_valid = _towards_zero_division(Instant.min_value().to_unix_time_ticks(), TICKS_PER_SECOND)
+        largest_valid = _towards_zero_division(Instant.max_value().to_unix_time_ticks(), TICKS_PER_SECOND)
         assert Instant.from_unix_time_seconds(smallest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_seconds(smallest_valid - 1)
@@ -322,9 +292,7 @@ class TestInstant:
             (-2, -1, -3),
         ],
     )
-    def test_safe_plus_near_end_of_time(
-        self, initial_offset: int | None, offset_to_add: int, final_offset: int | None
-    ):
+    def test_safe_plus_near_end_of_time(self, initial_offset: int | None, offset_to_add: int, final_offset: int | None):
         start = (
             Instant._after_max_value()
             if initial_offset is None
