@@ -1,5 +1,7 @@
 [tool.mypy]
 disallow_untyped_defs = true
+# strict mode sounds good, but at time of writing it just warns about pytest.mark.parametrize
+# strict = true
 warn_return_any = true
 warn_unused_configs = true
 
@@ -13,7 +15,7 @@ unfixable = []
 select = [
     "E",    # pycodestyle (error)
     "F",    # pyflakes
-    "I",     # isort
+    "I",    # isort
     "UP",   # pyupgrade
     "W",    # pycodestyle (warning)
 ]
