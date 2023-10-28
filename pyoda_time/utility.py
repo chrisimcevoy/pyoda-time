@@ -13,9 +13,8 @@ class _TickArithmetic:
 
     @staticmethod
     def ticks_to_days_and_tick_of_day(ticks: int) -> tuple[int, int]:
-        """Cautiously converts a number of ticks (which can have any value) into a number of
-        days and a tick within that day.
-        """
+        """Cautiously converts a number of ticks (which can have any value) into a number of days and a tick within that
+        day."""
         from pyoda_time import TICKS_PER_DAY
 
         if ticks >= 0:
@@ -29,9 +28,10 @@ class _TickArithmetic:
 
     @staticmethod
     def bounded_days_and_tick_of_day_to_ticks(days: int, tick_of_day: int) -> int:
-        """Computes a number of ticks from a day/tick-of-day value which is trusted not to overflow,
-        even when computed in the simplest way. Only call this method from places where there
-        are suitable constraints on the input.
+        """Computes a number of ticks from a day/tick-of-day value which is trusted not to overflow, even when computed
+        in the simplest way.
+
+        Only call this method from places where there are suitable constraints on the input.
         """
         from pyoda_time import TICKS_PER_DAY
 
@@ -40,6 +40,7 @@ class _TickArithmetic:
 
 def _towards_zero_division(x: int, y: int) -> int:
     """Divide two integers using "towards zero" rounding.
+
     This ensures that integer division produces the same result as it would do in C#.
     """
     from decimal import ROUND_DOWN, Decimal

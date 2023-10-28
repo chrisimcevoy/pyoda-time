@@ -10,6 +10,7 @@ from .utility import _towards_zero_division
 
 class _YearMonthDayCalculator(ABC):
     """The core of date calculations in Pyoda Time.
+
     This class *only* cares about absolute years, and only
     dates - it has no time aspects at all, nor era-related aspects.
     """
@@ -31,8 +32,7 @@ class _YearMonthDayCalculator(ABC):
         self.__year_cache = _YearStartCacheEntry._create_cache()
 
     def _get_start_of_year_in_days(self, year: int) -> int:
-        """Fetches the start of the year (in days since 1970-01-01 ISO) from the cache, or calculates
-        and caches it."""
+        """Fetches the start of the year (in days since 1970-01-01 ISO) from the cache, or calculates and caches it."""
         # TODO Preconditions.DebugCheckArgumentRange(...)
         cache_index = _YearStartCacheEntry._get_cache_index(year)
         cache_entry = self.__year_cache[cache_index]
@@ -44,11 +44,13 @@ class _YearMonthDayCalculator(ABC):
 
     @abstractmethod
     def _calculate_start_of_year_days(self, year: int) -> int:
-        """Compute the start of the given year in days since 1970-01-01 ISO. The year may be outside
-        the bounds advertised by the calendar, but only by a single year. This method is only
-        called by get_start_of_year_in_days (unless the calendar chooses to call it itself),
-        so calendars which override that method and don't call the original implementation may leave
-        this unimplemented (e.g. by throwing an exception if it's ever called)."""
+        """Compute the start of the given year in days since 1970-01-01 ISO.
+
+        The year may be outside the bounds advertised by the calendar, but only by a single year. This method is only
+        called by get_start_of_year_in_days (unless the calendar chooses to call it itself), so calendars which override
+        that method and don't call the original implementation may leave this unimplemented (e.g. by throwing an
+        exception if it's ever called).
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -61,8 +63,9 @@ class _YearMonthDayCalculator(ABC):
 
     def _get_days_since_epoch(self, year_month_day: _YearMonthDay) -> int:
         """Computes the days since the Unix epoch at the start of the given year/month/day.
-        This is the opposite of _get_year_month_day(int).
-        This assumes the parameter have been validated previously."""
+
+        This is the opposite of _get_year_month_day(int). This assumes the parameter have been validated previously.
+        """
         year = year_month_day._year
         start_of_year = self._get_start_of_year_in_days(year)
         start_of_month = start_of_year + self._get_days_from_start_of_year_to_start_of_month(
@@ -78,9 +81,9 @@ class _YearMonthDayCalculator(ABC):
 @final
 class Era:
     """Represents an era used in a calendar.
-    All the built-in calendars in Pyoda Time use the values specified by the
-    classmethods in this class. These may be compared for reference equality to check for specific
-    eras.
+
+    All the built-in calendars in Pyoda Time use the values specified by the classmethods in this class. These may be
+    compared for reference equality to check for specific eras.
     """
 
     def __init__(self, name: str, resource_identifier: str):
@@ -95,6 +98,7 @@ class Era:
     @classmethod
     def common(cls) -> Era:
         """The "Common" era (CE), also known as Anno Domini (AD).
+
         This is used in the ISO, Gregorian and Julian calendars.
         """
         return cls("CE", "Eras_Common")
@@ -102,6 +106,7 @@ class Era:
     @classmethod
     def before_common(cls) -> Era:
         """The "before common" era (BCE), also known as Before Christ (BC).
+
         This is used in the ISO, Gregorian and Julian calendars.
         """
         return cls("BCE", "Eras_BeforeCommon")
@@ -113,9 +118,10 @@ class Era:
 
 class _EraCalculator(ABC):
     """Takes responsibility for all era-based calculations for a calendar.
-    YearMonthDay arguments can be assumed to be valid for the relevant calendar,
-    but other arguments should be validated. (Eras should be validated for nullity as well
-    as for the presence of a particular era.)"""
+
+    YearMonthDay arguments can be assumed to be valid for the relevant calendar, but other arguments should be
+    validated. (Eras should be validated for nullity as well as for the presence of a particular era.)
+    """
 
     def __init__(self, *eras: Era):
         self._eras = eras
@@ -278,8 +284,8 @@ class _YearStartCacheEntry:
 
     @classmethod
     def __get_validator(cls, year: int) -> int:
-        """Returns the validator to use for a given year,
-        a non-negative number containing at most __ENTRY_VALIDATION_BITS bits."""
+        """Returns the validator to use for a given year, a non-negative number containing at most
+        __ENTRY_VALIDATION_BITS bits."""
         return (year >> cls.__CACHE_INDEX_BITS) & cls.__ENTRY_VALIDATION_MASK
 
     @classmethod
@@ -294,14 +300,14 @@ class _YearStartCacheEntry:
 
     @classmethod
     def __invalid(cls) -> _YearStartCacheEntry:
-        """Entry which is guaranteed to be obviously invalid for any real date, by having
-        a validation value which is larger than any valid year number.
-        """
+        """Entry which is guaranteed to be obviously invalid for any real date, by having a validation value which is
+        larger than any valid year number."""
         return _YearStartCacheEntry(cls.__INVALID_ENTRY_YEAR, 0)
 
     def _is_valid_for_year(self, year: int) -> bool:
-        """Returns whether this cache entry is valid for the given year, and so is safe to use.  (We assume that we
-        have located this entry via the correct cache index.)
+        """Returns whether this cache entry is valid for the given year, and so is safe to use.
+
+        (We assume that we have located this entry via the correct cache index.)
         """
         return self.__get_validator(year) == (self.__value & self.__ENTRY_VALIDATION_MASK)
 

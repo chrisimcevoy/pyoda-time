@@ -115,9 +115,8 @@ class TestInstant:
         ...  # TODO
 
     def test_max(self) -> None:
-        """This follows the Noda Time test which covers Instant.Max(), but
-        additionally covers support for the max() python builtin.
-        """
+        """This follows the Noda Time test which covers Instant.Max(), but additionally covers support for the max()
+        python builtin."""
         x = Instant.from_unix_time_ticks(100)
         y = Instant.from_unix_time_ticks(200)
         assert y == Instant.max(x, y) == max(x, y)
@@ -128,9 +127,8 @@ class TestInstant:
         assert Instant.max_value() == Instant.max(x, Instant.max_value()) == max(x, Instant.max_value())
 
     def test_min(self) -> None:
-        """This follows the Noda Time test which covers Instant.Min(), but
-        additionally covers support for the min() python builtin.
-        """
+        """This follows the Noda Time test which covers Instant.Min(), but additionally covers support for the min()
+        python builtin."""
         x = Instant.from_unix_time_ticks(100)
         y = Instant.from_unix_time_ticks(200)
         assert x == Instant.min(x, y) == min(x, y)

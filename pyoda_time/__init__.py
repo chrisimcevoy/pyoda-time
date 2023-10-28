@@ -37,6 +37,7 @@ TICKS_PER_DAY = TICKS_PER_HOUR * HOURS_PER_DAY
 
 class CalendarOrdinal(IntEnum):
     """Enumeration of calendar ordinal values.
+
     Used for converting between a compact integer representation and a calendar system.
     """
 
@@ -117,9 +118,8 @@ class CalendarSystem:
 
     @classmethod
     def iso(cls) -> CalendarSystem:
-        """Returns a calendar system that follows the rules of the ISO-8601 standard,
-        which is compatible with Gregorian for all modern dates.
-        """
+        """Returns a calendar system that follows the rules of the ISO-8601 standard, which is compatible with Gregorian
+        for all modern dates."""
         gregorian_calculator = _GregorianYearMonthDayCalculator()
         gregorian_era_calculator = _GJEraCalculator(gregorian_calculator)
         return CalendarSystem(
@@ -186,7 +186,10 @@ class Duration:
 
     @property
     def _nanosecond_of_floor_day(self) -> int:
-        """Nanosecond within the "floor day". This is *always* non-negative, even for negative durations."""
+        """Nanosecond within the "floor day".
+
+        This is *always* non-negative, even for negative durations.
+        """
         return self.nano_of_day
 
     @classmethod
@@ -212,8 +215,9 @@ class Duration:
         nanos_per_unit: int,
     ) -> Duration:
         """Constructs an instance from a given number of units.
-        This is a private constructor in Noda Time; its name here is derived from
-        that constructor's past life as a method (FromUnits).
+
+        This is a private constructor in Noda Time; its name here is derived from that constructor's past life as a
+        method (FromUnits).
         """
         days = _towards_zero_division(units, units_per_day)
         unit_of_day = units - (units_per_day * days)
@@ -261,6 +265,7 @@ class Duration:
     @classmethod
     def epsilon(cls) -> Duration:
         """Return a Duration representing 1 nanosecond.
+
         This is the smallest amount by which an instant can vary.
         """
         return cls(0, 1)
@@ -287,6 +292,7 @@ class Duration:
 
     def _plus_small_nanoseconds(self, small_nanos: int) -> Duration:
         """Adds a "small" number of nanoseconds to this duration.
+
         It is trusted to be less or equal to than 24 hours in magnitude.
         """
         _Preconditions._check_argument_range(small_nanos, -NANOSECONDS_PER_DAY, NANOSECONDS_PER_DAY)
@@ -326,6 +332,7 @@ class Offset:
 
 class Instant:
     """Represents an instant on the global timeline, with nanosecond resolution.
+
     An Instant has no concept of a particular time zone or calendar: it simply represents a point in
     time that can be globally agreed-upon.
     Equality and ordering comparisons are defined in the natural way, with earlier points on the timeline
@@ -384,6 +391,7 @@ class Instant:
     @classmethod
     def min_value(cls) -> Instant:
         """Represents the smallest possible Instant.
+
         This value is equivalent to -9998-01-01T00:00:00Z
         """
         return Instant(cls._MIN_DAYS, 0)
@@ -391,6 +399,7 @@ class Instant:
     @classmethod
     def max_value(cls) -> Instant:
         """Represents the largest possible Instant.
+
         This value is equivalent to 9999-12-31T23:59:59.999999999Z
         """
         return Instant(cls._MAX_DAYS, NANOSECONDS_PER_DAY - 1)
@@ -398,6 +407,7 @@ class Instant:
     @classmethod
     def _before_min_value(cls) -> Self:
         """Instant which is invalid *except* for comparison purposes; it is earlier than any valid value.
+
         This must never be exposed.
         """
         return cls(Duration._MIN_DAYS)
@@ -405,15 +415,17 @@ class Instant:
     @classmethod
     def _after_max_value(cls) -> Self:
         """Instant which is invalid *except* for comparison purposes; it is later than any valid value.
+
         This must never be exposed.
         """
         return cls(Duration._MAX_DAYS)
 
     @classmethod
     def __from_duration(cls, duration: Duration) -> Instant:
-        """Constructor which constructs a new instance with the given duration, which
-        is trusted to be valid. Should only be called from from_trusted_duration and
-        from_untrusted_duration."""
+        """Constructor which constructs a new instance with the given duration, which is trusted to be valid.
+
+        Should only be called from from_trusted_duration and from_untrusted_duration.
+        """
         # In Noda Time this is a private constructor, with the body:
         # `this.duration = duration;`
         # This is probably about as close as we can get in Python without
@@ -439,17 +451,21 @@ class Instant:
 
     @classmethod
     def _from_untrusted_duration(cls, duration: Duration) -> Instant:
-        """Creates an Instant with the given duration, validating that it has a suitable
-        "day" part. (It is assumed that the nanoOfDay is okay.)"""
+        """Creates an Instant with the given duration, validating that it has a suitable "day" part.
+
+        (It is assumed that the nanoOfDay is okay.)
+        """
         days = duration._floor_days
         if days < cls._MIN_DAYS or days > cls._MAX_DAYS:
             raise OverflowError("Operation would overflow range of Instant")
         return Instant.__from_duration(duration)
 
     def to_unix_time_ticks(self) -> int:
-        """Gets the number of ticks since the Unix epoch. Negative values represent instants before the Unix epoch.
-        A tick is equal to 100 nanoseconds. There are 10,000 ticks in a millisecond. If the number of nanoseconds
-        in this instant is not an exact number of ticks, the value is truncated towards the start of time.
+        """Gets the number of ticks since the Unix epoch.
+
+        Negative values represent instants before the Unix epoch. A tick is equal to 100 nanoseconds. There are 10,000
+        ticks in a millisecond. If the number of nanoseconds in this instant is not an exact number of ticks, the value
+        is truncated towards the start of time.
         """
         return _TickArithmetic.bounded_days_and_tick_of_day_to_ticks(
             self.duration._floor_days,
@@ -458,25 +474,23 @@ class Instant:
 
     @classmethod
     def from_unix_time_milliseconds(cls, milliseconds: int) -> Instant:
-        """Initializes a new Instant struct based on a number of milliseconds
-        since the Unix epoch of (ISO) January 1st 1970, midnight, UTC.
-        """
+        """Initializes a new Instant struct based on a number of milliseconds since the Unix epoch of (ISO) January 1st
+        1970, midnight, UTC."""
         _Preconditions._check_argument_range(milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS)
         return Instant._from_trusted_duration(Duration.from_milliseconds(milliseconds))
 
     @classmethod
     def from_unix_time_seconds(cls, seconds: int) -> Instant:
-        """Initializes a new Instant based on a number of seconds since the
-        Unix epoch of (ISO) January 1st 1970, midnight, UTC.
-        """
+        """Initializes a new Instant based on a number of seconds since the Unix epoch of (ISO) January 1st 1970,
+        midnight, UTC."""
         _Preconditions._check_argument_range(seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
         return cls._from_trusted_duration(Duration.from_seconds(seconds))
 
     def to_unix_time_seconds(self) -> int:
         """Gets the number of seconds since the Unix epoch.
-        Negative values represent instants before the Unix epoch.
-        If the number of nanoseconds in this instant is not an exact
-        number of seconds, the value is truncated towards the start of time.
+
+        Negative values represent instants before the Unix epoch. If the number of nanoseconds in this instant is not an
+        exact number of seconds, the value is truncated towards the start of time.
         """
         return self.duration._floor_days * SECONDS_PER_DAY + _towards_zero_division(
             self.duration._nanosecond_of_floor_day, NANOSECONDS_PER_SECOND
@@ -484,9 +498,9 @@ class Instant:
 
     def to_unix_time_milliseconds(self) -> int:
         """Gets the number of milliseconds since the Unix epoch.
-        Negative values represent instants before the Unix epoch.
-        If the number of nanoseconds in this instant is not an exact
-        number of milliseconds, the value is truncated towards the start of time.
+
+        Negative values represent instants before the Unix epoch. If the number of nanoseconds in this instant is not an
+        exact number of milliseconds, the value is truncated towards the start of time.
         """
         return self.duration._floor_days * MILLISECONDS_PER_DAY + _towards_zero_division(
             self.duration._nanosecond_of_floor_day, NANOSECONDS_PER_MILLISECOND
@@ -505,6 +519,7 @@ class Instant:
     @classmethod
     def from_datetime_utc(cls, datetime: datetime) -> Instant:
         """Converts a datetime.datetime into a new Instant representing the same instant in time.
+
         The datetime must have a truthy tzinfo, and must have a UTC offset of 0.
         """
         # TODO Precondition.CheckArgument
@@ -527,9 +542,10 @@ class Instant:
         minute_of_hour: int,
     ) -> Instant:
         """Returns a new Instant corresponding to the given UTC date and time in the ISO calendar.
-        In most cases applications should use ZonedDateTime to represent a date
-        and time, but this method is useful in some situations where an Instant is
-        required, such as time zone testing."""
+
+        In most cases applications should use ZonedDateTime to represent a date and time, but this method is useful in
+        some situations where an Instant is required, such as time zone testing.
+        """
         days = LocalDate(year, month_of_year, day_of_month)._days_since_epoch
         nano_of_day = LocalTime(hour_of_day, minute_of_hour).nanosecond_of_day
         return Instant(days, nano_of_day)
@@ -540,15 +556,18 @@ class Instant:
 
     @property
     def _is_valid(self) -> bool:
-        """Returns whether or not this is a valid instant. Returns true for all but
-        before_min_value and after_max_value.
+        """Returns whether or not this is a valid instant.
+
+        Returns true for all but before_min_value and after_max_value.
         """
         return self._MIN_DAYS <= self._days_since_epoch <= self._MAX_DAYS
 
     def _plus(self, offset: Offset) -> _LocalInstant:
         """Adds the given offset to this instant, to return a LocalInstant.
-        A positive offset indicates that the local instant represents a "later local time" than the UTC
-        representation of this instant."""
+
+        A positive offset indicates that the local instant represents a "later local time" than the UTC representation
+        of this instant.
+        """
         return _LocalInstant(self.duration._plus_small_nanoseconds(offset.nanoseconds))
 
     def plus(self, other: Duration) -> Instant:
@@ -556,9 +575,8 @@ class Instant:
         return self + other
 
     def _safe_plus(self, offset: Offset) -> _LocalInstant:
-        """Adds the given offset to this instant, either returning a normal LocalInstant,
-        or LocalInstant.before_min_value() or LocalInstant.after_max_value()
-        if the value would overflow."""
+        """Adds the given offset to this instant, either returning a normal LocalInstant, or
+        LocalInstant.before_min_value() or LocalInstant.after_max_value() if the value would overflow."""
         days = self.duration._floor_days
         if self._MIN_DAYS < days < self._MAX_DAYS:
             return self._plus(offset)
@@ -575,10 +593,12 @@ class Instant:
 
 
 class _LocalInstant:
-    """Represents a local date and time without reference to a calendar system. Essentially
+    """Represents a local date and time without reference to a calendar system. Essentially.
+
     this is a duration since a Unix epoch shifted by an offset (but we don't store what that
     offset is). This class has been slimmed down considerably over time - it's used much less
-    than it used to be... almost solely for time zones."""
+    than it used to be... almost solely for time zones.
+    """
 
     def __init__(self, nanoseconds: Duration):
         days = nanoseconds._floor_days
@@ -618,8 +638,8 @@ class _LocalInstant:
 
 
 class LocalDate:
-    """LocalDate is an immutable struct representing a date within the calendar,
-    with no reference to a particular time zone or time of day."""
+    """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
+    zone or time of day."""
 
     def __init__(self, year: int, month: int, day: int):
         self.__year_month_day_calendar = _YearMonthDayCalendar(year, month, day, CalendarOrdinal.ISO)
@@ -640,8 +660,8 @@ class LocalDate:
 
 
 class LocalTime:
-    """LocalTime is an immutable struct representing a time of day, with no reference
-    to a particular calendar, time zone or date."""
+    """LocalTime is an immutable struct representing a time of day, with no reference to a particular calendar, time
+    zone or date."""
 
     def __init__(self, hour: int, minute: int):
         if hour < 0 or hour > HOURS_PER_DAY - 1 or minute < 0 or minute > MINUTES_PER_HOUR - 1:
