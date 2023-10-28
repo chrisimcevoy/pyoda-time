@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 import pytz
 
-from pyoda_time.utility import towards_zero_division
+from pyoda_time.utility import _towards_zero_division
 from pyoda_time import (
     Duration,
     Instant,
@@ -11,7 +11,7 @@ from pyoda_time import (
     TICKS_PER_MILLISECOND,
     TICKS_PER_SECOND,
     Offset,
-    LocalInstant,
+    _LocalInstant,
 )
 
 
@@ -208,14 +208,14 @@ class TestInstant:
     )
     def test_ticks_truncates_down(self, nanoseconds: int, expected_ticks: int):
         nanos = Duration.from_nanoseconds(nanoseconds)
-        instant = Instant.from_duration(nanos)
+        instant = Instant._from_untrusted_duration(nanos)
         assert instant.to_unix_time_ticks() == expected_ticks
 
     def test_is_valid(self):
-        assert not Instant._before_min_value().is_valid
-        assert Instant.min_value().is_valid
-        assert Instant.max_value().is_valid
-        assert not Instant._after_max_value().is_valid
+        assert not Instant._before_min_value()._is_valid
+        assert Instant.min_value()._is_valid
+        assert Instant.max_value()._is_valid
+        assert not Instant._after_max_value()._is_valid
 
     def test_invalid_values(self):
         assert Instant._after_max_value() > Instant.max_value()
@@ -239,50 +239,50 @@ class TestInstant:
     # TODO def test_plus_offset_overflow(self):
 
     def test_from_unix_time_milliseconds_range(self):
-        smallest_valid = towards_zero_division(
+        smallest_valid = _towards_zero_division(
             Instant.min_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND
         )
-        largest_valid = towards_zero_division(
+        largest_valid = _towards_zero_division(
             Instant.max_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND
         )
-        assert Instant.from_unix_time_milliseconds(smallest_valid).is_valid
+        assert Instant.from_unix_time_milliseconds(smallest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(smallest_valid - 1)
-        assert Instant.from_unix_time_milliseconds(largest_valid).is_valid
+        assert Instant.from_unix_time_milliseconds(largest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(largest_valid + 1)
 
     def test_from_unix_time_seconds_range(self):
-        smallest_valid = towards_zero_division(
+        smallest_valid = _towards_zero_division(
             Instant.min_value().to_unix_time_ticks(), TICKS_PER_SECOND
         )
-        largest_valid = towards_zero_division(
+        largest_valid = _towards_zero_division(
             Instant.max_value().to_unix_time_ticks(), TICKS_PER_SECOND
         )
-        assert Instant.from_unix_time_seconds(smallest_valid).is_valid
+        assert Instant.from_unix_time_seconds(smallest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_seconds(smallest_valid - 1)
-        assert Instant.from_unix_time_seconds(largest_valid).is_valid
+        assert Instant.from_unix_time_seconds(largest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_seconds(largest_valid + 1)
 
     def test_from_ticks_since_unix_epoch_range(self):
         smallest_valid = Instant.min_value().to_unix_time_ticks()
         largest_valid = Instant.max_value().to_unix_time_ticks()
-        assert Instant.from_unix_time_ticks(smallest_valid).is_valid
+        assert Instant.from_unix_time_ticks(smallest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_ticks(smallest_valid - 1)
-        assert Instant.from_unix_time_ticks(largest_valid).is_valid
+        assert Instant.from_unix_time_ticks(largest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_ticks(largest_valid + 1)
 
     def test_plus_offset(self):
-        local_instant = UNIX_EPOCH.plus(Offset.from_hours(1))
-        assert local_instant.time_since_local_epoch == Duration.from_hours(1)
+        local_instant = UNIX_EPOCH._plus(Offset.from_hours(1))
+        assert local_instant._time_since_local_epoch == Duration.from_hours(1)
 
     def test_safe_plus_normal_time(self):
-        local_instant = UNIX_EPOCH.safe_plus(Offset.from_hours(1))
-        assert local_instant.time_since_local_epoch == Duration.from_hours(1)
+        local_instant = UNIX_EPOCH._safe_plus(Offset.from_hours(1))
+        assert local_instant._time_since_local_epoch == Duration.from_hours(1)
 
     @pytest.mark.parametrize(
         "initial_offset,offset_to_add,final_offset",
@@ -304,11 +304,11 @@ class TestInstant:
             else Instant.min_value() + Duration.from_hours(initial_offset)
         )
         expected = (
-            LocalInstant.before_min_value()
+            _LocalInstant.before_min_value()
             if final_offset is None
-            else Instant.min_value().plus(Offset.from_hours(final_offset))
+            else Instant.min_value()._plus(Offset.from_hours(final_offset))
         )
-        actual = start.safe_plus(Offset.from_hours(offset_to_add))
+        actual = start._safe_plus(Offset.from_hours(offset_to_add))
         assert actual == expected
 
     @pytest.mark.parametrize(
@@ -331,9 +331,9 @@ class TestInstant:
             else Instant.max_value() + Duration.from_hours(initial_offset)
         )
         expected = (
-            LocalInstant.after_max_value()
+            _LocalInstant.after_max_value()
             if final_offset is None
-            else Instant.max_value().plus(Offset.from_hours(final_offset))
+            else Instant.max_value()._plus(Offset.from_hours(final_offset))
         )
-        actual = start.safe_plus(Offset.from_hours(offset_to_add))
+        actual = start._safe_plus(Offset.from_hours(offset_to_add))
         assert actual == expected
