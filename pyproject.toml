@@ -6,8 +6,10 @@ fixable = ["ALL"]
 unfixable = []
 
 select = [
-    "E",
-    "F",
-    "UP",
+    "E",    # pycodestyle (error)
+    "F",    # pyflakes
+    "I",     # isort
+    "UP",   # pyupgrade
+    "W",    # pycodestyle (warning)
 ]
 

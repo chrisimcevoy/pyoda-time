@@ -3,16 +3,16 @@ from datetime import datetime
 import pytest
 import pytz
 
-from pyoda_time.utility import _towards_zero_division
 from pyoda_time import (
-    Duration,
-    Instant,
-    UNIX_EPOCH,
     TICKS_PER_MILLISECOND,
     TICKS_PER_SECOND,
+    UNIX_EPOCH,
+    Duration,
+    Instant,
     Offset,
     _LocalInstant,
 )
+from pyoda_time.utility import _towards_zero_division
 
 
 class TestInstant:

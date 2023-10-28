@@ -42,7 +42,7 @@ def _towards_zero_division(x: int, y: int) -> int:
     """Divide two integers using "towards zero" rounding.
     This ensures that integer division produces the same result as it would do in C#.
     """
-    from decimal import Decimal, ROUND_DOWN
+    from decimal import ROUND_DOWN, Decimal
 
     return int((Decimal(x) / y).quantize(0, ROUND_DOWN))
 
