@@ -154,7 +154,8 @@ class TestInstant:
             tz = pytz.timezone("America/New_York")
             Instant.from_datetime_utc(datetime(2011, 8, 18, 20, 53, 0, 0, tz))
         with pytest.raises(ValueError):
-            Instant.from_datetime_utc(datetime.now())
+            # Roughly equivalent to `DateTimeKind.Unspecified`
+            Instant.from_datetime_utc(datetime(2011, 8, 18, 20, 53, 0, 0))
 
     def test_from_datetime_utc_valid(self) -> None:
         x = datetime(2011, 8, 18, 20, 53, 0, 0, pytz.UTC)
