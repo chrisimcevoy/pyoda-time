@@ -107,7 +107,7 @@ class CalendarSystem:
         return cls._for_ordinal_uncached(ordinal)
 
     @classmethod
-    def _for_ordinal_uncached(cls, ordinal: CalendarOrdinal):
+    def _for_ordinal_uncached(cls, ordinal: CalendarOrdinal) -> CalendarSystem:
         match ordinal:
             case CalendarOrdinal.ISO:
                 return cls.iso()
@@ -116,7 +116,7 @@ class CalendarSystem:
                 raise ValueError(f"CalendarOrdinal '{ordinal.name}' not mapped to CalendarSystem yet")
 
     @classmethod
-    def iso(cls):
+    def iso(cls) -> CalendarSystem:
         """Returns a calendar system that follows the rules of the ISO-8601 standard,
         which is compatible with Gregorian for all modern dates.
         """
@@ -145,17 +145,17 @@ class Duration:
         self.days = days
         self.nano_of_day = nano_of_day
 
-    def __le__(self, other):
+    def __le__(self, other: Duration) -> bool:
         if isinstance(other, Duration):
             return self < other or self == other
         raise TypeError("Unsupported operand type")
 
-    def __lt__(self, other):
+    def __lt__(self, other: Duration) -> bool:
         if isinstance(other, Duration):
             return self.days < other.days or (self.days == other.days and self.nano_of_day < other.nano_of_day)
         raise TypeError("Unsupported operand type")
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Duration):
             return self.days == other.days and self.nano_of_day == other.nano_of_day
         raise TypeError("Unsupported operand type")
@@ -185,12 +185,12 @@ class Duration:
         return self.days
 
     @property
-    def _nanosecond_of_floor_day(self):
+    def _nanosecond_of_floor_day(self) -> int:
         """Nanosecond within the "floor day". This is *always* non-negative, even for negative durations."""
         return self.nano_of_day
 
     @classmethod
-    def from_milliseconds(cls, milliseconds):
+    def from_milliseconds(cls, milliseconds: int) -> Duration:
         """Returns a Duration that represents the given number of milliseconds."""
         return cls.__from_units(
             units=milliseconds,
@@ -210,7 +210,7 @@ class Duration:
         max_value: int,
         units_per_day: int,
         nanos_per_unit: int,
-    ):
+    ) -> Duration:
         """Constructs an instance from a given number of units.
         This is a private constructor in Noda Time; its name here is derived from
         that constructor's past life as a method (FromUnits).
@@ -228,7 +228,7 @@ class Duration:
         return cls(days, nano_of_day)
 
     @classmethod
-    def from_seconds(cls, seconds):
+    def from_seconds(cls, seconds: int) -> Duration:
         return cls.__from_units(
             seconds,
             "seconds",
@@ -238,7 +238,7 @@ class Duration:
             NANOSECONDS_PER_SECOND,
         )
 
-    def __add__(self, other):
+    def __add__(self, other: Duration) -> Duration:
         if isinstance(other, Duration):
             days = self.days + other.days
             nanos = self.nano_of_day + other.nano_of_day
@@ -248,7 +248,7 @@ class Duration:
             return Duration(days, nanos)
         raise TypeError("Unsupported operand type")
 
-    def __sub__(self, other):
+    def __sub__(self, other: Duration) -> Duration:
         if isinstance(other, Duration):
             days = self.days - other.days
             nanos = self.nano_of_day - other.nano_of_day
@@ -266,7 +266,7 @@ class Duration:
         return cls(0, 1)
 
     @classmethod
-    def from_nanoseconds(cls, nanoseconds):  # TODO from_nanoseconds overrides
+    def from_nanoseconds(cls, nanoseconds: int) -> Duration:  # TODO from_nanoseconds overrides
         """Returns a Duration that represents the given number of nanoseconds."""
         if nanoseconds >= 0:
             # TODO Is divmod compatible with C# integer division?
@@ -285,7 +285,7 @@ class Duration:
         # TODO this is a shortcut and differs from Noda Time
         return Duration.from_seconds(hours * SECONDS_PER_HOUR)
 
-    def _plus_small_nanoseconds(self, small_nanos) -> Duration:
+    def _plus_small_nanoseconds(self, small_nanos: int) -> Duration:
         """Adds a "small" number of nanoseconds to this duration.
         It is trusted to be less or equal to than 24 hours in magnitude.
         """
@@ -346,30 +346,22 @@ class Instant:
     def __init__(self, days: int = 0, nano_of_day: int = 0) -> None:
         self.duration = Duration(days, nano_of_day)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Instant):
             return self.duration == other.duration
         raise TypeError("Unsupported operand type")
 
-    def __lt__(self, other):
+    def __lt__(self, other: Instant) -> bool:
         if isinstance(other, Instant):
             return self.duration < other.duration
         raise TypeError("Unsupported operand type")
 
-    def __le__(self, other):
+    def __le__(self, other: Instant) -> bool:
         if isinstance(other, Instant):
             return self < other or self == other
         raise TypeError("Unsupported operand type")
 
-    @overload
-    def __add__(self, offset: Offset) -> _LocalInstant:
-        ...
-
-    @overload
-    def __add__(self, duration: Duration) -> Instant:
-        ...
-
-    def __add__(self, other):
+    def __add__(self, other: Duration) -> Instant:
         if isinstance(other, Duration):
             return self._from_untrusted_duration(self.duration + other)
         raise TypeError("Unsupported operand type")
@@ -434,13 +426,13 @@ class Instant:
         return self.duration._floor_days
 
     @classmethod
-    def from_unix_time_ticks(cls, ticks) -> Instant:
+    def from_unix_time_ticks(cls, ticks: int) -> Instant:
         """Initializes a new Instant based on a number of ticks since the Unix epoch."""
         _Preconditions._check_argument_range(ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
         return Instant._from_trusted_duration(Duration.from_ticks(ticks))
 
     @classmethod
-    def _from_trusted_duration(cls, duration) -> Instant:
+    def _from_trusted_duration(cls, duration: Duration) -> Instant:
         """Creates an Instant with the given duration, with no validation (in release mode)."""
         # TODO Preconditions.DebugCheckArgumentRange
         return Instant.__from_duration(duration)
@@ -473,14 +465,14 @@ class Instant:
         return Instant._from_trusted_duration(Duration.from_milliseconds(milliseconds))
 
     @classmethod
-    def from_unix_time_seconds(cls, seconds) -> Instant:
+    def from_unix_time_seconds(cls, seconds: int) -> Instant:
         """Initializes a new Instant based on a number of seconds since the
         Unix epoch of (ISO) January 1st 1970, midnight, UTC.
         """
         _Preconditions._check_argument_range(seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
         return cls._from_trusted_duration(Duration.from_seconds(seconds))
 
-    def to_unix_time_seconds(self):
+    def to_unix_time_seconds(self) -> int:
         """Gets the number of seconds since the Unix epoch.
         Negative values represent instants before the Unix epoch.
         If the number of nanoseconds in this instant is not an exact
@@ -490,7 +482,7 @@ class Instant:
             self.duration._nanosecond_of_floor_day, NANOSECONDS_PER_SECOND
         )
 
-    def to_unix_time_milliseconds(self):
+    def to_unix_time_milliseconds(self) -> int:
         """Gets the number of milliseconds since the Unix epoch.
         Negative values represent instants before the Unix epoch.
         If the number of nanoseconds in this instant is not an exact
@@ -563,7 +555,7 @@ class Instant:
         """Returns the result of adding a duration to this instant, for a fluent alternative to the + operator."""
         return self + other
 
-    def _safe_plus(self, offset: Offset):
+    def _safe_plus(self, offset: Offset) -> _LocalInstant:
         """Adds the given offset to this instant, either returning a normal LocalInstant,
         or LocalInstant.before_min_value() or LocalInstant.after_max_value()
         if the value would overflow."""
@@ -594,10 +586,10 @@ class _LocalInstant:
             raise ValueError("Operation would overflow bounds of local date/time")
         self._duration = nanoseconds
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, _LocalInstant):
             return self._duration == other._duration
-        TypeError("Unsupported operand type")
+        raise TypeError("Unsupported operand type")
 
     @property
     def _time_since_local_epoch(self) -> Duration:
@@ -605,12 +597,12 @@ class _LocalInstant:
         return self._duration
 
     @classmethod
-    def before_min_value(cls):
+    def before_min_value(cls) -> _LocalInstant:
         # In Noda Time this is a public static readonly field
         return _LocalInstant.__invalid_constructor(Instant._before_min_value()._days_since_epoch)
 
     @classmethod
-    def after_max_value(cls):
+    def after_max_value(cls) -> _LocalInstant:
         # In Noda Time this is a public static readonly field
         return _LocalInstant.__invalid_constructor(Instant._after_max_value()._days_since_epoch)
 

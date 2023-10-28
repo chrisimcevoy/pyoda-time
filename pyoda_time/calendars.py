@@ -85,26 +85,30 @@ class Era:
 
     def __init__(self, name: str, resource_identifier: str):
         # Note: in Noda Time this is an internal constructor...
-        self.name = property(lambda _: name)
+        self.__name = name
         self._resource_identifier = property(lambda _: resource_identifier)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns the name of this era."""
         return self.name
 
     @classmethod
-    def common(cls):
+    def common(cls) -> Era:
         """The "Common" era (CE), also known as Anno Domini (AD).
         This is used in the ISO, Gregorian and Julian calendars.
         """
         return cls("CE", "Eras_Common")
 
     @classmethod
-    def before_common(cls):
+    def before_common(cls) -> Era:
         """The "before common" era (BCE), also known as Before Christ (BC).
         This is used in the ISO, Gregorian and Julian calendars.
         """
         return cls("BCE", "Eras_BeforeCommon")
+
+    @property
+    def name(self) -> str:
+        return self.__name
 
 
 class _EraCalculator(ABC):
@@ -151,14 +155,14 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
     _LEAP_DAYS_PER_MONTH = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
     @staticmethod
-    def __generate_total_days_by_month(*month_lengths: int):
+    def __generate_total_days_by_month(*month_lengths: int) -> list[int]:
         ret = [0]
         for i in range(len(month_lengths)):
             ret.append(ret[i] + month_lengths[i])
         return ret
 
-    __NON_LEAP_TOTAL_DAYS_BY_MONTH = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
-    __LEAP_TOTAL_DAYS_BY_MONTH = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
+    __NON_LEAP_TOTAL_DAYS_BY_MONTH: list[int] = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
+    __LEAP_TOTAL_DAYS_BY_MONTH: list[int] = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
 
     def __init__(
         self,
@@ -177,7 +181,7 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
         )
 
     @final
-    def _get_days_in_month(self, year: int, month: int):
+    def _get_days_in_month(self, year: int, month: int) -> int:
         # February is awkward
         if month == 2:
             if self._is_leap_year(year):
@@ -202,7 +206,7 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
     __DAYS_FROM_0000_to_1970 = 719527
     __AVERAGE_DAYS_PER_10_YEARS = 3652
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             self.__MIN_GREGORIAN_YEAR,
             self.__MAX_GREGORIAN_YEAR,
@@ -244,7 +248,7 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
                 leap_years -= 1
         return year * 365 + (leap_years - self.__DAYS_FROM_0000_to_1970)
 
-    def _get_start_of_year_in_days(self, year: int):
+    def _get_start_of_year_in_days(self, year: int) -> int:
         if year < self.__FIRST_OPTIMIZED_YEAR or year > self.__LAST_OPTIMIZED_YEAR:
             return super()._get_start_of_year_in_days(year)
         return self.__YEAR_START_DAYS[year - self.__FIRST_OPTIMIZED_YEAR]

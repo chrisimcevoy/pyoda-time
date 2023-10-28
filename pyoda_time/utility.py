@@ -28,7 +28,7 @@ class _TickArithmetic:
         return days, tick_of_day
 
     @staticmethod
-    def bounded_days_and_tick_of_day_to_ticks(days: int, tick_of_day: int):
+    def bounded_days_and_tick_of_day_to_ticks(days: int, tick_of_day: int) -> int:
         """Computes a number of ticks from a day/tick-of-day value which is trusted not to overflow,
         even when computed in the simplest way. Only call this method from places where there
         are suitable constraints on the input.

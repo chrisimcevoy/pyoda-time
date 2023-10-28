@@ -12,7 +12,7 @@ ALL_CALCULATORS: list[_YearMonthDayCalculator] = [
 
 class TestYearMonthDayCalculator:
     @pytest.mark.parametrize("calculator", ALL_CALCULATORS, ids=lambda x: x.__class__.__name__)
-    def test_validate_start_of_year_1_days(self, calculator):
+    def test_validate_start_of_year_1_days(self, calculator: _YearMonthDayCalculator) -> None:
         if calculator._min_year > 1 or calculator._max_year < 0:
             return
         assert calculator._get_start_of_year_in_days(1) == calculator._days_at_start_of_year_1

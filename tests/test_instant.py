@@ -30,33 +30,33 @@ class TestInstant:
 
     # TODO def test_with_offset_non_iso_calendar(self):
 
-    def test_from_ticks_since_unix_epoch(self):
+    def test_from_ticks_since_unix_epoch(self) -> None:
         instant = Instant.from_unix_time_ticks(12345)
         assert instant.to_unix_time_ticks() == 12345
 
-    def test_from_unix_time_milliseconds_valid(self):
+    def test_from_unix_time_milliseconds_valid(self) -> None:
         actual = Instant.from_unix_time_milliseconds(12345)
         expected = Instant.from_unix_time_ticks(12345 * TICKS_PER_MILLISECOND)
         assert actual == expected
 
-    def test_from_unix_time_milliseconds_too_large(self):
+    def test_from_unix_time_milliseconds_too_large(self) -> None:
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(int(9223372036854775807 / 100))
 
-    def test_from_unix_time_milliseconds_too_small(self):
+    def test_from_unix_time_milliseconds_too_small(self) -> None:
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(int(-9223372036854775808 / 100))
 
-    def test_from_unix_time_seconds_valid(self):
+    def test_from_unix_time_seconds_valid(self) -> None:
         actual = Instant.from_unix_time_seconds(12345)
         expected = Instant.from_unix_time_ticks(12345 * TICKS_PER_SECOND)
         assert actual == expected
 
-    def test_from_unix_time_seconds_too_large(self):
+    def test_from_unix_time_seconds_too_large(self) -> None:
         with pytest.raises(ValueError):
             Instant.from_unix_time_seconds(int(9223372036854775807 / 1_000_000))
 
-    def test_from_unix_time_seconds_too_small(self):
+    def test_from_unix_time_seconds_too_small(self) -> None:
         with pytest.raises(ValueError):
             Instant.from_unix_time_seconds(int(-9223372036854775808 / 1_000_000))
 
@@ -76,7 +76,7 @@ class TestInstant:
             (1500, 1),
         ],
     )
-    def test_to_unix_time_seconds(self, milliseconds: int, expected_seconds: int):
+    def test_to_unix_time_seconds(self, milliseconds: int, expected_seconds: int) -> None:
         instant = Instant.from_unix_time_milliseconds(milliseconds)
         assert instant.to_unix_time_seconds() == expected_seconds
 
@@ -96,11 +96,11 @@ class TestInstant:
             (15000, 1),
         ],
     )
-    def test_to_unix_time_milliseconds(self, ticks: int, expected_milliseconds: int):
+    def test_to_unix_time_milliseconds(self, ticks: int, expected_milliseconds: int) -> None:
         instant = Instant.from_unix_time_ticks(ticks)
         assert instant.to_unix_time_milliseconds() == expected_milliseconds
 
-    def test_unix_conversions_extreme_values(self):
+    def test_unix_conversions_extreme_values(self) -> None:
         max_ = Instant.max_value() - Duration.from_seconds(1) + Duration.epsilon()
         assert Instant.from_unix_time_seconds(max_.to_unix_time_seconds()) == max_
         assert Instant.from_unix_time_milliseconds(max_.to_unix_time_milliseconds()) == max_
@@ -111,10 +111,10 @@ class TestInstant:
         assert Instant.from_unix_time_milliseconds(min_.to_unix_time_milliseconds()) == min_
         assert Instant.from_unix_time_ticks(min_.to_unix_time_ticks()) == min_
 
-    def test_in_zone_with_calendar(self):
+    def test_in_zone_with_calendar(self) -> None:
         ...  # TODO
 
-    def test_max(self):
+    def test_max(self) -> None:
         """This follows the Noda Time test which covers Instant.Max(), but
         additionally covers support for the max() python builtin.
         """
@@ -127,7 +127,7 @@ class TestInstant:
         assert Instant.max_value() == Instant.max(Instant.max_value(), x) == max(Instant.max_value(), x)
         assert Instant.max_value() == Instant.max(x, Instant.max_value()) == max(x, Instant.max_value())
 
-    def test_min(self):
+    def test_min(self) -> None:
         """This follows the Noda Time test which covers Instant.Min(), but
         additionally covers support for the min() python builtin.
         """
@@ -150,7 +150,7 @@ class TestInstant:
 
     # TODO def test_from_datetimeoffset(self):
 
-    def test_from_datetime_utc_invalid(self):
+    def test_from_datetime_utc_invalid(self) -> None:
         with pytest.raises(ValueError):
             # Roughly equivalent to `DateTimeKind.Local`
             tz = pytz.timezone("America/New_York")
@@ -158,13 +158,13 @@ class TestInstant:
         with pytest.raises(ValueError):
             Instant.from_datetime_utc(datetime.now())
 
-    def test_from_datetime_utc_valid(self):
+    def test_from_datetime_utc_valid(self) -> None:
         x = datetime(2011, 8, 18, 20, 53, 0, 0, pytz.UTC)
         expected = Instant.from_utc(2011, 8, 18, 20, 53)
         actual = Instant.from_datetime_utc(x)
         assert actual == expected
 
-    def test_default_constructor(self):
+    def test_default_constructor(self) -> None:
         actual = Instant()
         assert actual == UNIX_EPOCH
 
@@ -184,28 +184,28 @@ class TestInstant:
             (101, 1),
         ],
     )
-    def test_ticks_truncates_down(self, nanoseconds: int, expected_ticks: int):
+    def test_ticks_truncates_down(self, nanoseconds: int, expected_ticks: int) -> None:
         nanos = Duration.from_nanoseconds(nanoseconds)
         instant = Instant._from_untrusted_duration(nanos)
         assert instant.to_unix_time_ticks() == expected_ticks
 
-    def test_is_valid(self):
+    def test_is_valid(self) -> None:
         assert not Instant._before_min_value()._is_valid
         assert Instant.min_value()._is_valid
         assert Instant.max_value()._is_valid
         assert not Instant._after_max_value()._is_valid
 
-    def test_invalid_values(self):
+    def test_invalid_values(self) -> None:
         assert Instant._after_max_value() > Instant.max_value()
         assert Instant._before_min_value() < Instant.min_value()
 
-    def test_plus_duration_overflow(self):
+    def test_plus_duration_overflow(self) -> None:
         with pytest.raises(OverflowError):
             Instant.min_value().plus(-Duration.epsilon())
         with pytest.raises(OverflowError):
             Instant.max_value().plus(Duration.epsilon())
 
-    def test_extreme_arithmetic(self):
+    def test_extreme_arithmetic(self) -> None:
         huge_and_positive = Instant.max_value() - Instant.min_value()
         huge_and_negative = Instant.min_value() - Instant.max_value()
         assert huge_and_negative == -huge_and_positive
@@ -216,7 +216,7 @@ class TestInstant:
 
     # TODO def test_plus_offset_overflow(self):
 
-    def test_from_unix_time_milliseconds_range(self):
+    def test_from_unix_time_milliseconds_range(self) -> None:
         smallest_valid = _towards_zero_division(Instant.min_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND)
         largest_valid = _towards_zero_division(Instant.max_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND)
         assert Instant.from_unix_time_milliseconds(smallest_valid)._is_valid
@@ -226,7 +226,7 @@ class TestInstant:
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(largest_valid + 1)
 
-    def test_from_unix_time_seconds_range(self):
+    def test_from_unix_time_seconds_range(self) -> None:
         smallest_valid = _towards_zero_division(Instant.min_value().to_unix_time_ticks(), TICKS_PER_SECOND)
         largest_valid = _towards_zero_division(Instant.max_value().to_unix_time_ticks(), TICKS_PER_SECOND)
         assert Instant.from_unix_time_seconds(smallest_valid)._is_valid
@@ -236,7 +236,7 @@ class TestInstant:
         with pytest.raises(ValueError):
             Instant.from_unix_time_seconds(largest_valid + 1)
 
-    def test_from_ticks_since_unix_epoch_range(self):
+    def test_from_ticks_since_unix_epoch_range(self) -> None:
         smallest_valid = Instant.min_value().to_unix_time_ticks()
         largest_valid = Instant.max_value().to_unix_time_ticks()
         assert Instant.from_unix_time_ticks(smallest_valid)._is_valid
@@ -246,11 +246,11 @@ class TestInstant:
         with pytest.raises(ValueError):
             Instant.from_unix_time_ticks(largest_valid + 1)
 
-    def test_plus_offset(self):
+    def test_plus_offset(self) -> None:
         local_instant = UNIX_EPOCH._plus(Offset.from_hours(1))
         assert local_instant._time_since_local_epoch == Duration.from_hours(1)
 
-    def test_safe_plus_normal_time(self):
+    def test_safe_plus_normal_time(self) -> None:
         local_instant = UNIX_EPOCH._safe_plus(Offset.from_hours(1))
         assert local_instant._time_since_local_epoch == Duration.from_hours(1)
 
@@ -267,7 +267,7 @@ class TestInstant:
     )
     def test_safe_plus_near_start_of_time(
         self, initial_offset: int | None, offset_to_add: int, final_offset: int | None
-    ):
+    ) -> None:
         start = (
             Instant._before_min_value()
             if initial_offset is None
@@ -292,7 +292,9 @@ class TestInstant:
             (-2, -1, -3),
         ],
     )
-    def test_safe_plus_near_end_of_time(self, initial_offset: int | None, offset_to_add: int, final_offset: int | None):
+    def test_safe_plus_near_end_of_time(
+        self, initial_offset: int | None, offset_to_add: int, final_offset: int | None
+    ) -> None:
         start = (
             Instant._after_max_value()
             if initial_offset is None
