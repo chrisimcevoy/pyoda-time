@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import IntEnum
-from typing import Self, overload
+from typing import Annotated, Final, Self, final, overload
 
 from .calendars import (
     _EraCalculator,
@@ -10,7 +10,7 @@ from .calendars import (
     _GregorianYearMonthDayCalculator,
     _YearMonthDayCalculator,
 )
-from .utility import _Preconditions, _TickArithmetic, _to_ticks, _towards_zero_division
+from .utility import _Preconditions, _TickArithmetic, _to_ticks, _towards_zero_division, private, sealed
 
 HOURS_PER_DAY = 24
 SECONDS_PER_MINUTE = 60
@@ -64,22 +64,70 @@ class CalendarOrdinal(IntEnum):
     SIZE = 19
 
 
+@final
+@sealed
+@private
 class CalendarSystem:
-    """Maps the non-calendar-specific "local timeline" to human concepts such as years, months and days."""
+    """Maps the non-calendar-specific "local timeline" to human concepts such as years, months and days.
 
-    __ISO_NAME = "ISO"
-    __ISO_ID = __ISO_NAME
+    Many developers will never need to touch this class, other than to potentially ask a calendar how many days are in a
+    particular year/month and the like. Pyoda Time defaults to using the ISO-8601 calendar anywhere that a calendar
+    system is required but hasn't been explicitly specified.
+
+    If you need to obtain a CalendarSystem instance, use one of the static properties or methods in this class, such as
+    the iso() classmethod or the get_hebrew_calendar(HebrewMonthNumbering)" method.
+
+    Although this class is currently sealed, in the future this decision may be reversed. In any case, there is no
+    current intention for third-party developers to be able to implement their own calendar systems (for various
+    reasons). If you require a calendar system which is not currently supported, please file a feature request and we'll
+    see what we can do.
+    """
+
+    # IDs and names are separated out (usually with the ID either being the same as the name,
+    # or the base ID being the same as a name and then other IDs being formed from it.) The
+    # differentiation is only present for clarity.
+    __GREGORIAN_NAME: Final[str] = "Gregorian"
+    __GREGORIAN_ID: Final[str] = __GREGORIAN_NAME
+
+    __ISO_NAME: Final[str] = "ISO"
+    __ISO_ID: Final[str] = __ISO_NAME
+
+    __COPTIC_NAME: Final[str] = "Coptic"
+    __COPTIC_ID: Final[str] = __COPTIC_NAME
+
+    __BADI_NAME: Final[str] = "Badi"
+    __BADI_ID: Final[str] = __BADI_NAME
+
+    __JULIAN_NAME: Final[str] = "Julian"
+    __JULIAN_ID: Final[str] = __JULIAN_NAME
+
+    __ISLAMIC_NAME: Final[str] = "Hijri"
+    __ISLAMIC_ID_BASE: Final[str] = __ISLAMIC_NAME
 
     __CALENDAR_BY_ORDINAL: dict[int, CalendarSystem] = {}
 
-    def __init__(
-        self,
+    ordinal: Annotated[CalendarOrdinal, "Set by private constructor"]
+    id: Annotated[str, "Set by private constructor"]
+    name: Annotated[str, "Set by private constructor"]
+    year_month_day_calculator: Annotated[_YearMonthDayCalculator, "Set by private constructor"]
+    era_calculator: Annotated[_EraCalculator, "Set by private constructor"]
+    min_year: Annotated[int, "Set by private constructor"]
+    max_year: Annotated[int, "Set by private constructor"]
+    min_days: Annotated[int, "Set by private constructor"]
+    max_days: Annotated[int, "Set by private constructor"]
+
+    @classmethod
+    def __init(
+        cls,
         ordinal: CalendarOrdinal,
         id_: str,
         name: str,
         year_month_day_calculator: _YearMonthDayCalculator,
         era_calculator: _EraCalculator,
-    ):
+    ) -> CalendarSystem:
+        """Private initialiser which emulates the two private constructors on the corresponding Noda Time class."""
+        self: CalendarSystem = super().__new__(cls)
+        super(cls, self).__init__()
         self.ordinal = ordinal
         self.id = id_
         self.name = name
@@ -91,6 +139,7 @@ class CalendarSystem:
 
         self.era_calculator = era_calculator
         self.__CALENDAR_BY_ORDINAL[int(ordinal)] = self
+        return self
 
     @classmethod
     def _for_ordinal(cls, ordinal: CalendarOrdinal) -> CalendarSystem:
@@ -122,7 +171,7 @@ class CalendarSystem:
         for all modern dates."""
         gregorian_calculator = _GregorianYearMonthDayCalculator()
         gregorian_era_calculator = _GJEraCalculator(gregorian_calculator)
-        return CalendarSystem(
+        return CalendarSystem.__init(
             CalendarOrdinal.ISO,
             cls.__ISO_ID,
             cls.__ISO_NAME,

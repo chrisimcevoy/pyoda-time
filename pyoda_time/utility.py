@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, TypeVar
 
 
 class _Preconditions:
@@ -54,3 +55,48 @@ def _to_ticks(dt: datetime) -> int:
     import pytz
 
     return int((dt - datetime(1, 1, 1, tzinfo=pytz.UTC)).total_seconds() * 10000000)
+
+
+T = TypeVar("T", bound=type)
+
+
+def sealed(cls: T) -> T:
+    """Prevents the decorated class from being subclassed.
+
+    This is intended to loosely emulate the behaviour of the `sealed` keyword in C#.
+    Its use should be accompanied by the `typing.final` decorator to aid static analysis.
+    """
+
+    def __init_subclass__() -> None:
+        raise TypeError(f"{cls.__name__} is not intended to be subclassed.")
+
+    # Use setattr to stop mypy shouting
+    setattr(cls, "__init_subclass__", __init_subclass__)
+
+    return cls
+
+
+def private(klass: T) -> T:
+    """Prevents the decorated class from being instantiated.
+
+    This is used to decorate Python classes which have been ported from C#, where the C# class has no public
+    constructor.
+    """
+
+    msg = f"{klass.__name__} is not intended to be initialised directly."
+
+    def __init__(*_args: Any, **_kwargs: Any) -> None:
+        raise TypeError(msg)
+
+    def __new__(*_args: Any, **_kwargs: Any) -> T:
+        raise TypeError(msg)
+
+    def __call__(*_args: Any, **_kwargs: Any) -> T:
+        raise TypeError(msg)
+
+    # Use setattr to stop mypy shouting
+    setattr(klass, "__init__", __init__)
+    setattr(klass, "__new__", __new__)
+    setattr(klass, "__call__", __call__)
+
+    return klass
