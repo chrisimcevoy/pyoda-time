@@ -4,7 +4,7 @@ from typing import Any, TypeVar
 
 class _Preconditions:
     @staticmethod
-    def _check_argument_range(value: int, min_inclusive: int, max_inclusive: int) -> None:
+    def _check_argument_range(param_name: str, value: int, min_inclusive: int, max_inclusive: int) -> None:
         if (value < min_inclusive) or (value > max_inclusive):
             raise ValueError(f"Value should be in range [{min_inclusive}-{max_inclusive}]")
 

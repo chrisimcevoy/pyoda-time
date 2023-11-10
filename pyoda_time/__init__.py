@@ -238,7 +238,7 @@ class Duration:
     @classmethod
     def _ctor(cls, *, days: int, nano_of_day: int) -> Duration:
         if days < cls._MIN_DAYS or days > cls._MAX_DAYS:
-            _Preconditions._check_argument_range(days, cls._MIN_DAYS, cls._MAX_DAYS)
+            _Preconditions._check_argument_range("days", days, cls._MIN_DAYS, cls._MAX_DAYS)
         # TODO: _Precondition._debug_check_argument_range()
         self = super().__new__(cls)
         self.__days = days
@@ -436,7 +436,7 @@ class Duration:
 
         It is trusted to be less or equal to than 24 hours in magnitude.
         """
-        _Preconditions._check_argument_range(small_nanos, -NANOSECONDS_PER_DAY, NANOSECONDS_PER_DAY)
+        _Preconditions._check_argument_range("small_nanos", small_nanos, -NANOSECONDS_PER_DAY, NANOSECONDS_PER_DAY)
         new_days = self.__days
         new_nanos = self.__nano_of_day + small_nanos
         if new_nanos >= NANOSECONDS_PER_DAY:
@@ -464,7 +464,7 @@ class Offset:
     @classmethod
     def _ctor(cls, *, seconds: int) -> Offset:
         """Internal constructor."""
-        _Preconditions._check_argument_range(seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
+        _Preconditions._check_argument_range("seconds", seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
         self = super().__new__(cls)
         self.__seconds = seconds
         return self
@@ -504,7 +504,7 @@ class Offset:
     @classmethod
     def from_hours(cls, hours: int) -> Offset:
         """Returns an offset for the specified number of hours, which may be negative."""
-        _Preconditions._check_argument_range(hours, cls.__MIN_HOURS, cls.__MAX_HOURS)
+        _Preconditions._check_argument_range("hours", hours, cls.__MIN_HOURS, cls.__MAX_HOURS)
         return cls._ctor(seconds=hours * SECONDS_PER_HOUR)
 
 
@@ -643,7 +643,7 @@ class Instant:
     @classmethod
     def from_unix_time_ticks(cls, ticks: int) -> Instant:
         """Initializes a new Instant based on a number of ticks since the Unix epoch."""
-        _Preconditions._check_argument_range(ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
+        _Preconditions._check_argument_range("ticks", ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
         return Instant._from_trusted_duration(Duration.from_ticks(ticks))
 
     @classmethod
@@ -679,14 +679,16 @@ class Instant:
     def from_unix_time_milliseconds(cls, milliseconds: int) -> Instant:
         """Initializes a new Instant struct based on a number of milliseconds since the Unix epoch of (ISO) January 1st
         1970, midnight, UTC."""
-        _Preconditions._check_argument_range(milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS)
+        _Preconditions._check_argument_range(
+            "milliseconds", milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS
+        )
         return Instant._from_trusted_duration(Duration.from_milliseconds(milliseconds))
 
     @classmethod
     def from_unix_time_seconds(cls, seconds: int) -> Instant:
         """Initializes a new Instant based on a number of seconds since the Unix epoch of (ISO) January 1st 1970,
         midnight, UTC."""
-        _Preconditions._check_argument_range(seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
+        _Preconditions._check_argument_range("seconds", seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
         return cls._from_trusted_duration(Duration.from_seconds(seconds))
 
     def to_unix_time_seconds(self) -> int:
@@ -948,10 +950,10 @@ class LocalTime:
             or millisecond < 0
             or millisecond > MILLISECONDS_PER_SECOND - 1
         ):
-            _Preconditions._check_argument_range(hour, 0, HOURS_PER_DAY - 1)
-            _Preconditions._check_argument_range(minute, 0, MINUTES_PER_HOUR - 1)
-            _Preconditions._check_argument_range(second, 0, SECONDS_PER_MINUTE - 1)
-            _Preconditions._check_argument_range(millisecond, 0, MILLISECONDS_PER_SECOND - 1)
+            _Preconditions._check_argument_range("hour", hour, 0, HOURS_PER_DAY - 1)
+            _Preconditions._check_argument_range("minute", minute, 0, MINUTES_PER_HOUR - 1)
+            _Preconditions._check_argument_range("second", second, 0, SECONDS_PER_MINUTE - 1)
+            _Preconditions._check_argument_range("millisecond", millisecond, 0, MILLISECONDS_PER_SECOND - 1)
         self.__nanoseconds = (
             hour * NANOSECONDS_PER_HOUR
             + minute * NANOSECONDS_PER_MINUTE

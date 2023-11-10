@@ -82,9 +82,9 @@ class _YearMonthDayCalculator(ABC):
         raise NotImplementedError
 
     def _validate_year_month_day(self, year: int, month: int, day: int) -> None:
-        _Preconditions._check_argument_range(year, self._min_year, self._max_year)
-        _Preconditions._check_argument_range(month, 1, self._get_months_in_year(year))
-        _Preconditions._check_argument_range(day, 1, self._get_days_in_month(year, month))
+        _Preconditions._check_argument_range("year", year, self._min_year, self._max_year)
+        _Preconditions._check_argument_range("month", month, 1, self._get_months_in_year(year))
+        _Preconditions._check_argument_range("day", day, 1, self._get_days_in_month(year, month))
 
 
 @final
@@ -165,7 +165,7 @@ class _SingleEraCalculator(_EraCalculator):
 
     def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
         self.__validate_era(era)
-        _Preconditions._check_argument_range(year_of_era, self.__min_year, self.__max_year)
+        _Preconditions._check_argument_range("year_of_era", year_of_era, self.__min_year, self.__max_year)
         return year_of_era
 
 
@@ -188,9 +188,9 @@ class _GJEraCalculator(_EraCalculator):
     def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
         self.__validate_era(era)
         if era == Era.common():
-            _Preconditions._check_argument_range(year_of_era, 1, self.__max_year_of_ad)
+            _Preconditions._check_argument_range("year_of_era", year_of_era, 1, self.__max_year_of_ad)
             return year_of_era
-        _Preconditions._check_argument_range(year_of_era, 1, self.__max_year_of_bc)
+        _Preconditions._check_argument_range("year_of_era", year_of_era, 1, self.__max_year_of_bc)
         return 1 - year_of_era
 
 
