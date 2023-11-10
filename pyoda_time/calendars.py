@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, final
+from typing import TYPE_CHECKING, Annotated, final
 
 if TYPE_CHECKING:
     from . import _YearMonthDay
-from .utility import _towards_zero_division
+from .utility import _Preconditions, _towards_zero_division, private, sealed
 
 
 class _YearMonthDayCalculator(ABC):
@@ -77,6 +77,15 @@ class _YearMonthDayCalculator(ABC):
     def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
         raise NotImplementedError
 
+    @abstractmethod
+    def _get_months_in_year(self, year: int) -> int:
+        raise NotImplementedError
+
+    def _validate_year_month_day(self, year: int, month: int, day: int) -> None:
+        _Preconditions._check_argument_range(year, self._min_year, self._max_year)
+        _Preconditions._check_argument_range(month, 1, self._get_months_in_year(year))
+        _Preconditions._check_argument_range(day, 1, self._get_days_in_month(year, month))
+
 
 @final
 class Era:
@@ -126,6 +135,39 @@ class _EraCalculator(ABC):
     def __init__(self, *eras: Era):
         self._eras = eras
 
+    @abstractmethod
+    def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
+        raise NotImplementedError
+
+
+@final
+@sealed
+@private
+class _SingleEraCalculator(_EraCalculator):
+    """Implementation of EraCalculator for calendars which only have a single era."""
+
+    __min_year: Annotated[int, "Set by internal constructor"]
+    __max_year: Annotated[int, "Set by internal constructor"]
+    __era: Annotated[Era, "Set by internal constructor"]
+
+    @classmethod
+    def _ctor(cls, *, era: Era, ymd_calculator: _YearMonthDayCalculator) -> _SingleEraCalculator:
+        self = super().__new__(cls)
+        self.__min_year = ymd_calculator._min_year
+        self.__max_year = ymd_calculator._max_year
+        self.__era = era
+        return self
+
+    def __validate_era(self, era: Era) -> None:
+        # TODO: _Preconditions._check_not_null()
+        # TODO: _Preconditions._check_argument()
+        raise NotImplementedError
+
+    def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
+        self.__validate_era(era)
+        _Preconditions._check_argument_range(year_of_era, self.__min_year, self.__max_year)
+        return year_of_era
+
 
 @final
 class _GJEraCalculator(_EraCalculator):
@@ -135,6 +177,21 @@ class _GJEraCalculator(_EraCalculator):
         super().__init__(Era.before_common(), Era.common())
         self.__max_year_of_bc = 1 - ymd_calculator._min_year
         self.__max_year_of_ad = ymd_calculator._max_year
+
+    def __validate_era(self, era: Era) -> None:
+        if era != era.common() and era != Era.before_common():
+            # TODO: _Preconditions.check_not_null(era)
+            # TODO: _Preconditions._check_argument()
+            ...
+        raise NotImplementedError
+
+    def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
+        self.__validate_era(era)
+        if era == Era.common():
+            _Preconditions._check_argument_range(year_of_era, 1, self.__max_year_of_ad)
+            return year_of_era
+        _Preconditions._check_argument_range(year_of_era, 1, self.__max_year_of_bc)
+        return 1 - year_of_era
 
 
 class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, ABC):
@@ -154,6 +211,9 @@ class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, ABC):
     ):
         super().__init__(min_year, max_year, aveage_days_per_10_years, days_at_start_of_year_1)
         self.__months_in_year = months_in_year
+
+    def _get_months_in_year(self, year: int) -> int:
+        return self.__months_in_year
 
 
 class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
