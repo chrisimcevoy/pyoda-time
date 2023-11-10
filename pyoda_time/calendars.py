@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Annotated, final
+from typing import TYPE_CHECKING, Annotated, Final, final
 
 if TYPE_CHECKING:
     from . import _YearMonthDay
@@ -217,8 +217,8 @@ class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, ABC):
 
 
 class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
-    _NON_LEAP_DAYS_PER_MONTH = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    _LEAP_DAYS_PER_MONTH = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    _NON_LEAP_DAYS_PER_MONTH: Final[tuple] = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    _LEAP_DAYS_PER_MONTH: Final[tuple] = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
     @staticmethod
     def __generate_total_days_by_month(*month_lengths: int) -> list[int]:
@@ -227,8 +227,8 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
             ret.append(ret[i] + month_lengths[i])
         return ret
 
-    __NON_LEAP_TOTAL_DAYS_BY_MONTH: list[int] = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
-    __LEAP_TOTAL_DAYS_BY_MONTH: list[int] = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
+    __NON_LEAP_TOTAL_DAYS_BY_MONTH: Final[list[int]] = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
+    __LEAP_TOTAL_DAYS_BY_MONTH: Final[list[int]] = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
 
     def __init__(
         self,
@@ -260,17 +260,17 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
 
 @final
 class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
-    __MIN_GREGORIAN_YEAR = -9998
-    __MAX_GREGORIAN_YEAR = 9999
+    __MIN_GREGORIAN_YEAR: Final[int] = -9998
+    __MAX_GREGORIAN_YEAR: Final[int] = 9999
 
-    __FIRST_OPTIMIZED_YEAR = 1900
-    __LAST_OPTIMIZED_YEAR = 2100
+    __FIRST_OPTIMIZED_YEAR: Final[int] = 1900
+    __LAST_OPTIMIZED_YEAR: Final[int] = 2100
 
-    __MONTH_START_DAYS = list(range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1))
-    __YEAR_START_DAYS = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
+    __MONTH_START_DAYS: Final[list[int]] = list(range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1))
+    __YEAR_START_DAYS: Final[list[int]] = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
 
-    __DAYS_FROM_0000_to_1970 = 719527
-    __AVERAGE_DAYS_PER_10_YEARS = 3652
+    __DAYS_FROM_0000_to_1970: Final[int] = 719527
+    __AVERAGE_DAYS_PER_10_YEARS: Final[int] = 3652
 
     def __init__(self) -> None:
         super().__init__(
@@ -332,12 +332,12 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
 class _YearStartCacheEntry:
     """Type containing as much logic as possible for how the cache of "start of year" data works."""
 
-    __CACHE_INDEX_BITS = 10
-    __CACHE_SIZE = 1 << __CACHE_INDEX_BITS
-    __CACHE_INDEX_MASK = __CACHE_SIZE - 1
-    __ENTRY_VALIDATION_BITS = 7
-    __ENTRY_VALIDATION_MASK = (1 << __ENTRY_VALIDATION_BITS) - 1
-    __INVALID_ENTRY_YEAR = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
+    __CACHE_INDEX_BITS: Final[int] = 10
+    __CACHE_SIZE: Final[int] = 1 << __CACHE_INDEX_BITS
+    __CACHE_INDEX_MASK: Final[int] = __CACHE_SIZE - 1
+    __ENTRY_VALIDATION_BITS: Final[int] = 7
+    __ENTRY_VALIDATION_MASK: Final[int] = (1 << __ENTRY_VALIDATION_BITS) - 1
+    __INVALID_ENTRY_YEAR: Final[int] = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
 
     def __init__(self, year: int, days: int) -> None:
         self.__value = (days << self.__ENTRY_VALIDATION_BITS) | self.__get_validator(year)

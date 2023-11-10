@@ -14,27 +14,26 @@ from .calendars import (
 )
 from .utility import _Preconditions, _TickArithmetic, _to_ticks, _towards_zero_division, private, sealed
 
-HOURS_PER_DAY = 24
-SECONDS_PER_MINUTE = 60
-MINUTES_PER_HOUR = 60
-SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
-SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY
-MILLISECONDS_PER_SECOND = 1000
-MILLISECONDS_PER_MINUTE = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE
-MILLISECONDS_PER_HOUR = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR
-MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * HOURS_PER_DAY
-MINUTES_PER_HOUR = 60
-NANOSECONDS_PER_TICK = 100
-NANOSECONDS_PER_MILLISECOND = 1000000
-NANOSECONDS_PER_SECOND = 1000000000
-NANOSECONDS_PER_MINUTE = NANOSECONDS_PER_SECOND * SECONDS_PER_MINUTE
-NANOSECONDS_PER_HOUR = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR
-NANOSECONDS_PER_DAY = NANOSECONDS_PER_HOUR * HOURS_PER_DAY
-TICKS_PER_MILLISECOND = 10_000
-TICKS_PER_SECOND = TICKS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
-TICKS_PER_MINUTE = TICKS_PER_SECOND * SECONDS_PER_MINUTE
-TICKS_PER_HOUR = TICKS_PER_MINUTE * MINUTES_PER_HOUR
-TICKS_PER_DAY = TICKS_PER_HOUR * HOURS_PER_DAY
+HOURS_PER_DAY: Final[int] = 24
+SECONDS_PER_MINUTE: Final[int] = 60
+MINUTES_PER_HOUR: Final[int] = 60
+SECONDS_PER_HOUR: Final[int] = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+SECONDS_PER_DAY: Final[int] = SECONDS_PER_HOUR * HOURS_PER_DAY
+MILLISECONDS_PER_SECOND: Final[int] = 1000
+MILLISECONDS_PER_MINUTE: Final[int] = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE
+MILLISECONDS_PER_HOUR: Final[int] = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR
+MILLISECONDS_PER_DAY: Final[int] = MILLISECONDS_PER_HOUR * HOURS_PER_DAY
+NANOSECONDS_PER_TICK: Final[int] = 100
+NANOSECONDS_PER_MILLISECOND: Final[int] = 1000000
+NANOSECONDS_PER_SECOND: Final[int] = 1000000000
+NANOSECONDS_PER_MINUTE: Final[int] = NANOSECONDS_PER_SECOND * SECONDS_PER_MINUTE
+NANOSECONDS_PER_HOUR: Final[int] = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR
+NANOSECONDS_PER_DAY: Final[int] = NANOSECONDS_PER_HOUR * HOURS_PER_DAY
+TICKS_PER_MILLISECOND: Final[int] = 10_000
+TICKS_PER_SECOND: Final[int] = TICKS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
+TICKS_PER_MINUTE: Final[int] = TICKS_PER_SECOND * SECONDS_PER_MINUTE
+TICKS_PER_HOUR: Final[int] = TICKS_PER_MINUTE * MINUTES_PER_HOUR
+TICKS_PER_DAY: Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
 
 
 class _CalendarOrdinal(IntEnum):
@@ -521,15 +520,15 @@ class Instant:
     """
 
     # These correspond to -9998-01-01 and 9999-12-31 respectively.
-    _MIN_DAYS = -4371222
-    _MAX_DAYS = 2932896
+    _MIN_DAYS: Final[int] = -4371222
+    _MAX_DAYS: Final[int] = 2932896
 
-    __MIN_TICKS = _MIN_DAYS * TICKS_PER_DAY
-    __MAX_TICKS = (_MAX_DAYS + 1) * TICKS_PER_DAY - 1
-    __MIN_MILLISECONDS = _MIN_DAYS * MILLISECONDS_PER_DAY
-    __MAX_MILLISECONDS = (_MAX_DAYS + 1) * MILLISECONDS_PER_DAY - 1
-    __MIN_SECONDS = _MIN_DAYS * SECONDS_PER_DAY
-    __MAX_SECONDS = (_MAX_DAYS + 1) * SECONDS_PER_DAY - 1
+    __MIN_TICKS: Final[int] = _MIN_DAYS * TICKS_PER_DAY
+    __MAX_TICKS: Final[int] = (_MAX_DAYS + 1) * TICKS_PER_DAY - 1
+    __MIN_MILLISECONDS: Final[int] = _MIN_DAYS * MILLISECONDS_PER_DAY
+    __MAX_MILLISECONDS: Final[int] = (_MAX_DAYS + 1) * MILLISECONDS_PER_DAY - 1
+    __MIN_SECONDS: Final[int] = _MIN_DAYS * SECONDS_PER_DAY
+    __MAX_SECONDS: Final[int] = (_MAX_DAYS + 1) * SECONDS_PER_DAY - 1
 
     def __init__(self) -> None:
         self.__duration = Duration.zero()
@@ -980,19 +979,19 @@ class _YearMonthDayCalendar:
     """A compact representation of a year, month, day and calendar ordinal (integer ID) in a single 32-bit integer."""
 
     # These constants are internal so they can be used in YearMonthDay
-    _CALENDAR_BITS = 6  # Up to 64 calendars.
-    _DAY_BITS = 6  # Up to 64 days in a month.
-    _MONTH_BITS = 5  # Up to 32 months per year.
-    _YEAR_BITS = 15  # 32K range; only need -10K to +10K.
+    _CALENDAR_BITS: Final[int] = 6  # Up to 64 calendars.
+    _DAY_BITS: Final[int] = 6  # Up to 64 days in a month.
+    _MONTH_BITS: Final[int] = 5  # Up to 32 months per year.
+    _YEAR_BITS: Final[int] = 15  # 32K range; only need -10K to +10K.
 
     # Just handy constants to use for shifting and masking.
-    __CALENDAR_DAY_BITS = _CALENDAR_BITS + _DAY_BITS
-    __CALENDAR_DAY_MONTH_BITS = __CALENDAR_DAY_BITS + _MONTH_BITS
+    __CALENDAR_DAY_BITS: Final[int] = _CALENDAR_BITS + _DAY_BITS
+    __CALENDAR_DAY_MONTH_BITS: Final[int] = __CALENDAR_DAY_BITS + _MONTH_BITS
 
-    __CALENDAR_MASK = (1 << _CALENDAR_BITS) - 1
-    __DAY_MASK = ((1 << _DAY_BITS) - 1) << _CALENDAR_BITS
-    __MONTH_MASK = ((1 << _MONTH_BITS) - 1) << __CALENDAR_DAY_BITS
-    __YEAR_MASK = ((1 << _YEAR_BITS) - 1) << __CALENDAR_DAY_MONTH_BITS
+    __CALENDAR_MASK: Final[int] = (1 << _CALENDAR_BITS) - 1
+    __DAY_MASK: Final[int] = ((1 << _DAY_BITS) - 1) << _CALENDAR_BITS
+    __MONTH_MASK: Final[int] = ((1 << _MONTH_BITS) - 1) << __CALENDAR_DAY_BITS
+    __YEAR_MASK: Final[int] = ((1 << _YEAR_BITS) - 1) << __CALENDAR_DAY_MONTH_BITS
 
     def __init__(self) -> None:
         self.__value: int = 0
@@ -1047,8 +1046,8 @@ class _YearMonthDayCalendar:
 class _YearMonthDay:
     """A compact representation of a year, month and day in a single 32-bit integer."""
 
-    __DAY_MASK = (1 << _YearMonthDayCalendar._DAY_BITS) - 1
-    __MONTH_MASK = ((1 << _YearMonthDayCalendar._MONTH_BITS) - 1) << _YearMonthDayCalendar._DAY_BITS
+    __DAY_MASK: Final[int] = (1 << _YearMonthDayCalendar._DAY_BITS) - 1
+    __MONTH_MASK: Final[int] = ((1 << _YearMonthDayCalendar._MONTH_BITS) - 1) << _YearMonthDayCalendar._DAY_BITS
 
     def __init__(self) -> None:
         self.__value: int = 0
@@ -1095,5 +1094,5 @@ class _YearMonthDay:
         return (self.__value & self.__DAY_MASK) + 1
 
 
-BCL_EPOCH: Instant = Instant.from_utc(1, 1, 1, 0, 0)
-UNIX_EPOCH: Instant = Instant.from_unix_time_ticks(0)
+BCL_EPOCH: Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)
+UNIX_EPOCH: Final[Instant] = Instant.from_unix_time_ticks(0)
