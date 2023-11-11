@@ -121,15 +121,15 @@ class CalendarSystem:
 
     __CALENDAR_BY_ORDINAL: dict[int, CalendarSystem] = {}
 
-    ordinal: Annotated[_CalendarOrdinal, "Set by private constructor"]
-    id: Annotated[str, "Set by private constructor"]
-    name: Annotated[str, "Set by private constructor"]
-    year_month_day_calculator: Annotated[_YearMonthDayCalculator, "Set by private constructor"]
-    era_calculator: Annotated[_EraCalculator, "Set by private constructor"]
-    min_year: Annotated[int, "Set by private constructor"]
-    max_year: Annotated[int, "Set by private constructor"]
-    min_days: Annotated[int, "Set by private constructor"]
-    max_days: Annotated[int, "Set by private constructor"]
+    __ordinal: Annotated[_CalendarOrdinal, "Set by private constructor"]
+    __id: Annotated[str, "Set by private constructor"]
+    __name: Annotated[str, "Set by private constructor"]
+    __year_month_day_calculator: Annotated[_YearMonthDayCalculator, "Set by private constructor"]
+    __era_calculator: Annotated[_EraCalculator, "Set by private constructor"]
+    __min_year: Annotated[int, "Set by private constructor"]
+    __max_year: Annotated[int, "Set by private constructor"]
+    __min_days: Annotated[int, "Set by private constructor"]
+    __max_days: Annotated[int, "Set by private constructor"]
 
     @classmethod
     @overload
@@ -170,23 +170,61 @@ class CalendarSystem:
     ) -> CalendarSystem:
         """Private initialiser which emulates the two private constructors on the corresponding Noda Time class."""
         self: CalendarSystem = super().__new__(cls)
-        self.ordinal = ordinal
-        self.id = id_
-        self.name = name
-        self.year_month_day_calculator = year_month_day_calculator
-        self.min_year = year_month_day_calculator._min_year
-        self.max_year = year_month_day_calculator._max_year
-        self.min_days = year_month_day_calculator._get_start_of_year_in_days(self.min_year)
-        self.max_days = year_month_day_calculator._get_start_of_year_in_days(self.max_year + 1) - 1
+        self.__ordinal = ordinal
+        self.__id = id_
+        self.__name = name
+        self.__year_month_day_calculator = year_month_day_calculator
+        self.__min_year = year_month_day_calculator._min_year
+        self.__max_year = year_month_day_calculator._max_year
+        self.__min_days = year_month_day_calculator._get_start_of_year_in_days(self.min_year)
+        self.__max_days = year_month_day_calculator._get_start_of_year_in_days(self.max_year + 1) - 1
 
         if era_calculator is None:
             if single_era is None:
                 raise TypeError
             era_calculator = _SingleEraCalculator._ctor(era=single_era, ymd_calculator=year_month_day_calculator)
 
-        self.era_calculator = era_calculator
+        self.__era_calculator = era_calculator
         self.__CALENDAR_BY_ORDINAL[int(ordinal)] = self
         return self
+
+    @property
+    def id(self) -> str:
+        """Returns the unique identifier for this calendar system.
+
+        This provides full round-trip capability using for_id() to retrieve the calendar system from the identifier.
+        """
+        return self.__id
+
+    @property
+    def name(self) -> str:
+        """The name of this calendar system.
+
+        Each kind of calendar system has a unique name, but this does not usually provide enough information for round-
+        tripping. (For example, the name of an Islamic calendar system does not indicate which kind of leap cycle it
+        uses.)
+        """
+        return self.__name
+
+    @property
+    def min_year(self) -> int:
+        return self.__min_year
+
+    @property
+    def max_year(self) -> int:
+        return self.__max_year
+
+    @property
+    def _min_days(self) -> int:
+        return self.__min_days
+
+    @property
+    def _max_days(self) -> int:
+        return self.__max_days
+
+    @property
+    def _ordinal(self) -> _CalendarOrdinal:
+        return self.__ordinal
 
     @classmethod
     def _for_ordinal(cls, ordinal: _CalendarOrdinal) -> CalendarSystem:
@@ -227,11 +265,15 @@ class CalendarSystem:
         )
 
     def get_absolute_year(self, year_of_era: int, era: Era) -> int:
-        return self.era_calculator._get_absolute_year(year_of_era, era)
+        return self.__era_calculator._get_absolute_year(year_of_era, era)
+
+    @property
+    def _year_month_day_calculator(self) -> _YearMonthDayCalculator:
+        return self.__year_month_day_calculator
 
     def _get_days_since_epoch(self, year_month_day: _YearMonthDay) -> int:
         """Returns the number of days since the Unix epoch (1970-01-01 ISO) for the given date."""
-        return self.year_month_day_calculator._get_days_since_epoch(year_month_day)
+        return self._year_month_day_calculator._get_days_since_epoch(year_month_day)
 
     def _get_day_of_week(self, year_month_day: _YearMonthDay) -> IsoDayOfWeek:
         """Returns the IsoDayOfWeek corresponding to the day of week for the given year, month and day.
@@ -239,17 +281,17 @@ class CalendarSystem:
         :param year_month_day: The year, month and day to use to find the day of the week
         """
         # TODO: DebugValidateYearMonthDay(yearMonthDay);
-        days_since_epoch: int = self.year_month_day_calculator._get_days_since_epoch(year_month_day)
+        days_since_epoch: int = self._year_month_day_calculator._get_days_since_epoch(year_month_day)
         numeric_day_of_week: int = (
             1 + ((days_since_epoch + 3) % 7) if days_since_epoch >= -3 else 7 + ((days_since_epoch + 4) % 7)
         )
         return IsoDayOfWeek(numeric_day_of_week)
 
     def _validate_year_month_day(self, year: int, month: int, day: int) -> None:
-        self.year_month_day_calculator._validate_year_month_day(year, month, day)
+        self._year_month_day_calculator._validate_year_month_day(year, month, day)
 
     def _compare(self, lhs: _YearMonthDay, rhs: _YearMonthDay) -> int:
-        return self.year_month_day_calculator.compare(lhs, rhs)
+        return self._year_month_day_calculator.compare(lhs, rhs)
 
 
 @sealed
@@ -1008,7 +1050,7 @@ class LocalDate:
         if year is not None and month is not None and day is not None:
             calendar._validate_year_month_day(year, month, day)
             self.__year_month_day_calendar = _YearMonthDayCalendar._ctor(
-                year=year, month=month, day=day, calendar_ordinal=calendar.ordinal
+                year=year, month=month, day=day, calendar_ordinal=calendar._ordinal
             )
         else:
             raise TypeError
