@@ -22,7 +22,11 @@ class _YearMonthDayCalculator(ABC):
         average_days_per_10_years: int,
         days_at_start_of_year_1: int,
     ):
-        # TODO Preconditions.CheckArgument(...)
+        _Preconditions._check_argument(
+            max_year < _YearStartCacheEntry._INVALID_ENTRY_YEAR,
+            "max_year",
+            "Calendar year range would invalidate caching.",
+        )
         self._min_year = min_year
         self._max_year = max_year
         # We add an extra day to make sure that
@@ -159,9 +163,10 @@ class _SingleEraCalculator(_EraCalculator):
         return self
 
     def __validate_era(self, era: Era) -> None:
-        # TODO: _Preconditions._check_not_null()
-        # TODO: _Preconditions._check_argument()
-        raise NotImplementedError
+        _Preconditions._check_not_null(era, "era")
+        _Preconditions._check_argument(
+            era == self.__era, "era", "Only supported era is {}; requested era was {}", self.__era.name, era.name
+        )
 
     def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
         self.__validate_era(era)
@@ -180,10 +185,10 @@ class _GJEraCalculator(_EraCalculator):
 
     def __validate_era(self, era: Era) -> None:
         if era != era.common() and era != Era.before_common():
-            # TODO: _Preconditions.check_not_null(era)
-            # TODO: _Preconditions._check_argument()
-            ...
-        raise NotImplementedError
+            _Preconditions._check_not_null(era, "era")
+            _Preconditions._check_argument(
+                False, "era", "Era {} is not supported by this calendar; only BC and AD are supported", era.name
+            )
 
     def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
         self.__validate_era(era)
@@ -337,7 +342,7 @@ class _YearStartCacheEntry:
     __CACHE_INDEX_MASK: Final[int] = __CACHE_SIZE - 1
     __ENTRY_VALIDATION_BITS: Final[int] = 7
     __ENTRY_VALIDATION_MASK: Final[int] = (1 << __ENTRY_VALIDATION_BITS) - 1
-    __INVALID_ENTRY_YEAR: Final[int] = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
+    _INVALID_ENTRY_YEAR: Final[int] = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
 
     def __init__(self, year: int, days: int) -> None:
         self.__value = (days << self.__ENTRY_VALIDATION_BITS) | self.__get_validator(year)
@@ -362,7 +367,7 @@ class _YearStartCacheEntry:
     def __invalid(cls) -> _YearStartCacheEntry:
         """Entry which is guaranteed to be obviously invalid for any real date, by having a validation value which is
         larger than any valid year number."""
-        return _YearStartCacheEntry(cls.__INVALID_ENTRY_YEAR, 0)
+        return _YearStartCacheEntry(cls._INVALID_ENTRY_YEAR, 0)
 
     def _is_valid_for_year(self, year: int) -> bool:
         """Returns whether this cache entry is valid for the given year, and so is safe to use.

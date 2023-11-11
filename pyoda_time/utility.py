@@ -1,12 +1,49 @@
 from datetime import datetime
 from typing import Any, TypeVar
 
+_T = TypeVar("_T")
+_Ttype = TypeVar("_Ttype", bound=type)
+
 
 class _Preconditions:
-    @staticmethod
-    def _check_argument_range(param_name: str, value: int, min_inclusive: int, max_inclusive: int) -> None:
+    """Helper static methods for argument/state validation."""
+
+    @classmethod
+    def _check_not_null(cls, argument: _T, param_name: str) -> _T:
+        """Returns the given argument after checking whether it's null.
+
+        This is useful for putting nullity checks in parameters which are passed to base class constructors.
+        """
+        if argument is None:
+            raise ValueError(f"{param_name} cannot be None.")
+        return argument
+
+    @classmethod
+    def _check_argument_range(cls, param_name: str, value: int, min_inclusive: int, max_inclusive: int) -> None:
         if (value < min_inclusive) or (value > max_inclusive):
-            raise ValueError(f"Value should be in range [{min_inclusive}-{max_inclusive}]")
+            cls._throw_argument_out_of_range_exception(param_name, value, min_inclusive, max_inclusive)
+
+    @staticmethod
+    def _throw_argument_out_of_range_exception(
+        param_name: str, value: _T, min_inclusive: _T, max_inclusive: _T
+    ) -> None:
+        raise ValueError(
+            f"Value should be in range [{min_inclusive}-{max_inclusive}]\n"
+            f"Parameter name: {param_name}\n"
+            f"Actual value was {value}"
+        )
+
+    @classmethod
+    def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: Any) -> None:
+        if not expession:
+            if message_args:
+                message = message.format(*message_args)
+            raise ValueError(f"{message}\nParameter name: {parameter}")
+
+    @classmethod
+    def _check_state(cls, expression: bool, message: str) -> None:
+        if not expression:
+            raise RuntimeError(message)
 
 
 class _TickArithmetic:
@@ -57,10 +94,7 @@ def _to_ticks(dt: datetime) -> int:
     return int((dt - datetime(1, 1, 1, tzinfo=pytz.UTC)).total_seconds() * 10000000)
 
 
-T = TypeVar("T", bound=type)
-
-
-def sealed(cls: T) -> T:
+def sealed(cls: _Ttype) -> _Ttype:
     """Prevents the decorated class from being subclassed.
 
     This is intended to loosely emulate the behaviour of the `sealed` keyword in C#.
@@ -76,7 +110,7 @@ def sealed(cls: T) -> T:
     return cls
 
 
-def private(klass: T) -> T:
+def private(klass: _Ttype) -> _Ttype:
     """Prevents the decorated class from being instantiated.
 
     This is used to decorate Python classes which have been ported from C#, where the C# class has no public
@@ -88,10 +122,10 @@ def private(klass: T) -> T:
     def __init__(*_args: Any, **_kwargs: Any) -> None:
         raise TypeError(msg)
 
-    def __new__(*_args: Any, **_kwargs: Any) -> T:
+    def __new__(*_args: Any, **_kwargs: Any) -> _Ttype:
         raise TypeError(msg)
 
-    def __call__(*_args: Any, **_kwargs: Any) -> T:
+    def __call__(*_args: Any, **_kwargs: Any) -> _Ttype:
         raise TypeError(msg)
 
     # Use setattr to stop mypy shouting
