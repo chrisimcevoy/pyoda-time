@@ -90,6 +90,16 @@ class _YearMonthDayCalculator(ABC):
         _Preconditions._check_argument_range("month", month, 1, self._get_months_in_year(year))
         _Preconditions._check_argument_range("day", day, 1, self._get_days_in_month(year, month))
 
+    def compare(self, lhs: _YearMonthDay, rhs: _YearMonthDay) -> int:
+        """Compares two YearMonthDay values according to the rules of this calendar. The default implementation simply
+        uses a naive comparison of the values, as this is suitable for most calendars (where the first month of the year
+        is month 1).
+
+        Although the parameters are trusted (as in, they'll be valid in this calendar),
+        the method being public isn't a problem - this type is never exposed.
+        """
+        return lhs.compare_to(rhs)
+
 
 @final
 class Era:

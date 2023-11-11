@@ -66,6 +66,19 @@ class _CalendarOrdinal(IntEnum):
     SIZE = 19
 
 
+class IsoDayOfWeek(IntEnum):
+    """Equates the days of the week with their numerical value according to ISO-8601."""
+
+    NONE = 0
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+    SUNDAY = 7
+
+
 @final
 @private
 @sealed
@@ -220,8 +233,51 @@ class CalendarSystem:
         """Returns the number of days since the Unix epoch (1970-01-01 ISO) for the given date."""
         return self.year_month_day_calculator._get_days_since_epoch(year_month_day)
 
+    def _get_day_of_week(self, year_month_day: _YearMonthDay) -> IsoDayOfWeek:
+        """Returns the IsoDayOfWeek corresponding to the day of week for the given year, month and day.
+
+        :param year_month_day: The year, month and day to use to find the day of the week
+        """
+        # TODO: DebugValidateYearMonthDay(yearMonthDay);
+        days_since_epoch: int = self.year_month_day_calculator._get_days_since_epoch(year_month_day)
+        numeric_day_of_week: int = (
+            1 + ((days_since_epoch + 3) % 7) if days_since_epoch >= -3 else 7 + ((days_since_epoch + 4) % 7)
+        )
+        return IsoDayOfWeek(numeric_day_of_week)
+
     def _validate_year_month_day(self, year: int, month: int, day: int) -> None:
         self.year_month_day_calculator._validate_year_month_day(year, month, day)
+
+    def _compare(self, lhs: _YearMonthDay, rhs: _YearMonthDay) -> int:
+        return self.year_month_day_calculator.compare(lhs, rhs)
+
+
+@sealed
+class DateInterval:
+    """An interval between two dates."""
+
+    @property
+    def start(self) -> LocalDate:
+        """The start date of the interval."""
+        return self.__start
+
+    @property
+    def end(self) -> LocalDate:
+        """The end date of the interval."""
+        return self.__end
+
+    def __init__(self, start: LocalDate, end: LocalDate) -> None:
+        """Constructs a date interval from a start date and an end date, both of which are included in the interval.
+
+        :param start: Start date of the interval
+        :param end: End date of the interval
+        """
+        _Preconditions._check_argument(
+            start.calendar == end.calendar, "end", "Calendars of start and end dates must be the same."
+        )
+        _Preconditions._check_argument(not end < start, "end", "End date must not be earlier than the start date")
+        self.__start: LocalDate = start
+        self.__end: LocalDate = end
 
 
 class DateTimeZone(ABC):
@@ -958,18 +1014,51 @@ class LocalDate:
             raise TypeError
 
     @property
-    def __calendar_ordinal(self) -> _CalendarOrdinal:
-        return self.__year_month_day_calendar._calendar_ordinal
-
-    @property
     def calendar(self) -> CalendarSystem:
         """The calendar system associated with this local date."""
         return CalendarSystem._for_ordinal(self.__calendar_ordinal)
 
     @property
+    def __calendar_ordinal(self) -> _CalendarOrdinal:
+        return self.__year_month_day_calendar._calendar_ordinal
+
+    @property
+    def year(self) -> int:
+        """The year of this local date.
+
+        This returns the "absolute year", so, for the ISO calendar, a value of 0 means 1 BC, for example.
+        """
+        return self.__year_month_day_calendar._year
+
+    @property
+    def month(self) -> int:
+        """The month of this local date within the year."""
+        return self.__year_month_day_calendar._month
+
+    @property
+    def day(self) -> int:
+        return self.__year_month_day_calendar._day
+
+    @property
     def _days_since_epoch(self) -> int:
         """Number of days since the local unix epoch."""
         return self.calendar._get_days_since_epoch(self.__year_month_day_calendar._to_year_month_day())
+
+    @property
+    def _year_month_day(self) -> _YearMonthDay:
+        return self.__year_month_day_calendar._to_year_month_day()
+
+    def __lt__(self, other: LocalDate) -> bool:
+        if isinstance(other, LocalDate):
+            return self.__trusted_compare_to(other) < 0
+        raise TypeError
+
+    def __trusted_compare_to(self, other: LocalDate) -> int:
+        """Performs a comparison with another date, trusting that the calendar of the other date is already correct.
+
+        This avoids duplicate calendar checks.
+        """
+        return self.calendar._compare(self._year_month_day, other._year_month_day)
 
 
 @final
@@ -1090,6 +1179,18 @@ class _YearMonthDayCalendar:
     def _calendar_ordinal(self) -> _CalendarOrdinal:
         return _CalendarOrdinal(self.__value & self.__CALENDAR_MASK)
 
+    @property
+    def _year(self) -> int:
+        return ((self.__value & self.__YEAR_MASK) >> self.__CALENDAR_DAY_MONTH_BITS) + 1
+
+    @property
+    def _month(self) -> int:
+        return ((self.__value & self.__MONTH_MASK) >> self.__CALENDAR_DAY_BITS) + 1
+
+    @property
+    def _day(self) -> int:
+        return ((self.__value & self.__DAY_MASK) >> self._CALENDAR_BITS) + 1
+
     def _to_year_month_day(self) -> _YearMonthDay:
         return _YearMonthDay._ctor(raw_value=self.__value >> self._CALENDAR_BITS)
 
@@ -1145,6 +1246,10 @@ class _YearMonthDay:
     @property
     def _day(self) -> int:
         return (self.__value & self.__DAY_MASK) + 1
+
+    def compare_to(self, other: _YearMonthDay) -> int:
+        # In Noda Time, this method calls `int.CompareTo(otherInt)`
+        return self.__value - other.__value
 
 
 BCL_EPOCH: Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)
