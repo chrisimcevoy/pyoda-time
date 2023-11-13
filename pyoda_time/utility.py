@@ -134,3 +134,15 @@ def private(klass: _Ttype) -> _Ttype:
     setattr(klass, "__call__", __call__)
 
     return klass
+
+
+def _int32_overflow(value: int) -> int:
+    """Simulates 32-bit signed integer overflow behavior.
+
+    Args:
+        value (int): The integer value to apply 32-bit overflow to.
+
+    Returns:
+        int: The result after simulating 32-bit overflow.
+    """
+    return (value + 2**31) % 2**32 - 2**31

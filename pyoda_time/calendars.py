@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Annotated, Final, final
+from typing import TYPE_CHECKING, Annotated, Final, final, overload
 
 if TYPE_CHECKING:
-    from . import _YearMonthDay
+    from . import CalendarSystem, _YearMonthDay, _YearMonthDayCalendar
 from .utility import _Preconditions, _towards_zero_division, private, sealed
 
 
@@ -65,6 +65,10 @@ class _YearMonthDayCalculator(ABC):
     def _is_leap_year(self, year: int) -> bool:
         raise NotImplementedError
 
+    @abstractmethod
+    def _get_days_in_year(self, year: int) -> int:
+        raise NotImplementedError
+
     def _get_days_since_epoch(self, year_month_day: _YearMonthDay) -> int:
         """Computes the days since the Unix epoch at the start of the given year/month/day.
 
@@ -99,6 +103,80 @@ class _YearMonthDayCalculator(ABC):
         the method being public isn't a problem - this type is never exposed.
         """
         return lhs.compare_to(rhs)
+
+    @overload
+    def _get_year_month_day(self, *, year: int, day_of_year: int) -> _YearMonthDay:
+        ...
+
+    @overload
+    def _get_year_month_day(self, *, days_since_epoch: int) -> _YearMonthDay:
+        ...
+
+    def _get_year_month_day(
+        self, *, year: int | None = None, day_of_year: int | None = None, days_since_epoch: int | None = None
+    ) -> _YearMonthDay:
+        """This method is in place to preserve some semblance of parity with Noda Time.
+
+        Currently, typing.overload does not allow for some overloads to be implemented and some to be abstract. So I
+        have split them out into separate methods with an appropriate suffix.
+        """
+        if year is not None and day_of_year is not None:
+            return self._get_year_month_day_from_year_and_day_of_year(year, day_of_year)
+        elif days_since_epoch is not None:
+            return self._get_year_month_day_from_days_since_epoch(days_since_epoch)
+        raise RuntimeError("_get_year_month_day called with incorrect arguments")
+
+    @abstractmethod
+    def _get_year_month_day_from_year_and_day_of_year(self, year: int, day_of_year: int) -> _YearMonthDay:
+        """This is supposed to be an abstract overload of YearMonthDayCalendar.GetYearMonthDay.
+
+        In Python, we can't quite do that, so this method has a different name. The signature in C# is:     `abstract
+        YearMonthDay GetYearMonthDay([Trusted] int year, [Trusted] int dayOfYear);`
+        """
+        raise NotImplementedError
+
+    def _get_year_month_day_from_days_since_epoch(self, days_since_epoch: int) -> _YearMonthDay:
+        """Works out the year/month/day of a given days-since-epoch by first computing the year and day of year, then
+        getting the month and day from those two.
+
+        This is how almost all calendars are naturally implemented anyway.
+        """
+        year, zero_based_day = self._get_year(days_since_epoch)
+        return self._get_year_month_day(year=year, day_of_year=zero_based_day + 1)
+
+    def _get_year(self, days_since_epoch: int) -> tuple[int, int]:
+        # Get an initial estimate of the year, and the days-since-epoch value that
+        # represents the start of that year. Then verify estimate and fix if
+        # necessary. We have the average days per 100 years to avoid getting bad candidates
+        # pretty quickly.
+        days_since_year_1 = days_since_epoch - self._days_at_start_of_year_1
+        candidate = _towards_zero_division(days_since_year_1 * 10, self.__average_days_per_10_years) + 1
+
+        # Most of the time we'll get the right year straight away, and we'll almost
+        # always get it after one adjustment - but it's safer (and easier to think about)
+        # if we just keep going until we know we're right.
+        candidate_start = self._get_start_of_year_in_days(candidate)
+        days_from_candidate_start_to_target = days_since_epoch - candidate_start
+        if days_from_candidate_start_to_target < 0:
+            # Our candidate year is later than we want. Keep going backwards until we've got
+            # a non-negative result, which must then be correct.
+            while days_from_candidate_start_to_target < 0:
+                candidate -= 1
+                days_from_candidate_start_to_target += self._get_days_in_year(candidate)
+            zero_based_day_of_year = days_from_candidate_start_to_target
+            return candidate, zero_based_day_of_year
+        # Our candidate year is correct or earlier than the right one. Find out which by
+        # comparing it with the length of the candidate year.
+        candidate_length = self._get_days_in_year(candidate)
+        while days_from_candidate_start_to_target >= candidate_length:
+            # Our candidate year is earlier than we want, so fast forward a year,
+            # removing the current candidate length from the "remaining days" and
+            # working out the length of the new candidate.
+            candidate += 1
+            days_from_candidate_start_to_target -= candidate_length
+            candidate_length = self._get_days_in_year(candidate)
+        zero_based_day_of_year = days_from_candidate_start_to_target
+        return candidate, zero_based_day_of_year
 
 
 @final
@@ -254,12 +332,38 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
     ):
         super().__init__(min_year, max_year, 12, average_days_per_10_years, days_at_start_of_year_1)
 
-    def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
-        return (
-            self.__LEAP_TOTAL_DAYS_BY_MONTH[month]
-            if self._is_leap_year(year)
-            else self.__NON_LEAP_TOTAL_DAYS_BY_MONTH[month]
-        )
+    def _get_year_month_day_from_year_and_day_of_year(self, year: int, d: int) -> _YearMonthDay:
+        is_leap: bool = self._is_leap_year(year)
+
+        start_of_month: int
+        # Perform a hard-coded binary search to get the 0-based start day of the month. We can
+        # then use that to work out the month... without ever hitting the heap. The values
+        # are still MinTotalDaysPerMonth and MaxTotalDaysPerMonth (-1 for convenience), just hard-coded.
+        if is_leap:
+            start_of_month = (
+                (0 if d < 32 else 31 if d < 61 else 60)
+                if d < 92
+                else (91 if d < 122 else 121 if d < 153 else 152)
+                if d < 183
+                else (182 if d < 214 else 213 if d < 245 else 244)
+                if d < 275
+                else (274 if d < 306 else 305 if d < 336 else 335)
+            )
+        else:
+            start_of_month = (
+                (0 if d < 32 else 31 if d < 60 else 59)
+                if d < 91
+                else (90 if d < 121 else 120 if d < 152 else 151)
+                if d < 182
+                else (181 if d < 213 else 212 if d < 244 else 243)
+                if d < 274
+                else (273 if d < 305 else 304 if d < 335 else 334)
+            )
+
+        day_of_month: int = d - start_of_month
+        from pyoda_time import _YearMonthDay
+
+        return _YearMonthDay._ctor(year=year, month=_towards_zero_division(start_of_month, 29) + 1, day=day_of_month)
 
     @final
     def _get_days_in_month(self, year: int, month: int) -> int:
@@ -272,6 +376,13 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
         # By dividing the month by 8, we effectively handle that skip.
         return 30 + ((month + (month >> 3)) & 1)
 
+    def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
+        return (
+            self.__LEAP_TOTAL_DAYS_BY_MONTH[month]
+            if self._is_leap_year(year)
+            else self.__NON_LEAP_TOTAL_DAYS_BY_MONTH[month]
+        )
+
 
 @final
 class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
@@ -280,12 +391,24 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
 
     __FIRST_OPTIMIZED_YEAR: Final[int] = 1900
     __LAST_OPTIMIZED_YEAR: Final[int] = 2100
-
+    __FIRST_OPTIMIZED_DAY: Final[int] = -25567
+    __LAST_OPTIMIZED_DAY: Final[int] = 47846
+    # The 0-based days-since-unix-epoch for the start of each month
     __MONTH_START_DAYS: Final[list[int]] = list(range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1))
+    # The 1-based days-since-unix-epoch for the start of each year
     __YEAR_START_DAYS: Final[list[int]] = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
 
     __DAYS_FROM_0000_to_1970: Final[int] = 719527
     __AVERAGE_DAYS_PER_10_YEARS: Final[int] = 3652
+
+    @classmethod
+    def _get_gregorian_year_month_day_calendar_from_days_since_epoch(
+        cls, days_since_epoch: int
+    ) -> _YearMonthDayCalendar:
+        # TODO: unchecked
+        if days_since_epoch < cls.__FIRST_OPTIMIZED_DAY or days_since_epoch > cls.__LAST_OPTIMIZED_DAY:
+            return CalendarSystem.iso()._get_year_month_day_calendar_from_days_since_epoch(days_since_epoch)
+        raise NotImplementedError("We need to figure out the static constructor stuff first :(")
 
     def __init__(self) -> None:
         super().__init__(
@@ -307,12 +430,19 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
                 self.__MONTH_START_DAYS[year_month_index] = month_start_day
                 month_start_day += month_length
 
-    @staticmethod
-    def __is_gregorian_leap_year(year: int) -> bool:
-        return ((year & 3) == 0) and ((year % 100) != 0 or (year % 400) == 0)
+    def _get_start_of_year_in_days(self, year: int) -> int:
+        if year < self.__FIRST_OPTIMIZED_YEAR or year > self.__LAST_OPTIMIZED_YEAR:
+            return super()._get_start_of_year_in_days(year)
+        return self.__YEAR_START_DAYS[year - self.__FIRST_OPTIMIZED_YEAR]
 
-    def _is_leap_year(self, year: int) -> bool:
-        return self.__is_gregorian_leap_year(year)
+    def _get_days_since_epoch(self, year_month_day: _YearMonthDay) -> int:
+        year = year_month_day._year
+        month_of_year = year_month_day._month
+        day_of_month = year_month_day._day
+        if year < self.__FIRST_OPTIMIZED_YEAR or year > self.__LAST_OPTIMIZED_YEAR:
+            return super()._get_days_since_epoch(year_month_day)
+        year_month_index = (year - self.__FIRST_OPTIMIZED_YEAR) * 12 + month_of_year
+        return self.__MONTH_START_DAYS[year_month_index] + day_of_month
 
     def _calculate_start_of_year_days(self, year: int) -> int:
         leap_years = _towards_zero_division(year, 100)
@@ -329,19 +459,15 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
                 leap_years -= 1
         return year * 365 + (leap_years - self.__DAYS_FROM_0000_to_1970)
 
-    def _get_start_of_year_in_days(self, year: int) -> int:
-        if year < self.__FIRST_OPTIMIZED_YEAR or year > self.__LAST_OPTIMIZED_YEAR:
-            return super()._get_start_of_year_in_days(year)
-        return self.__YEAR_START_DAYS[year - self.__FIRST_OPTIMIZED_YEAR]
+    def _get_days_in_year(self, year: int) -> int:
+        return 366 if self.__is_gregorian_leap_year(year) else 365
 
-    def _get_days_since_epoch(self, year_month_day: _YearMonthDay) -> int:
-        year = year_month_day._year
-        month_of_year = year_month_day._month
-        day_of_month = year_month_day._day
-        if year < self.__FIRST_OPTIMIZED_YEAR or year > self.__LAST_OPTIMIZED_YEAR:
-            return super()._get_days_since_epoch(year_month_day)
-        year_month_index = (year - self.__FIRST_OPTIMIZED_YEAR) * 12 + month_of_year
-        return self.__MONTH_START_DAYS[year_month_index] + day_of_month
+    def _is_leap_year(self, year: int) -> bool:
+        return self.__is_gregorian_leap_year(year)
+
+    @staticmethod
+    def __is_gregorian_leap_year(year: int) -> bool:
+        return ((year & 3) == 0) and ((year % 100) != 0 or (year % 400) == 0)
 
 
 class _YearStartCacheEntry:

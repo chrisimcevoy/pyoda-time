@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from datetime import datetime
 from enum import IntEnum
-from typing import Annotated, Final, Self, final, overload
+from typing import Annotated, Final, Iterable, Self, final, overload
 
 from .calendars import (
     Era,
@@ -13,7 +13,15 @@ from .calendars import (
     _SingleEraCalculator,
     _YearMonthDayCalculator,
 )
-from .utility import _Preconditions, _TickArithmetic, _to_ticks, _towards_zero_division, private, sealed
+from .utility import (
+    _int32_overflow,
+    _Preconditions,
+    _TickArithmetic,
+    _to_ticks,
+    _towards_zero_division,
+    private,
+    sealed,
+)
 
 HOURS_PER_DAY: Final[int] = 24
 SECONDS_PER_MINUTE: Final[int] = 60
@@ -120,6 +128,15 @@ class CalendarSystem:
     __ISLAMIC_ID_BASE: Final[str] = __ISLAMIC_NAME
 
     __CALENDAR_BY_ORDINAL: dict[int, CalendarSystem] = {}
+
+    @classmethod
+    def for_id(cls, id_: str) -> CalendarSystem:
+        _Preconditions._check_not_null(id_, "id_")
+        if not (factory := cls.__ID_TO_FACTORY_MAP.get(id_)):
+            raise KeyError(f"No calendar system for ID {id_} exists")
+        # At time of writing, mypy doesn't understand __func__ (https://github.com/python/mypy/issues/3482)
+        calendar: CalendarSystem = factory.__func__(CalendarSystem)  # type: ignore
+        return calendar
 
     __ordinal: Annotated[_CalendarOrdinal, "Set by private constructor"]
     __id: Annotated[str, "Set by private constructor"]
@@ -242,6 +259,14 @@ class CalendarSystem:
         return cls._for_ordinal_uncached(ordinal)
 
     @classmethod
+    def ids(cls) -> Iterable[str]:
+        """Returns the IDs of all calendar systems available within Pyoda Time.
+
+        The order of the keys is not guaranteed.
+        """
+        return cls.__ID_TO_FACTORY_MAP.keys()
+
+    @classmethod
     def _for_ordinal_uncached(cls, ordinal: _CalendarOrdinal) -> CalendarSystem:
         match ordinal:
             case _CalendarOrdinal.ISO:
@@ -292,6 +317,14 @@ class CalendarSystem:
 
     def _compare(self, lhs: _YearMonthDay, rhs: _YearMonthDay) -> int:
         return self._year_month_day_calculator.compare(lhs, rhs)
+
+    __ID_TO_FACTORY_MAP = {__ISO_ID: iso}
+
+    def _get_year_month_day_calendar_from_days_since_epoch(self, days_since_epoch: int) -> _YearMonthDayCalendar:
+        _Preconditions._check_argument_range("days_since_epoch", days_since_epoch, self._min_days, self._max_days)
+        return self._year_month_day_calculator._get_year_month_day(
+            days_since_epoch=days_since_epoch
+        )._with_calendar_ordinal(self._ordinal)
 
 
 @sealed
@@ -1055,6 +1088,47 @@ class LocalDate:
         else:
             raise TypeError
 
+    @classmethod
+    @overload
+    def _ctor(cls, *, year_month_day_calendar: _YearMonthDayCalendar) -> LocalDate:
+        ...
+
+    @classmethod
+    @overload
+    def _ctor(cls, *, days_since_epoch: int) -> LocalDate:
+        ...
+
+    @classmethod
+    @overload
+    def _ctor(cls, *, days_since_epoch: int, calendar: CalendarSystem) -> LocalDate:
+        ...
+
+    @classmethod
+    def _ctor(
+        cls,
+        *,
+        year_month_day_calendar: _YearMonthDayCalendar | None = None,
+        days_since_epoch: int | None = None,
+        calendar: CalendarSystem | None = None,
+    ) -> LocalDate:
+        self = super().__new__(cls)
+        if year_month_day_calendar is not None:
+            self.__year_month_day_calendar = year_month_day_calendar
+        elif days_since_epoch is not None:
+            if calendar is None:
+                self.__year_month_day_calendar = (
+                    _GregorianYearMonthDayCalculator._get_gregorian_year_month_day_calendar_from_days_since_epoch(
+                        days_since_epoch
+                    )
+                )
+            else:
+                self.__year_month_day_calendar = calendar._get_year_month_day_calendar_from_days_since_epoch(
+                    days_since_epoch
+                )
+        else:
+            raise TypeError
+        return self
+
     @property
     def calendar(self) -> CalendarSystem:
         """The calendar system associated with this local date."""
@@ -1223,7 +1297,7 @@ class _YearMonthDayCalendar:
 
     @property
     def _year(self) -> int:
-        return ((self.__value & self.__YEAR_MASK) >> self.__CALENDAR_DAY_MONTH_BITS) + 1
+        return (_int32_overflow(self.__value & self.__YEAR_MASK) >> self.__CALENDAR_DAY_MONTH_BITS) + 1
 
     @property
     def _month(self) -> int:
@@ -1288,6 +1362,9 @@ class _YearMonthDay:
     @property
     def _day(self) -> int:
         return (self.__value & self.__DAY_MASK) + 1
+
+    def _with_calendar_ordinal(self, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar:
+        return _YearMonthDayCalendar._ctor(year_month_day=self.__value, calendar_ordinal=calendar_ordinal)
 
     def compare_to(self, other: _YearMonthDay) -> int:
         # In Noda Time, this method calls `int.CompareTo(otherInt)`
