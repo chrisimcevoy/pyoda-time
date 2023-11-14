@@ -630,15 +630,28 @@ class Duration:
         return Duration._ctor(days=new_days, nano_of_day=new_nanos)
 
 
+class _OffsetMeta(type):
+    @property
+    def zero(self) -> Offset:
+        """An offset of zero seconds - effectively the permanent offset for UTC."""
+        return Offset.from_seconds(0)
+
+
 @final
 @sealed
-class Offset:
+class Offset(metaclass=_OffsetMeta):
     """An offset from UTC in seconds."""
 
     __MIN_HOURS: Final[int] = -18
     __MAX_HOURS: Final[int] = 18
     __MIN_SECONDS: Final[int] = -18 * SECONDS_PER_HOUR
     __MAX_SECONDS: Final[int] = 18 * SECONDS_PER_HOUR
+    __MIN_MILLISECONDS: Final[int] = -18 * MILLISECONDS_PER_HOUR
+    __MAX_MILLISECONDS: Final[int] = 18 * MILLISECONDS_PER_HOUR
+    __MIN_TICKS: Final[int] = -18 * TICKS_PER_HOUR
+    __MAX_TICKS: Final[int] = 18 * TICKS_PER_HOUR
+    __MIN_NANOSECONDS: Final[int] = -18 * NANOSECONDS_PER_HOUR
+    __MAX_NANOSECONDS: Final[int] = 18 * NANOSECONDS_PER_HOUR
 
     def __init__(self) -> None:
         self.__seconds = 0
@@ -683,11 +696,97 @@ class Offset:
         """
         return self.__seconds * NANOSECONDS_PER_SECOND
 
+    # region Construction
+
+    @classmethod
+    def from_seconds(cls, seconds: int) -> Offset:
+        """Returns an offset for the given seconds value, which may be negative.
+
+        :param seconds: The int seconds value.
+        :return: An offset representing the given number of seconds.
+        :raises ValueError: The specified number of seconds is outside the range of [-18, +18] hours.
+        """
+        _Preconditions._check_argument_range("seconds", seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
+        return cls._ctor(seconds=seconds)
+
+    @classmethod
+    def from_milliseconds(cls, milliseconds: int) -> Offset:
+        """Returns an offset for the given milliseconds value, which may be negative.
+
+        :param milliseconds: The int milliseconds value.
+        :return: An offset representing the given number of milliseconds, to the (truncated) second.
+        :raises ValueError: The specified number of milliseconds is outside the range of [-18, +18] hours.
+
+        Offsets are only accurate to second precision; the given number of milliseconds is simply divided by 1,000 to
+        give the number of seconds - any remainder is truncated.
+        """
+        _Preconditions._check_argument_range(
+            "milliseconds", milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS
+        )
+        return cls._ctor(seconds=_towards_zero_division(milliseconds, MILLISECONDS_PER_SECOND))
+
+    @classmethod
+    def from_ticks(cls, ticks: int) -> Offset:
+        """Returns an offset for the given number of ticks, which may be negative.
+
+        :param ticks: The number of ticks specifying the length of the new offset.
+        :return: An offset representing the given number of ticks, to the (truncated) second.
+        :raises ValueError: The specified number of ticks is outside the range of [-18, +18] hours.
+
+        Offsets are only accurate to second precision; the given number of ticks is simply divided
+        by 10,000,000 to give the number of seconds - any remainder is truncated.
+        """
+        _Preconditions._check_argument_range("ticks", ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
+        return cls._ctor(seconds=_towards_zero_division(ticks, TICKS_PER_SECOND))
+
+    @classmethod
+    def from_nanoseconds(cls, nanoseconds: int) -> Offset:
+        """Returns an offset for the given number of nanoseconds, which may be negative.
+
+        :param nanoseconds: The number of nanoseconds specifying the length of the new offset.
+        :return: An offset representing the given number of nanoseconds, to the (truncated) second.
+        :raises ValueError: The specified number of nanoseconds is outside the range of [-18, +18] hours.
+
+        Offsets are only accurate to second precision; the given number of nanoseconds is simply divided by
+        1,000,000,000 to give the number of seconds - any remainder is truncated towards zero.
+        """
+        _Preconditions._check_argument_range("nanoseconds", nanoseconds, cls.__MIN_NANOSECONDS, cls.__MAX_NANOSECONDS)
+        return cls._ctor(seconds=_towards_zero_division(nanoseconds, NANOSECONDS_PER_SECOND))
+
     @classmethod
     def from_hours(cls, hours: int) -> Offset:
-        """Returns an offset for the specified number of hours, which may be negative."""
+        """Returns an offset for the specified number of hours, which may be negative.
+
+        :param hours: The number of hours to represent in the new offset.
+        :return: An offset representing the given value.
+        :raises ValueError: The specified number of hours is outside the range of [-18, +18].
+        """
         _Preconditions._check_argument_range("hours", hours, cls.__MIN_HOURS, cls.__MAX_HOURS)
         return cls._ctor(seconds=hours * SECONDS_PER_HOUR)
+
+    @classmethod
+    def from_hours_and_minutes(cls, hours: int, minutes: int) -> Offset:
+        """Returns an offset for the specified number of hours and minutes.
+
+        :param hours: The number of hours to represent in the new offset.
+        :param minutes: The number of minutes to represent in the new offset.
+        :return: An offset representing the given value.
+        :raises ValueError: The result of the operation is outside the range of Offset.
+
+        The result simply takes the hours and minutes and converts each component into milliseconds
+        separately. As a result, a negative offset should usually be obtained by making both arguments
+        negative. For example, to obtain "three hours and ten minutes behind UTC" you might call
+        ``Offset.from_hours_and_minutes(-3, -10)``.
+        """
+        return cls.from_seconds(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE)
+
+    # endregion
+
+    # region Conversion
+
+    # TODO: Offset Conversion
+
+    # endregion
 
 
 @final
