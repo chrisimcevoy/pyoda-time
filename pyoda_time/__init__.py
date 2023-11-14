@@ -1307,6 +1307,26 @@ class _YearMonthDayCalendar:
     def _day(self) -> int:
         return ((self.__value & self.__DAY_MASK) >> self._CALENDAR_BITS) + 1
 
+    @classmethod
+    def _parse(cls, text: str) -> _YearMonthDayCalendar:
+        # Handle a leading - to negate the year
+        if text[0] == "-":
+            ymdc = cls._parse(text[1:])
+            return _YearMonthDayCalendar._ctor(
+                year=-ymdc._year,
+                month=ymdc._month,
+                day=ymdc._day,
+                calendar_ordinal=ymdc._calendar_ordinal,
+            )
+
+        bits = text.split("-")
+        return _YearMonthDayCalendar._ctor(
+            year=int(bits[0]),
+            month=int(bits[1]),
+            day=int(bits[2]),
+            calendar_ordinal=getattr(_CalendarOrdinal, bits[3]),
+        )
+
     def _to_year_month_day(self) -> _YearMonthDay:
         return _YearMonthDay._ctor(raw_value=self.__value >> self._CALENDAR_BITS)
 

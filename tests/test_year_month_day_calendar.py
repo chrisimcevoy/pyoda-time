@@ -1,3 +1,5 @@
+import pytest
+
 from pyoda_time import _CalendarOrdinal, _YearMonthDayCalendar
 
 
@@ -38,3 +40,19 @@ class TestYearMonthDayCalendar:
             assert ymdc._month == 30
             assert ymdc._day == 64
             assert ymdc._calendar_ordinal == calendar
+
+    # TODO: def test_equality():
+
+    @pytest.mark.parametrize(
+        "text,year,month,day,calendar",
+        [
+            ("2017-08-21-JULIAN", 2017, 8, 21, _CalendarOrdinal.JULIAN),
+            ("-0005-08-21-ISO", -5, 8, 21, _CalendarOrdinal.ISO),
+        ],
+    )
+    def test_parse(self, text: str, year: int, month: int, day: int, calendar: _CalendarOrdinal) -> None:
+        value: _YearMonthDayCalendar = _YearMonthDayCalendar._parse(text)
+        assert value._year == year
+        assert value._month == month
+        assert value._day == day
+        assert value._calendar_ordinal == calendar
