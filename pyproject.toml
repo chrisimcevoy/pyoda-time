@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.docformatter]
 black = true
 recursive = true
@@ -11,6 +15,22 @@ disallow_untyped_defs = true
 # strict = true
 warn_return_any = true
 warn_unused_configs = true
+
+[tool.poetry]
+name = "pyoda-time"
+version = "0.1.0"
+description = "An alternative datetime library for Python."
+authors = ["Christopher McEvoy <12284065+chrisimcevoy@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytz = "^2023.3.post1"
+pre-commit = "^3.5.0"
+coverage = "^7.3.2"
 
 [tool.ruff]
 line-length = 120
@@ -26,4 +46,3 @@ select = [
     "UP",   # pyupgrade
     "W",    # pycodestyle (warning)
 ]
-

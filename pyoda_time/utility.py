@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, TypeVar
 
 _T = TypeVar("_T")
@@ -89,9 +89,7 @@ def _towards_zero_division(x: int | float, y: int) -> int:
 def _to_ticks(dt: datetime) -> int:
     """Get a value akin to C#'s DateTime.Ticks property from a python datetime."""
     # Gratefully stolen from https://stackoverflow.com/a/29368771
-    import pytz
-
-    return int((dt - datetime(1, 1, 1, tzinfo=pytz.UTC)).total_seconds() * 10000000)
+    return int((dt - datetime(1, 1, 1, tzinfo=timezone.utc)).total_seconds() * 10000000)
 
 
 def sealed(cls: _Ttype) -> _Ttype:
