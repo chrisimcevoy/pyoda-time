@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import datetime as _datetime
 from abc import ABC
-from datetime import datetime
 from enum import IntEnum
 from typing import Annotated, Final, Iterable, Self, final, overload
 
@@ -636,6 +636,16 @@ class _OffsetMeta(type):
         """An offset of zero seconds - effectively the permanent offset for UTC."""
         return Offset.from_seconds(0)
 
+    @property
+    def min_value(self) -> Offset:
+        """The minimum permitted offset; 18 hours before UTC."""
+        return Offset.from_hours(-18)
+
+    @property
+    def max_value(self) -> Offset:
+        """The maximum permitted offset; 18 hours after UTC."""
+        return Offset.from_hours(18)
+
 
 @final
 @sealed
@@ -695,6 +705,215 @@ class Offset(metaclass=_OffsetMeta):
         give the number of nanoseconds.
         """
         return self.__seconds * NANOSECONDS_PER_SECOND
+
+    @staticmethod
+    def max(x: Offset, y: Offset) -> Offset:
+        """Returns the greater offset of the given two, i.e. the one which will give a later local time when added to an
+        instant.
+
+        :param x: The first offset
+        :param y: The second offset
+        :return: The greater offset of x and y.
+        """
+        return x if x > y else y
+
+    @staticmethod
+    def min(x: Offset, y: Offset) -> Offset:
+        """Returns the lower offset of the given two, i.e. the one which will give an earlier local time when added to
+        an instant.
+
+        :param x: The first offset
+        :param y: The second offset
+        :return: The lower offset of x and y.
+        """
+        return x if x < y else y
+
+    # region Operators
+
+    def __neg__(self) -> Offset:
+        """Implements the unary operator - (negation).
+
+        :return: A new ``Offset`` instance with a negated value.
+        """
+        # Guaranteed to still be in range.
+        return Offset._ctor(seconds=-self.seconds)
+
+    @staticmethod
+    def negate(offset: Offset) -> Offset:
+        """Returns the negation of the specified offset. This is the method form of the unary minus operator.
+
+        :param offset: The offset to negate.
+        :return: The negation of the specified offset.
+        """
+        return -offset
+
+    def __pos__(self) -> Offset:
+        """Implements the unary operator + .
+
+        :return: The same ``Offset`` instance
+
+        There is no method form of this operator; the ``plus`` method is an instance
+        method for addition, and is more useful than a method form of this would be.
+        """
+        return self
+
+    def __add__(self, other: Offset) -> Offset:
+        """Implements the operator + (addition).
+
+        :param other: The offset to add.
+        :return: A new ``Offset`` representing the sum of the given values.
+        :raises ValueError: The result of the operation is outside the range of Offset.
+        """
+        return self.from_seconds(self.seconds + other.seconds)
+
+    @staticmethod
+    def add(left: Offset, right: Offset) -> Offset:
+        """Adds one Offset to another. Friendly alternative to ``+``.
+
+        :param left: The left hand side of the operator.
+        :param right: The right hand side of the operator.
+        :return: A new ``Offset`` representing the sum of the given values.
+        :raises ValueError: The result of the operation is outside the range of Offset.
+        """
+        return left + right
+
+    def plus(self, other: Offset) -> Offset:
+        """Returns the result of adding another Offset to this one, for a fluent alternative to ``+``.
+
+        :param other: The offset to add
+        :return: THe result of adding the other offset to this one.
+        :raises ValueError: The result of the operation is outside the range of Offset.
+        """
+        return self + other
+
+    def __sub__(self, other: Offset) -> Offset:
+        """Implements the operator - (subtraction).
+
+        :param other: The offset to subtract.
+        :return: A new ``Offset`` representing the difference of the given values.
+        :raises ValueError: The result of the operation is outside the range of Offset.
+        """
+        return self.from_seconds(self.seconds - other.seconds)
+
+    @staticmethod
+    def subtract(minuend: Offset, subtrahend: Offset) -> Offset:
+        """Subtracts one Offset from another. Friendly alternative to ``-``.
+
+        :param minuend: The left hand side of the operator.
+        :param subtrahend: The right hand side of the operator.
+        :return: A new ``Offset`` representing the difference of the given values.
+        :raises ValueError: The result of the operation is outside the range of Offset.
+        """
+        return minuend - subtrahend
+
+    def minus(self, other: Offset) -> Offset:
+        """Returns the result of subtracting another Offset from this one, for a fluent alternative to ``-``.
+
+        :param other: The offset to subtract
+        :return: The result of subtracting the other offset from this one.
+        :raises ValueError: The result of the operation is outside the range of Offset.
+        """
+        return self - other
+
+    def __eq__(self, other: object) -> bool:
+        """Implements the operator == (equality). See the type documentation for a description of equality semantics.
+
+        :param other: The object to compare this one to for equality.
+        :return: ``True`` if values are equal to each other, otherwise ``False``.
+        """
+        return isinstance(other, Offset) and self.equals(other)
+
+    def __ne__(self, other: object) -> bool:
+        """Implements the operator != (inequality). See the type documentation for a description of equality semantics.
+
+        :param other: The object to compare with this one.
+        :return: ``True`` if values are not equal to each other, otherwise ``False``.
+        """
+        return not (self == other)
+
+    def __lt__(self, other: Offset | None) -> bool:
+        """Implements the operator ``<`` (less than). See the type documentation for a description of ordering
+        semantics.
+
+        :param other: The offset to compare with this one.
+        :return: ``True`` if this offset is less than ``other``, otherwise ``False``.
+        """
+        return isinstance(other, Offset) and self.compare_to(other) < 0
+
+    def __le__(self, other: Offset) -> bool:
+        """Implements the operator ``<=`` (less than or equal). See the type documentation for a description of ordering
+        semantics.
+
+        :param other: The offset to compare with this one.
+        :return: ``True`` if this offset is less than or equal to ``other``, otherwise ``False``.
+        """
+        return isinstance(other, Offset) and self.compare_to(other) <= 0
+
+    def __gt__(self, other: Offset | None) -> bool:
+        """Implements the operator ``>`` (greater than). See the type documentation for a description of ordering
+        semantics.
+
+        :param other: The offset to compare with this one.
+        :return: ``True`` if this offset is greater than ``other``, otherwise ``False``.
+        """
+        return other is None or (isinstance(other, Offset) and self.compare_to(other) > 0)
+
+    def __ge__(self, other: Offset) -> bool:
+        """Implements the operator ``>=`` (greater than or equal). See the type documentation for a description of
+        ordering semantics.
+
+        :param other: The offset to compare with this one.
+        :return: ``True`` if this offset is greater than or equal to ``other``, otherwise ``False``.
+        """
+        return other is None or (isinstance(other, Offset) and self.compare_to(other) >= 0)
+
+    # endregion
+
+    # region IComparable<Offset> Members
+
+    def compare_to(self, other: Offset) -> int:
+        """Compares the current object with another object of the same type. See the type documentation for a
+        description of ordering semantics.
+
+        :param other: An object to compare with this object.
+        :return: An integer that indicates the relative order of the objects being compared.
+        :exception TypeError: An object of an incompatible type was passed to this method.
+
+        The return value has the following meanings:
+
+        =====  ======
+        Value  Meaning
+        =====  ======
+        < 0    This object is less than the ``other`` parameter.
+        0      This object is equal to ``other``.
+        > 0    This object is greater than ``other``.
+        =====  ======
+        """
+        if not isinstance(other, Offset):
+            raise TypeError(f"Offset can only be compared_to another Offset, not {other.__class__.__name__}")
+        return self.seconds - other.seconds
+
+    # endregion
+
+    # region IEquatable<Offset> Members
+
+    def equals(self, other: Offset) -> bool:
+        """Indicates whether the current object is equal to another object of the same type. See the type documentation
+        for a description of equality semantics.
+
+        :param other: An object to compare with this object.
+        :return: true if the current object is equal to the ``other`` parameter; otherwise, false.
+        """
+        return self.seconds == other.seconds
+
+    # endregion
+
+    # region object overrides
+
+    def __hash__(self) -> int:
+        return hash(self.seconds)
+
+    # endregion
 
     # region Construction
 
@@ -784,7 +1003,34 @@ class Offset(metaclass=_OffsetMeta):
 
     # region Conversion
 
-    # TODO: Offset Conversion
+    def to_timedelta(self) -> _datetime.timedelta:
+        """Converts this offset to a stdlib ``datetime.timedelta`` value.
+
+        :return: An equivalent ``datetime.timedelta`` to this value.
+        """
+        return _datetime.timedelta(seconds=self.seconds)
+
+    @classmethod
+    def from_timedelta(cls, timedelta: _datetime.timedelta) -> Offset:
+        """Converts the given ``timedelta`` to an offset, with fractional seconds truncated.
+
+        :param timedelta: The timedelta to convert
+        :returns: An offset for the same time as the given time span. :exception ValueError: The given timedelta falls
+            outside the range of +/- 18 hours.
+        """
+        # TODO: Consider introducing a "from_microseconds" constructor?
+
+        # Convert to ticks first, then divide that float by 1 using our special
+        # function to convert to a rounded-towards-zero int.
+        ticks = _towards_zero_division(timedelta.total_seconds() * TICKS_PER_SECOND, 1)
+        _Preconditions._check_argument_range("timedelta", ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
+        return Offset.from_ticks(ticks)
+
+    # endregion
+
+    # region XML serialization
+
+    # TODO: XML serialization???
 
     # endregion
 
@@ -1003,7 +1249,7 @@ class Instant:
         return min(x, y)
 
     @classmethod
-    def from_datetime_utc(cls, datetime: datetime) -> Instant:
+    def from_datetime_utc(cls, datetime: _datetime.datetime) -> Instant:
         """Converts a datetime.datetime into a new Instant representing the same instant in time.
 
         The datetime must have a truthy tzinfo, and must have a UTC offset of 0.

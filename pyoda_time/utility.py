@@ -76,7 +76,7 @@ class _TickArithmetic:
         return days * TICKS_PER_DAY + tick_of_day
 
 
-def _towards_zero_division(x: int, y: int) -> int:
+def _towards_zero_division(x: int | float, y: int) -> int:
     """Divide two integers using "towards zero" rounding.
 
     This ensures that integer division produces the same result as it would do in C#.
