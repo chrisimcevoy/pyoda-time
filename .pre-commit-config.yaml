@@ -1,25 +1,47 @@
+default_stages:
+  - commit
+
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+  - pre-push
+
 default_language_version:
     python: python3.12
 
 repos:
 
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  # Ruff version.
-  rev: v0.1.3
-  hooks:
-    - id: ruff-format
-    - id: ruff
-      args: [--fix]
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: 3.12.0
+    hooks:
+      - id: commitizen
+        stages:
+          - commit-msg
+      - id: commitizen-branch
+        stages:
+          - push
+        args:
+          - --rev-range
+          - origin/master..HEAD
+        always_run: true
+        pass_filenames: false
 
-- repo: https://github.com/PyCQA/docformatter
-  rev: v1.7.5
-  hooks:
-    - id: docformatter
-      additional_dependencies: [tomli]
-      args: ["--in-place", "--config", "./pyproject.toml"]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.5
+    hooks:
+      - id: ruff-format
+      - id: ruff
+        args: [--fix]
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.6.1'  # Use the sha / tag you want to point at
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        additional_dependencies: [tomli]
+        args: ["--in-place", "--config", "./pyproject.toml"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.7.0'
     hooks:
     -   id: mypy
         additional_dependencies: [types-pytz==2023.3.1.1]
