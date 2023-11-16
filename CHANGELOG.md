@@ -1,3 +1,9 @@
+## 0.3.0 (2023-11-16)
+
+### Feat
+
+- **publish**: add development status classifier & badges (#7)
+
 ## 0.2.1 (2023-11-16)
 
 ### Fix
