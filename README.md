@@ -1,3 +1,7 @@
+![PyPI - Status](https://img.shields.io/pypi/status/pyoda-time)
+![PyPI - Version](https://img.shields.io/pypi/v/pyoda-time)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyoda-time)
+
 # pyoda-time
 
 An alternative datetime library for Python.
