@@ -1,4 +1,4 @@
-name: CI/CD Workflow
+name: PR Checks
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  test:
+  pytest:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
