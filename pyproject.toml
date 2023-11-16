@@ -30,6 +30,7 @@ version = "0.2.1"
 description = "An alternative datetime library for Python."
 authors = ["Christopher McEvoy <12284065+chrisimcevoy@users.noreply.github.com>"]
 readme = "README.md"
+repository = "https://github.com/chrisimcevoy/pyoda-time"
 
 [tool.poetry.dependencies]
 python = "^3.12"
