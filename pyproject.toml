@@ -56,6 +56,7 @@ select = [
     "E",    # pycodestyle (error)
     "F",    # pyflakes
     "I",    # isort
+    "RUF",  # ruff
     "UP",   # pyupgrade
     "W",    # pycodestyle (warning)
 ]
