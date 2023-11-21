@@ -1,3 +1,9 @@
+## 0.4.0 (2023-11-21)
+
+### Feat
+
+- **calendars**: Implement Hebrew, Coptic and Badi calendars (#8)
+
 ## 0.3.0 (2023-11-16)
 
 ### Feat
