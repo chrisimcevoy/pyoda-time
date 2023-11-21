@@ -15,7 +15,7 @@ class _Preconditions:
         This is useful for putting nullity checks in parameters which are passed to base class constructors.
         """
         if argument is None:
-            raise ValueError(f"{param_name} cannot be None.")
+            raise TypeError(f"{param_name} cannot be None.")
         return argument
 
     @classmethod
@@ -144,3 +144,22 @@ def _int32_overflow(value: int) -> int:
         int: The result after simulating 32-bit overflow.
     """
     return (value + 2**31) % 2**32 - 2**31
+
+
+def _csharp_modulo(dividend: int, divisor: int) -> int:
+    """Perform a modulo operation with C# behavior, where the result has the same sign as the divisor.
+
+    In C#, the result of a modulo operation takes the sign of the divisor, unlike Python where it
+    takes the sign of the dividend. This function adjusts the Python modulo result to mimic C#'s behavior.
+
+    Args:
+    dividend (int): The number to be divided.
+    divisor (int): The number by which to divide.
+
+    Returns:
+    int: The result of the modulo operation, adjusted for C# behavior.
+    """
+    result = dividend % divisor
+    if dividend < 0 < result:
+        result -= abs(divisor)
+    return result
