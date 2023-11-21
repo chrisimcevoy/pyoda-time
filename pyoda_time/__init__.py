@@ -209,7 +209,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
     __UM_AL_QURA_ID: Final[str] = __UM_AL_QURA_NAME
 
     # While we could implement some of these as auto-props, it probably adds more confusion than convenience.
-    __CALENDAR_BY_ORDINAL: dict[_CalendarOrdinal, CalendarSystem] = {}
+    __CALENDAR_BY_ORDINAL: Final[dict[_CalendarOrdinal, CalendarSystem]] = {}
 
     __ID_ORDINAL_MAP: Final[dict[str, _CalendarOrdinal]] = {
         __BADI_ID: _CalendarOrdinal.BADI,
