@@ -7,13 +7,19 @@ from typing import Annotated, Final, Iterable, Self, final, overload
 
 from .calendars import (
     Era,
+    HebrewMonthNumbering,
+    _BadiYearMonthDayCalculator,
+    _CopticYearMonthDayCalculator,
     _EraCalculator,
     _GJEraCalculator,
     _GregorianYearMonthDayCalculator,
+    _HebrewYearMonthDayCalculator,
+    _JulianYearMonthDayCalculator,
     _SingleEraCalculator,
     _YearMonthDayCalculator,
 )
 from .utility import (
+    _csharp_modulo,
     _int32_overflow,
     _Preconditions,
     _TickArithmetic,
@@ -48,7 +54,8 @@ TICKS_PER_DAY: Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
 class _CalendarOrdinal(IntEnum):
     """Enumeration of calendar ordinal values.
 
-    Used for converting between a compact integer representation and a calendar system.
+    Used for converting between a compact integer representation and a calendar system. We use 6 bits to store the
+    calendar ordinal in YearMonthDayCalendar, so we can have up to 64 calendars.
     """
 
     ISO = 0
@@ -87,10 +94,68 @@ class IsoDayOfWeek(IntEnum):
     SUNDAY = 7
 
 
+class _CalendarSystemMeta(type):
+    @property
+    def badi(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.BADI)
+
+    @property
+    def coptic(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.COPTIC)
+
+    @property
+    def gregorian(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.GREGORIAN)
+
+    @property
+    def islamic_bcl(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16)
+
+    @property
+    def hebrew_civil(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.HEBREW_CIVIL)
+
+    @property
+    def hebrew_scriptural(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.HEBREW_SCRIPTURAL)
+
+    @property
+    def iso(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.ISO)
+
+    @property
+    def julian(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.JULIAN)
+
+    @property
+    def persian_arithmetic(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.PERSIAN_ARITHMETIC)
+
+    @property
+    def persian_astronomical(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.PERSIAN_ASTRONOMICAL)
+
+    @property
+    def persian_simple(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.PERSIAN_SIMPLE)
+
+    @property
+    def um_al_qura(cls) -> CalendarSystem:
+        return CalendarSystem._for_ordinal(_CalendarOrdinal.UM_AL_QURA)
+
+    @property
+    def ids(cls) -> Iterable[str]:
+        """Returns the IDs of all calendar systems available within Pyoda Time.
+
+        The order of the keys is not guaranteed.
+        """
+        return CalendarSystem._ids()
+
+
 @final
 @private
 @sealed
-class CalendarSystem:
+class CalendarSystem(metaclass=_CalendarSystemMeta):
     """Maps the non-calendar-specific "local timeline" to human concepts such as years, months and days.
 
     Many developers will never need to touch this class, other than to potentially ask a calendar how many days are in a
@@ -126,17 +191,108 @@ class CalendarSystem:
 
     __ISLAMIC_NAME: Final[str] = "Hijri"
     __ISLAMIC_ID_BASE: Final[str] = __ISLAMIC_NAME
+    # Not part of IslamicCalendars as we want to be able to call it without triggering type initialization.
+    # TODO def _get_islamic_id()
 
-    __CALENDAR_BY_ORDINAL: dict[int, CalendarSystem] = {}
+    __PERSIAN_NAME: Final[str] = "Persian"
+    __PERSIAN_ID_BASE: Final[str] = __PERSIAN_NAME
+    __PERSIAN_SIMPLE_ID: Final[str] = __PERSIAN_ID_BASE + " Simple"
+    __PERSIAN_ASTRONOMICAL_ID: Final[str] = __PERSIAN_ID_BASE + " Algorithmic"
+    __PERSIAN_ARITHMETIC_ID: Final[str] = __PERSIAN_ID_BASE + " Arithmetic"
+
+    __HEBREW_NAME: Final[str] = "Hebrew"
+    __HEBREW_ID_BASE: Final[str] = __HEBREW_NAME
+    __HEBREW_CIVIL_ID: Final[str] = __HEBREW_ID_BASE + " Civil"
+    __HEBREW_SCRIPTURAL_ID: Final[str] = __HEBREW_ID_BASE + " Scriptural"
+
+    __UM_AL_QURA_NAME: Final[str] = "Um Al Qura"
+    __UM_AL_QURA_ID: Final[str] = __UM_AL_QURA_NAME
+
+    # While we could implement some of these as auto-props, it probably adds more confusion than convenience.
+    __CALENDAR_BY_ORDINAL: dict[_CalendarOrdinal, CalendarSystem] = {}
+
+    __ID_ORDINAL_MAP: Final[dict[str, _CalendarOrdinal]] = {
+        __BADI_ID: _CalendarOrdinal.BADI,
+        __COPTIC_ID: _CalendarOrdinal.COPTIC,
+        __GREGORIAN_ID: _CalendarOrdinal.GREGORIAN,
+        __HEBREW_CIVIL_ID: _CalendarOrdinal.HEBREW_CIVIL,
+        __HEBREW_SCRIPTURAL_ID: _CalendarOrdinal.HEBREW_SCRIPTURAL,
+        # TODO: Islamic IDs
+        __ISO_ID: _CalendarOrdinal.ISO,
+        __JULIAN_ID: _CalendarOrdinal.JULIAN,
+        # TODO: __PERSIAN_SIMPLE_ID: _CalendarOrdinal.PERSIAN_SIMPLE,
+        # TODO: __PERSIAN_ARITHMETIC_ID: _CalendarOrdinal.PERSIAN_ARITHMETIC,
+        # TODO: __PERSIAN_ASTRONOMICAL_ID: _CalendarOrdinal.PERSIAN_ASTRONOMICAL,
+        # TODO: __UM_AL_QURA_ID: _CalendarOrdinal.UM_AL_QURA,
+    }
+
+    # region Public factory members for calendars
 
     @classmethod
     def for_id(cls, id_: str) -> CalendarSystem:
+        """Fetches a calendar system by its unique identifier. This provides full round-tripping of a calendar system.
+        This method will always return the same reference for the same ID.
+
+        :param id_: The ID of the calendar system. This is case-sensitive.
+        :return: The calendar system with the given ID. :exception KeyError: No calendar system for the specified ID can
+            be found.
+        """
+        # TODO: transcribe <exception cref="NotSupportedException" /> in docstring
         _Preconditions._check_not_null(id_, "id_")
-        if not (factory := cls.__ID_TO_FACTORY_MAP.get(id_)):
+        if (ordinal := cls.__ID_ORDINAL_MAP.get(id_)) is None:
             raise KeyError(f"No calendar system for ID {id_} exists")
-        # At time of writing, mypy doesn't understand __func__ (https://github.com/python/mypy/issues/3482)
-        calendar: CalendarSystem = factory.__func__(CalendarSystem)  # type: ignore
-        return calendar
+        return cls._for_ordinal(ordinal)
+
+    @classmethod
+    def _for_ordinal(cls, ordinal: _CalendarOrdinal) -> CalendarSystem:
+        """Fetches a calendar system by its ordinal value, constructing it if necessary."""
+
+        # TODO Preconditions.DebugCheckArgument
+
+        if calendar := cls.__CALENDAR_BY_ORDINAL.get(ordinal):
+            return calendar
+
+        # Not found it in the array. This can happen if the calendar system was initialized in
+        # a different thread, and the write to the array isn't visible in this thread yet.
+        # A simple switch will do the right thing. This is separated out (directly below) to allow
+        # it to be tested separately. (It may also help this method be inlined...) The return
+        # statement below is unlikely to ever be hit by code coverage, as it's handling a very
+        # unusual and hard-to-provoke situation.
+        return cls._for_ordinal_uncached(ordinal)
+
+    @classmethod
+    def _ids(cls) -> Iterable[str]:
+        """Returns an iterable of all valid IDs.
+
+        The public static property is implemented in the metaclass. This classmethod just exists to expose the keys of
+        the dictionary (internally). This implementation differs somewhat from noda time!
+        """
+        yield from cls.__ID_ORDINAL_MAP.keys()
+
+    @classmethod
+    def get_hebrew_calendar(cls, month_numbering: HebrewMonthNumbering) -> CalendarSystem:
+        _Preconditions._check_argument_range("month_numbering", int(month_numbering), 1, 2)
+        match month_numbering:
+            case HebrewMonthNumbering.CIVIL:
+                return CalendarSystem.__ctor(
+                    ordinal=_CalendarOrdinal.HEBREW_CIVIL,
+                    id_=cls.__HEBREW_CIVIL_ID,
+                    name=cls.__HEBREW_NAME,
+                    year_month_day_calculator=_HebrewYearMonthDayCalculator(month_numbering),
+                    single_era=Era.anno_mundi,
+                )
+            case HebrewMonthNumbering.SCRIPTURAL:
+                return CalendarSystem.__ctor(
+                    ordinal=_CalendarOrdinal.HEBREW_SCRIPTURAL,
+                    id_=cls.__HEBREW_SCRIPTURAL_ID,
+                    name=cls.__HEBREW_NAME,
+                    year_month_day_calculator=_HebrewYearMonthDayCalculator(month_numbering),
+                    single_era=Era.anno_mundi,
+                )
+            case _:
+                raise ValueError(f"Unknown HebrewMonthNumbering: {month_numbering}")
+
+    # endregion
 
     __ordinal: Annotated[_CalendarOrdinal, "Set by private constructor"]
     __id: Annotated[str, "Set by private constructor"]
@@ -202,7 +358,7 @@ class CalendarSystem:
             era_calculator = _SingleEraCalculator._ctor(era=single_era, ymd_calculator=year_month_day_calculator)
 
         self.__era_calculator = era_calculator
-        self.__CALENDAR_BY_ORDINAL[int(ordinal)] = self
+        self.__CALENDAR_BY_ORDINAL[ordinal] = self
         return self
 
     @property
@@ -243,58 +399,72 @@ class CalendarSystem:
     def _ordinal(self) -> _CalendarOrdinal:
         return self.__ordinal
 
-    @classmethod
-    def _for_ordinal(cls, ordinal: _CalendarOrdinal) -> CalendarSystem:
-        """Fetches a calendar system by its ordinal value, constructing it if necessary."""
+    # region Era-based members
 
-        # TODO Preconditions.DebugCheckArgument
-
-        # Avoid an array lookup for the overwhelmingly common case.
-        if ordinal == _CalendarOrdinal.ISO:
-            return cls.iso()
-
-        if calendar := cls.__CALENDAR_BY_ORDINAL.get(int(ordinal)):
-            return calendar
-
-        return cls._for_ordinal_uncached(ordinal)
-
-    @classmethod
-    def ids(cls) -> Iterable[str]:
-        """Returns the IDs of all calendar systems available within Pyoda Time.
-
-        The order of the keys is not guaranteed.
-        """
-        return cls.__ID_TO_FACTORY_MAP.keys()
-
-    @classmethod
-    def _for_ordinal_uncached(cls, ordinal: _CalendarOrdinal) -> CalendarSystem:
-        match ordinal:
-            case _CalendarOrdinal.ISO:
-                return cls.iso()
-            case _:
-                # TODO map all CalendarOrdinals to CalendarSystems and rephrase this error
-                raise ValueError(f"CalendarOrdinal '{ordinal.name}' not mapped to CalendarSystem yet")
-
-    @classmethod
-    def iso(cls) -> CalendarSystem:
-        """Returns a calendar system that follows the rules of the ISO-8601 standard, which is compatible with Gregorian
-        for all modern dates."""
-        gregorian_calculator = _GregorianYearMonthDayCalculator()
-        gregorian_era_calculator = _GJEraCalculator(gregorian_calculator)
-        return CalendarSystem.__ctor(
-            ordinal=_CalendarOrdinal.ISO,
-            id_=cls.__ISO_ID,
-            name=cls.__ISO_NAME,
-            year_month_day_calculator=gregorian_calculator,
-            era_calculator=gregorian_era_calculator,
-        )
+    def eras(self) -> Iterable[Era]:
+        """Gets a read-only iterable of eras used in this calendar system."""
+        yield from self.__era_calculator._eras
 
     def get_absolute_year(self, year_of_era: int, era: Era) -> int:
+        """Returns the "absolute year" (the one used throughout most of the API, without respect to eras) from a year-
+        of-era and an era.
+
+        For example, in the Gregorian and Julian calendar systems, the BCE era starts at year 1, which is equivalent to
+        an "absolute year" of 0 (then BCE year 2 has an absolute year of -1, and so on).  The absolute year is the year
+        that is used throughout the API; year-of-era is typically used primarily when formatting and parsing date values
+        to and from text.
+
+        :param year_of_era: The year within the era.
+        :param era: The era in which to consider the year.
+        :return: The absolute year represented by the specified year of era.
+        """
         return self.__era_calculator._get_absolute_year(year_of_era, era)
+
+    def get_max_year_of_era(self, era: Era) -> int:
+        """Returns the maximum valid year-of-era in the given era.
+
+        Note that depending on the calendar system, it's possible that only part of the returned year falls within the
+        given era. It is also possible that the returned value represents the earliest year of the era rather than the
+        latest year. (See the BC era in the Gregorian calendar, for example.)
+
+        :param era: The era in which to find the greatest year
+        :return: The maximum valid year in the given era. :exception ValueError: era is not an era used in this
+            calendar.
+        """
+        return self.__era_calculator._get_max_year_of_era(era)
+
+    def get_min_year_of_era(self, era: Era) -> int:
+        """Returns the minimum valid year-of-era in the given era.
+
+        Note that depending on the calendar system, it's possible that only part of the returned year falls within the
+        given era. It is also possible that the returned value represents the latest year of the era rather than the
+        earliest year. (See the BC era in the Gregorian calendar, for example.)
+
+        :param era: The era in which to find the greatest year
+        :return: The minimum valid year in the given era. :exception ValueError: era is not an era used in this
+            calendar.
+        """
+        return self.__era_calculator._get_min_year_of_era(era)
+
+    # endregion
 
     @property
     def _year_month_day_calculator(self) -> _YearMonthDayCalculator:
         return self.__year_month_day_calculator
+
+    def _get_year_month_day_calendar_from_days_since_epoch(self, days_since_epoch: int) -> _YearMonthDayCalendar:
+        _Preconditions._check_argument_range("days_since_epoch", days_since_epoch, self._min_days, self._max_days)
+        return self._year_month_day_calculator._get_year_month_day(
+            days_since_epoch=days_since_epoch
+        )._with_calendar_ordinal(self._ordinal)
+
+    # region object overrides
+
+    def __str__(self) -> str:
+        """Converts this calendar system to text by simply returning its unique ID."""
+        return self.id
+
+    # endregion
 
     def _get_days_since_epoch(self, year_month_day: _YearMonthDay) -> int:
         """Returns the number of days since the Unix epoch (1970-01-01 ISO) for the given date."""
@@ -307,24 +477,137 @@ class CalendarSystem:
         """
         # TODO: DebugValidateYearMonthDay(yearMonthDay);
         days_since_epoch: int = self._year_month_day_calculator._get_days_since_epoch(year_month_day)
-        numeric_day_of_week: int = (
-            1 + ((days_since_epoch + 3) % 7) if days_since_epoch >= -3 else 7 + ((days_since_epoch + 4) % 7)
+
+        numeric_day_of_week = (
+            1 + _csharp_modulo(days_since_epoch + 3, 7)
+            if days_since_epoch >= -3
+            else 7 + _csharp_modulo(days_since_epoch + 4, 7)
         )
+
         return IsoDayOfWeek(numeric_day_of_week)
+
+    def get_days_in_year(self, year: int) -> int:
+        """Returns the number of days in the given year.
+
+        :param year: The year to determine the number of days in.
+        :return: The number of days in the given year.
+        """
+        _Preconditions._check_argument_range("year", year, self.__min_year, self.__max_year)
+        return self._year_month_day_calculator._get_days_in_year(year)
+
+    def get_days_in_month(self, year: int, month: int) -> int:
+        """Returns the number of days in the given month within the given year.
+
+        :param year: The year in which to consider the month.
+        :param month: The month to determine the number of days in.
+        :return: The number of days in the given month and year.
+        """
+        # Simplest way to validate the year and month. Assume it's quick enough to validate the day...
+        self._validate_year_month_day(year, month, 1)
+        return self._year_month_day_calculator._get_days_in_month(year, month)
+
+    def is_leap_year(self, year: int) -> bool:
+        """Returns True if the given year is a leap year in this calendar."""
+        _Preconditions._check_argument_range("year", year, self.__min_year, self.__max_year)
+        return self._year_month_day_calculator._is_leap_year(year)
+
+    def get_months_in_year(self, year: int) -> int:
+        """Returns the maximum valid month (inclusive) within this calendar in the given year.
+
+        It is assumed that in all calendars, every month between 1 and this month number is valid for the given year.
+        This does not necessarily mean that the first month of the year is 1, however. (See the Hebrew calendar system
+        using the scriptural month numbering system for example.)
+
+        :param year: The year to consider.
+        :return: The maximum month number within the given year.
+        """
+        _Preconditions._check_argument_range("year", year, self.__min_year, self.__max_year)
+        return self._year_month_day_calculator._get_months_in_year(year)
 
     def _validate_year_month_day(self, year: int, month: int, day: int) -> None:
         self._year_month_day_calculator._validate_year_month_day(year, month, day)
 
     def _compare(self, lhs: _YearMonthDay, rhs: _YearMonthDay) -> int:
+        # TODO: DebugValidateYearMonthDay(lhs)
+        # TODO: DebugValidateYearMonthDay(rhs)
         return self._year_month_day_calculator.compare(lhs, rhs)
 
-    __ID_TO_FACTORY_MAP = {__ISO_ID: iso}
+    # region "Getter" methods which used to be a DateTimeField
 
-    def _get_year_month_day_calendar_from_days_since_epoch(self, days_since_epoch: int) -> _YearMonthDayCalendar:
-        _Preconditions._check_argument_range("days_since_epoch", days_since_epoch, self._min_days, self._max_days)
-        return self._year_month_day_calculator._get_year_month_day(
-            days_since_epoch=days_since_epoch
-        )._with_calendar_ordinal(self._ordinal)
+    def _get_day_of_year(self, year_month_day: _YearMonthDay) -> int:
+        # TODO DebugValidateYearMonthDay(yearMonthDay)
+        return self._year_month_day_calculator._get_day_of_year(year_month_day)
+
+    def _get_year_of_era(self, absolute_year: int) -> int:
+        # TODO: _Preconditions._debug_check_argument_range()
+        return self.__era_calculator._get_year_of_era(absolute_year)
+
+    def _get_era(self, absolute_year: int) -> Era:
+        # TODO: _Preconditions._debug_check_argument_range()
+        return self.__era_calculator._get_era(absolute_year)
+
+    # endregion
+
+    @classmethod
+    def _for_ordinal_uncached(cls, ordinal: _CalendarOrdinal) -> CalendarSystem:
+        # pyoda-time-specic implementation note:
+        # This lookup is just in case this method is called directly
+        # This shouldn't be the case, but we need to ensure that these are
+        # effectively singletons.
+        if (calendar := cls.__CALENDAR_BY_ORDINAL.get(ordinal)) is not None:
+            return calendar
+
+        match ordinal:
+            case _CalendarOrdinal.BADI:
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__BADI_ID,
+                    name=cls.__BADI_NAME,
+                    year_month_day_calculator=_BadiYearMonthDayCalculator(),
+                    single_era=Era.bahai,
+                )
+            case _CalendarOrdinal.COPTIC:
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__COPTIC_ID,
+                    name=cls.__COPTIC_NAME,
+                    year_month_day_calculator=_CopticYearMonthDayCalculator(),
+                    single_era=Era.anno_martyrum,
+                )
+            case _CalendarOrdinal.GREGORIAN:
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__GREGORIAN_ID,
+                    name=cls.__GREGORIAN_NAME,
+                    year_month_day_calculator=cls.iso._year_month_day_calculator,
+                    era_calculator=cls.iso.__era_calculator,
+                )
+            case _CalendarOrdinal.HEBREW_CIVIL:
+                return cls.get_hebrew_calendar(HebrewMonthNumbering.CIVIL)
+            case _CalendarOrdinal.HEBREW_SCRIPTURAL:
+                return cls.get_hebrew_calendar(HebrewMonthNumbering.SCRIPTURAL)
+            case _CalendarOrdinal.ISO:
+                gregorian_calculator = _GregorianYearMonthDayCalculator()
+                gregorian_era_calculator = _GJEraCalculator(gregorian_calculator)
+                return CalendarSystem.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__ISO_ID,
+                    name=cls.__ISO_NAME,
+                    year_month_day_calculator=gregorian_calculator,
+                    era_calculator=gregorian_era_calculator,
+                )
+            case _CalendarOrdinal.JULIAN:
+                julian_calculator = _JulianYearMonthDayCalculator()
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__JULIAN_ID,
+                    name=cls.__JULIAN_NAME,
+                    year_month_day_calculator=julian_calculator,
+                    era_calculator=_GJEraCalculator(julian_calculator),
+                )
+            case _:
+                # TODO map all CalendarOrdinals to CalendarSystems and rephrase this error
+                raise ValueError(f"CalendarOrdinal '{ordinal.name}' not mapped to CalendarSystem yet")
 
 
 @sealed
@@ -1420,7 +1703,7 @@ class LocalDate:
         era: Era | None = None,
         year_of_era: int | None = None,
     ):
-        calendar = calendar or CalendarSystem.iso()
+        calendar = calendar or CalendarSystem.iso
 
         if era is not None and year_of_era is not None and month is not None and day is not None:
             year = calendar.get_absolute_year(year_of_era, era)
@@ -1504,6 +1787,26 @@ class LocalDate:
     def _days_since_epoch(self) -> int:
         """Number of days since the local unix epoch."""
         return self.calendar._get_days_since_epoch(self.__year_month_day_calendar._to_year_month_day())
+
+    @property
+    def day_of_week(self) -> IsoDayOfWeek:
+        """The week day of this local date expressed as an ``IsoDayOfWeek``."""
+        return self.calendar._get_day_of_week(self._year_month_day)
+
+    @property
+    def year_of_era(self) -> int:
+        """The year of this local date within the era."""
+        return self.calendar._get_year_of_era(self.__year_month_day_calendar._year)
+
+    @property
+    def era(self) -> Era:
+        """The era of this local date."""
+        return self.calendar._get_era(self.__year_month_day_calendar._year)
+
+    @property
+    def day_of_year(self) -> int:
+        """The day of this local date within the year."""
+        return self.calendar._get_day_of_year(self._year_month_day)
 
     @property
     def _year_month_day(self) -> _YearMonthDay:
@@ -1734,6 +2037,30 @@ class _YearMonthDay:
     def compare_to(self, other: _YearMonthDay) -> int:
         # In Noda Time, this method calls `int.CompareTo(otherInt)`
         return self.__value - other.__value
+
+    def equals(self, other: _YearMonthDay) -> bool:
+        return isinstance(other, _YearMonthDay) and self.__value == other.__value
+
+    def __hash__(self) -> int:
+        return self.__value
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, _YearMonthDay) and self.__value == other.__value
+
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+    def __lt__(self, other: _YearMonthDay) -> bool:
+        return isinstance(other, _YearMonthDay) and self.__value < other.__value
+
+    def __le__(self, other: _YearMonthDay) -> bool:
+        return isinstance(other, _YearMonthDay) and self.__value <= other.__value
+
+    def __gt__(self, other: _YearMonthDay) -> bool:
+        return isinstance(other, _YearMonthDay) and self.__value > other.__value
+
+    def __ge__(self, other: _YearMonthDay) -> bool:
+        return isinstance(other, _YearMonthDay) and self.__value >= other.__value
 
 
 BCL_EPOCH: Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)

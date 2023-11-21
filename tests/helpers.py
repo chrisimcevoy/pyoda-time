@@ -8,7 +8,7 @@ module-level functions.
 """
 
 
-from typing import Any, Iterable, Protocol, Self, TypeVar
+from typing import Any, Callable, Iterable, Protocol, Self, TypeVar
 
 import pytest
 
@@ -41,6 +41,8 @@ class SupportsComparison(Protocol):
 
 
 T = TypeVar("T")
+TArg = TypeVar("TArg")
+TOut = TypeVar("TOut")
 T_IComparable = TypeVar("T_IComparable", bound=IComparable)
 T_IEquatable = TypeVar("T_IEquatable", bound=IEquatable)
 T_SupportsComparison = TypeVar("T_SupportsComparison", bound=SupportsComparison)
@@ -231,3 +233,29 @@ def create_negative_offset(hours: int, minutes: int, seconds: int) -> Offset:
     :exception ValueError: The result of the operation is outside the range of Offset.
     """
     return Offset.from_seconds(-create_positive_offset(hours, minutes, seconds).seconds)
+
+
+def assert_valid(func: Callable[..., TOut], *args: TArg) -> TOut:
+    """Asserts that calling the specified callable with the specified value(s) doesn't raise an exception."""
+    return func(*args)
+
+
+def assert_out_of_range(func: Callable[..., TOut], *args: TArg) -> TOut:
+    """Asserts that calling func with the specified value(s) raises ValueError."""
+    # TODO: In Noda Time ArgumentOutOfRangeException is thrown
+    with pytest.raises(ValueError):
+        return func(*args)
+
+
+def assert_invalid(func: Callable[..., TOut], *args: Any) -> TOut:
+    """Asserts that calling func with the specified value(s) raises ValueError."""
+    # TODO: In Noda Time ArgumentException is thrown
+    with pytest.raises(ValueError):
+        return func(*args)
+
+
+def assert_argument_null(func: Callable[..., TOut], *args: Any) -> TOut:
+    """Asserts that calling func with the specified value(s) raises TypeError."""
+    # TODO: In Noda Time ArgumentNullException is thrown
+    with pytest.raises(TypeError):
+        return func(*args)
