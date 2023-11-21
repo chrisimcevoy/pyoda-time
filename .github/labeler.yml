@@ -1,0 +1,31 @@
+python:
+  - "**/*.py"
+
+yaml:
+  - "**/*.yaml"
+  - "**/*.yml"
+
+json:
+  - "**/*.json"
+
+markdown:
+  - "**/*.md"
+
+docker:
+  - "**/Dockerfile"
+
+shell:
+  - "**/*.sh"
+
+dependencies:
+  - "poetry.lock"
+
+documentation:
+  - "docs/**"
+  - README.md
+
+tests:
+  - "tests/**"
+
+release:
+  - "pyoda_time/version.py"
