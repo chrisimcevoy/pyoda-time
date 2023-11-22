@@ -1,23 +1,5 @@
-## 0.4.0 (2023-11-21)
+## [0.4.0](https://github.com/chrisimcevoy/pyoda-time/compare/0.3.0...0.4.0) (2023-11-21)
 
-### Feat
+### 🚀 Features
 
-- **calendars**: Implement Hebrew, Coptic and Badi calendars (#8)
-
-## 0.3.0 (2023-11-16)
-
-### Feat
-
-- **publish**: add development status classifier & badges (#7)
-
-## 0.2.1 (2023-11-16)
-
-### Fix
-
-- **commitizen**: specify changelog increment filename (#4)
-
-## 0.2.0 (2023-11-16)
-
-### Feat
-
-- Implement Offset
+* Implement Hebrew, Coptic and Badi calendars ([#8](https://github.com/chrisimcevoy/pyoda-time/issues/8)) ([fecd4c6](https://github.com/chrisimcevoy/pyoda-time/commit/fecd4c65ecf0cbb7ec1c0bd0cb8909a45c39cbef))
