@@ -26,7 +26,7 @@ warn_unused_configs = true
 
 [tool.poetry]
 name = "pyoda-time"
-version = "0.4.0"
+version = "0.5.0"
 description = "An alternative datetime library for Python."
 authors = ["Christopher McEvoy <12284065+chrisimcevoy@users.noreply.github.com>"]
 readme = "README.md"
