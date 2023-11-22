@@ -29,26 +29,45 @@ from .utility import (
     sealed,
 )
 
-HOURS_PER_DAY: Final[int] = 24
-SECONDS_PER_MINUTE: Final[int] = 60
-MINUTES_PER_HOUR: Final[int] = 60
-SECONDS_PER_HOUR: Final[int] = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
-SECONDS_PER_DAY: Final[int] = SECONDS_PER_HOUR * HOURS_PER_DAY
-MILLISECONDS_PER_SECOND: Final[int] = 1000
-MILLISECONDS_PER_MINUTE: Final[int] = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE
-MILLISECONDS_PER_HOUR: Final[int] = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR
-MILLISECONDS_PER_DAY: Final[int] = MILLISECONDS_PER_HOUR * HOURS_PER_DAY
-NANOSECONDS_PER_TICK: Final[int] = 100
-NANOSECONDS_PER_MILLISECOND: Final[int] = 1000000
-NANOSECONDS_PER_SECOND: Final[int] = 1000000000
-NANOSECONDS_PER_MINUTE: Final[int] = NANOSECONDS_PER_SECOND * SECONDS_PER_MINUTE
-NANOSECONDS_PER_HOUR: Final[int] = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR
-NANOSECONDS_PER_DAY: Final[int] = NANOSECONDS_PER_HOUR * HOURS_PER_DAY
-TICKS_PER_MILLISECOND: Final[int] = 10_000
-TICKS_PER_SECOND: Final[int] = TICKS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
-TICKS_PER_MINUTE: Final[int] = TICKS_PER_SECOND * SECONDS_PER_MINUTE
-TICKS_PER_HOUR: Final[int] = TICKS_PER_MINUTE * MINUTES_PER_HOUR
-TICKS_PER_DAY: Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
+
+class _PyodaConstantsMeta(type):
+    """Contains properties of the PyodaConstants class.
+
+    These properties maintain the similarity in our API to that of Noda Time,
+    but avoid issues with certain classes not being defined yet when declared
+    as class attributes on the `PyodaConstants` class.
+    """
+
+    @property
+    def BCL_EPOCH(cls) -> Instant:
+        return Instant.from_utc(1, 1, 1, 0, 0)
+
+    @property
+    def UNIX_EPOCH(cls) -> Instant:
+        return Instant.from_unix_time_ticks(0)
+
+
+class PyodaConstants(metaclass=_PyodaConstantsMeta):
+    HOURS_PER_DAY: Final[int] = 24
+    SECONDS_PER_MINUTE: Final[int] = 60
+    MINUTES_PER_HOUR: Final[int] = 60
+    SECONDS_PER_HOUR: Final[int] = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+    SECONDS_PER_DAY: Final[int] = SECONDS_PER_HOUR * HOURS_PER_DAY
+    MILLISECONDS_PER_SECOND: Final[int] = 1000
+    MILLISECONDS_PER_MINUTE: Final[int] = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE
+    MILLISECONDS_PER_HOUR: Final[int] = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR
+    MILLISECONDS_PER_DAY: Final[int] = MILLISECONDS_PER_HOUR * HOURS_PER_DAY
+    NANOSECONDS_PER_TICK: Final[int] = 100
+    NANOSECONDS_PER_MILLISECOND: Final[int] = 1000000
+    NANOSECONDS_PER_SECOND: Final[int] = 1000000000
+    NANOSECONDS_PER_MINUTE: Final[int] = NANOSECONDS_PER_SECOND * SECONDS_PER_MINUTE
+    NANOSECONDS_PER_HOUR: Final[int] = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR
+    NANOSECONDS_PER_DAY: Final[int] = NANOSECONDS_PER_HOUR * HOURS_PER_DAY
+    TICKS_PER_MILLISECOND: Final[int] = 10_000
+    TICKS_PER_SECOND: Final[int] = TICKS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
+    TICKS_PER_MINUTE: Final[int] = TICKS_PER_SECOND * SECONDS_PER_MINUTE
+    TICKS_PER_HOUR: Final[int] = TICKS_PER_MINUTE * MINUTES_PER_HOUR
+    TICKS_PER_DAY: Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
 
 
 class _CalendarOrdinal(IntEnum):
@@ -798,14 +817,14 @@ class Duration:
         old_nano_of_day = self.__nano_of_day
         if old_nano_of_day == 0:
             return Duration._ctor(days=-old_days, nano_of_day=0)
-        new_nano_of_day = NANOSECONDS_PER_DAY - old_nano_of_day
+        new_nano_of_day = PyodaConstants.NANOSECONDS_PER_DAY - old_nano_of_day
         return Duration._ctor(days=-old_days - 1, nano_of_day=new_nano_of_day)
 
     @staticmethod
     def from_ticks(ticks: int) -> Duration:
         """Returns a Duration that represents the given number of ticks."""
         days, tick_of_day = _TickArithmetic.ticks_to_days_and_tick_of_day(ticks)
-        return Duration._ctor(days=days, nano_of_day=tick_of_day * NANOSECONDS_PER_TICK)
+        return Duration._ctor(days=days, nano_of_day=tick_of_day * PyodaConstants.NANOSECONDS_PER_TICK)
 
     @staticmethod
     def zero() -> Duration:
@@ -831,10 +850,10 @@ class Duration:
         return cls.__ctor(
             units=milliseconds,
             param_name="milliseconds",
-            min_value=cls._MIN_DAYS * MILLISECONDS_PER_DAY,
-            max_value=((cls._MAX_DAYS + 1) * MILLISECONDS_PER_DAY) - 1,
-            units_per_day=MILLISECONDS_PER_DAY,
-            nanos_per_unit=NANOSECONDS_PER_MILLISECOND,
+            min_value=cls._MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY,
+            max_value=((cls._MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY) - 1,
+            units_per_day=PyodaConstants.MILLISECONDS_PER_DAY,
+            nanos_per_unit=PyodaConstants.NANOSECONDS_PER_MILLISECOND,
         )
 
     @classmethod
@@ -842,19 +861,19 @@ class Duration:
         return cls.__ctor(
             units=seconds,
             param_name="seconds",
-            min_value=cls._MIN_DAYS * SECONDS_PER_DAY,
+            min_value=cls._MIN_DAYS * PyodaConstants.SECONDS_PER_DAY,
             max_value=cls._MAX_DAYS + 1,
-            units_per_day=SECONDS_PER_DAY,
-            nanos_per_unit=NANOSECONDS_PER_SECOND,
+            units_per_day=PyodaConstants.SECONDS_PER_DAY,
+            nanos_per_unit=PyodaConstants.NANOSECONDS_PER_SECOND,
         )
 
     def __add__(self, other: Duration) -> Duration:
         if isinstance(other, Duration):
             days = self.__days + other.__days
             nanos = self.__nano_of_day + other.__nano_of_day
-            if nanos >= NANOSECONDS_PER_DAY:
+            if nanos >= PyodaConstants.NANOSECONDS_PER_DAY:
                 days += 1
-                nanos -= NANOSECONDS_PER_DAY
+                nanos -= PyodaConstants.NANOSECONDS_PER_DAY
             return Duration._ctor(days=days, nano_of_day=nanos)
         raise TypeError("Unsupported operand type")
 
@@ -864,7 +883,7 @@ class Duration:
             nanos = self.__nano_of_day - other.__nano_of_day
             if nanos < 0:
                 days -= 1
-                nanos += NANOSECONDS_PER_DAY
+                nanos += PyodaConstants.NANOSECONDS_PER_DAY
             return Duration._ctor(days=days, nano_of_day=nanos)
         raise TypeError("Unsupported operand type")
 
@@ -881,35 +900,37 @@ class Duration:
         """Returns a Duration that represents the given number of nanoseconds."""
         if nanoseconds >= 0:
             # TODO Is divmod compatible with C# integer division?
-            quotient, remainder = divmod(nanoseconds, NANOSECONDS_PER_DAY)
+            quotient, remainder = divmod(nanoseconds, PyodaConstants.NANOSECONDS_PER_DAY)
             return cls._ctor(days=quotient, nano_of_day=remainder)
 
         # Work out the "floor days"; division truncates towards zero and
         # nanoseconds is definitely negative by now, hence the addition and subtraction here.
-        days = _towards_zero_division(nanoseconds + 1, NANOSECONDS_PER_DAY) - 1
-        nano_of_day = nanoseconds - days * NANOSECONDS_PER_DAY
+        days = _towards_zero_division(nanoseconds + 1, PyodaConstants.NANOSECONDS_PER_DAY) - 1
+        nano_of_day = nanoseconds - days * PyodaConstants.NANOSECONDS_PER_DAY
         return Duration._ctor(days=days, nano_of_day=nano_of_day)
 
     @classmethod
     def from_hours(cls, hours: int) -> Duration:
         """Returns a Duration that represents the given number of hours."""
         # TODO this is a shortcut and differs from Noda Time
-        return Duration.from_seconds(hours * SECONDS_PER_HOUR)
+        return Duration.from_seconds(hours * PyodaConstants.SECONDS_PER_HOUR)
 
     def _plus_small_nanoseconds(self, small_nanos: int) -> Duration:
         """Adds a "small" number of nanoseconds to this duration.
 
         It is trusted to be less or equal to than 24 hours in magnitude.
         """
-        _Preconditions._check_argument_range("small_nanos", small_nanos, -NANOSECONDS_PER_DAY, NANOSECONDS_PER_DAY)
+        _Preconditions._check_argument_range(
+            "small_nanos", small_nanos, -PyodaConstants.NANOSECONDS_PER_DAY, PyodaConstants.NANOSECONDS_PER_DAY
+        )
         new_days = self.__days
         new_nanos = self.__nano_of_day + small_nanos
-        if new_nanos >= NANOSECONDS_PER_DAY:
+        if new_nanos >= PyodaConstants.NANOSECONDS_PER_DAY:
             new_days += 1
-            new_nanos -= NANOSECONDS_PER_DAY
+            new_nanos -= PyodaConstants.NANOSECONDS_PER_DAY
         elif new_nanos < 0:
             new_days -= 1
-            new_nanos += NANOSECONDS_PER_DAY
+            new_nanos += PyodaConstants.NANOSECONDS_PER_DAY
         return Duration._ctor(days=new_days, nano_of_day=new_nanos)
 
 
@@ -937,14 +958,14 @@ class Offset(metaclass=_OffsetMeta):
 
     __MIN_HOURS: Final[int] = -18
     __MAX_HOURS: Final[int] = 18
-    __MIN_SECONDS: Final[int] = -18 * SECONDS_PER_HOUR
-    __MAX_SECONDS: Final[int] = 18 * SECONDS_PER_HOUR
-    __MIN_MILLISECONDS: Final[int] = -18 * MILLISECONDS_PER_HOUR
-    __MAX_MILLISECONDS: Final[int] = 18 * MILLISECONDS_PER_HOUR
-    __MIN_TICKS: Final[int] = -18 * TICKS_PER_HOUR
-    __MAX_TICKS: Final[int] = 18 * TICKS_PER_HOUR
-    __MIN_NANOSECONDS: Final[int] = -18 * NANOSECONDS_PER_HOUR
-    __MAX_NANOSECONDS: Final[int] = 18 * NANOSECONDS_PER_HOUR
+    __MIN_SECONDS: Final[int] = -18 * PyodaConstants.SECONDS_PER_HOUR
+    __MAX_SECONDS: Final[int] = 18 * PyodaConstants.SECONDS_PER_HOUR
+    __MIN_MILLISECONDS: Final[int] = -18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MAX_MILLISECONDS: Final[int] = 18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MIN_TICKS: Final[int] = -18 * PyodaConstants.TICKS_PER_HOUR
+    __MAX_TICKS: Final[int] = 18 * PyodaConstants.TICKS_PER_HOUR
+    __MIN_NANOSECONDS: Final[int] = -18 * PyodaConstants.NANOSECONDS_PER_HOUR
+    __MAX_NANOSECONDS: Final[int] = 18 * PyodaConstants.NANOSECONDS_PER_HOUR
 
     def __init__(self) -> None:
         self.__seconds = 0
@@ -969,7 +990,7 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the number of seconds is simply multiplied by 1,000 to give the
         number of milliseconds.
         """
-        return self.__seconds * MILLISECONDS_PER_SECOND
+        return self.__seconds * PyodaConstants.MILLISECONDS_PER_SECOND
 
     @property
     def ticks(self) -> int:
@@ -978,7 +999,7 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the number of seconds is simply multiplied by 10,000,000 to give
         the number of ticks.
         """
-        return self.__seconds * TICKS_PER_SECOND
+        return self.__seconds * PyodaConstants.TICKS_PER_SECOND
 
     @property
     def nanoseconds(self) -> int:
@@ -987,7 +1008,7 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the number of seconds is simply multiplied by 1,000,000,000 to
         give the number of nanoseconds.
         """
-        return self.__seconds * NANOSECONDS_PER_SECOND
+        return self.__seconds * PyodaConstants.NANOSECONDS_PER_SECOND
 
     @staticmethod
     def max(x: Offset, y: Offset) -> Offset:
@@ -1225,7 +1246,7 @@ class Offset(metaclass=_OffsetMeta):
         _Preconditions._check_argument_range(
             "milliseconds", milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS
         )
-        return cls._ctor(seconds=_towards_zero_division(milliseconds, MILLISECONDS_PER_SECOND))
+        return cls._ctor(seconds=_towards_zero_division(milliseconds, PyodaConstants.MILLISECONDS_PER_SECOND))
 
     @classmethod
     def from_ticks(cls, ticks: int) -> Offset:
@@ -1239,7 +1260,7 @@ class Offset(metaclass=_OffsetMeta):
         by 10,000,000 to give the number of seconds - any remainder is truncated.
         """
         _Preconditions._check_argument_range("ticks", ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
-        return cls._ctor(seconds=_towards_zero_division(ticks, TICKS_PER_SECOND))
+        return cls._ctor(seconds=_towards_zero_division(ticks, PyodaConstants.TICKS_PER_SECOND))
 
     @classmethod
     def from_nanoseconds(cls, nanoseconds: int) -> Offset:
@@ -1253,7 +1274,7 @@ class Offset(metaclass=_OffsetMeta):
         1,000,000,000 to give the number of seconds - any remainder is truncated towards zero.
         """
         _Preconditions._check_argument_range("nanoseconds", nanoseconds, cls.__MIN_NANOSECONDS, cls.__MAX_NANOSECONDS)
-        return cls._ctor(seconds=_towards_zero_division(nanoseconds, NANOSECONDS_PER_SECOND))
+        return cls._ctor(seconds=_towards_zero_division(nanoseconds, PyodaConstants.NANOSECONDS_PER_SECOND))
 
     @classmethod
     def from_hours(cls, hours: int) -> Offset:
@@ -1264,7 +1285,7 @@ class Offset(metaclass=_OffsetMeta):
         :raises ValueError: The specified number of hours is outside the range of [-18, +18].
         """
         _Preconditions._check_argument_range("hours", hours, cls.__MIN_HOURS, cls.__MAX_HOURS)
-        return cls._ctor(seconds=hours * SECONDS_PER_HOUR)
+        return cls._ctor(seconds=hours * PyodaConstants.SECONDS_PER_HOUR)
 
     @classmethod
     def from_hours_and_minutes(cls, hours: int, minutes: int) -> Offset:
@@ -1280,7 +1301,7 @@ class Offset(metaclass=_OffsetMeta):
         negative. For example, to obtain "three hours and ten minutes behind UTC" you might call
         ``Offset.from_hours_and_minutes(-3, -10)``.
         """
-        return cls.from_seconds(hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE)
+        return cls.from_seconds(hours * PyodaConstants.SECONDS_PER_HOUR + minutes * PyodaConstants.SECONDS_PER_MINUTE)
 
     # endregion
 
@@ -1305,7 +1326,7 @@ class Offset(metaclass=_OffsetMeta):
 
         # Convert to ticks first, then divide that float by 1 using our special
         # function to convert to a rounded-towards-zero int.
-        ticks = _towards_zero_division(timedelta.total_seconds() * TICKS_PER_SECOND, 1)
+        ticks = _towards_zero_division(timedelta.total_seconds() * PyodaConstants.TICKS_PER_SECOND, 1)
         _Preconditions._check_argument_range("timedelta", ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
         return Offset.from_ticks(ticks)
 
@@ -1333,12 +1354,12 @@ class Instant:
     _MIN_DAYS: Final[int] = -4371222
     _MAX_DAYS: Final[int] = 2932896
 
-    __MIN_TICKS: Final[int] = _MIN_DAYS * TICKS_PER_DAY
-    __MAX_TICKS: Final[int] = (_MAX_DAYS + 1) * TICKS_PER_DAY - 1
-    __MIN_MILLISECONDS: Final[int] = _MIN_DAYS * MILLISECONDS_PER_DAY
-    __MAX_MILLISECONDS: Final[int] = (_MAX_DAYS + 1) * MILLISECONDS_PER_DAY - 1
-    __MIN_SECONDS: Final[int] = _MIN_DAYS * SECONDS_PER_DAY
-    __MAX_SECONDS: Final[int] = (_MAX_DAYS + 1) * SECONDS_PER_DAY - 1
+    __MIN_TICKS: Final[int] = _MIN_DAYS * PyodaConstants.TICKS_PER_DAY
+    __MAX_TICKS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.TICKS_PER_DAY - 1
+    __MIN_MILLISECONDS: Final[int] = _MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY
+    __MAX_MILLISECONDS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY - 1
+    __MIN_SECONDS: Final[int] = _MIN_DAYS * PyodaConstants.SECONDS_PER_DAY
+    __MAX_SECONDS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1
 
     def __init__(self) -> None:
         self.__duration = Duration.zero()
@@ -1427,7 +1448,7 @@ class Instant:
 
         This value is equivalent to 9999-12-31T23:59:59.999999999Z
         """
-        return Instant._ctor(days=cls._MAX_DAYS, nano_of_day=NANOSECONDS_PER_DAY - 1)
+        return Instant._ctor(days=cls._MAX_DAYS, nano_of_day=PyodaConstants.NANOSECONDS_PER_DAY - 1)
 
     @classmethod
     def _before_min_value(cls) -> Self:
@@ -1482,7 +1503,7 @@ class Instant:
         """
         return _TickArithmetic.bounded_days_and_tick_of_day_to_ticks(
             self.__duration._floor_days,
-            _towards_zero_division(self.__duration._nanosecond_of_floor_day, NANOSECONDS_PER_TICK),
+            _towards_zero_division(self.__duration._nanosecond_of_floor_day, PyodaConstants.NANOSECONDS_PER_TICK),
         )
 
     @classmethod
@@ -1507,8 +1528,8 @@ class Instant:
         Negative values represent instants before the Unix epoch. If the number of nanoseconds in this instant is not an
         exact number of seconds, the value is truncated towards the start of time.
         """
-        return self.__duration._floor_days * SECONDS_PER_DAY + _towards_zero_division(
-            self.__duration._nanosecond_of_floor_day, NANOSECONDS_PER_SECOND
+        return self.__duration._floor_days * PyodaConstants.SECONDS_PER_DAY + _towards_zero_division(
+            self.__duration._nanosecond_of_floor_day, PyodaConstants.NANOSECONDS_PER_SECOND
         )
 
     def to_unix_time_milliseconds(self) -> int:
@@ -1517,8 +1538,8 @@ class Instant:
         Negative values represent instants before the Unix epoch. If the number of nanoseconds in this instant is not an
         exact number of milliseconds, the value is truncated towards the start of time.
         """
-        return self.__duration._floor_days * MILLISECONDS_PER_DAY + _towards_zero_division(
-            self.__duration._nanosecond_of_floor_day, NANOSECONDS_PER_MILLISECOND
+        return self.__duration._floor_days * PyodaConstants.MILLISECONDS_PER_DAY + _towards_zero_division(
+            self.__duration._nanosecond_of_floor_day, PyodaConstants.NANOSECONDS_PER_MILLISECOND
         )
 
     @staticmethod
@@ -1545,7 +1566,7 @@ class Instant:
         # Roughly equivalent to DateTimeKind.Unspecified
         if datetime.tzinfo is None:
             raise ValueError()
-        return BCL_EPOCH.plus_ticks(_to_ticks(datetime))
+        return PyodaConstants.BCL_EPOCH.plus_ticks(_to_ticks(datetime))
 
     @classmethod
     def from_utc(
@@ -1846,23 +1867,25 @@ class LocalTime:
     def __init__(self, *, hour: int, minute: int, second: int = 0, millisecond: int = 0):
         if (
             hour < 0
-            or hour > HOURS_PER_DAY - 1
+            or hour > PyodaConstants.HOURS_PER_DAY - 1
             or minute < 0
-            or minute > MINUTES_PER_HOUR - 1
+            or minute > PyodaConstants.MINUTES_PER_HOUR - 1
             or second < 0
-            or second > SECONDS_PER_MINUTE - 1
+            or second > PyodaConstants.SECONDS_PER_MINUTE - 1
             or millisecond < 0
-            or millisecond > MILLISECONDS_PER_SECOND - 1
+            or millisecond > PyodaConstants.MILLISECONDS_PER_SECOND - 1
         ):
-            _Preconditions._check_argument_range("hour", hour, 0, HOURS_PER_DAY - 1)
-            _Preconditions._check_argument_range("minute", minute, 0, MINUTES_PER_HOUR - 1)
-            _Preconditions._check_argument_range("second", second, 0, SECONDS_PER_MINUTE - 1)
-            _Preconditions._check_argument_range("millisecond", millisecond, 0, MILLISECONDS_PER_SECOND - 1)
+            _Preconditions._check_argument_range("hour", hour, 0, PyodaConstants.HOURS_PER_DAY - 1)
+            _Preconditions._check_argument_range("minute", minute, 0, PyodaConstants.MINUTES_PER_HOUR - 1)
+            _Preconditions._check_argument_range("second", second, 0, PyodaConstants.SECONDS_PER_MINUTE - 1)
+            _Preconditions._check_argument_range(
+                "millisecond", millisecond, 0, PyodaConstants.MILLISECONDS_PER_SECOND - 1
+            )
         self.__nanoseconds = (
-            hour * NANOSECONDS_PER_HOUR
-            + minute * NANOSECONDS_PER_MINUTE
-            + second * NANOSECONDS_PER_SECOND
-            + millisecond * MILLISECONDS_PER_SECOND
+            hour * PyodaConstants.NANOSECONDS_PER_HOUR
+            + minute * PyodaConstants.NANOSECONDS_PER_MINUTE
+            + second * PyodaConstants.NANOSECONDS_PER_SECOND
+            + millisecond * PyodaConstants.MILLISECONDS_PER_SECOND
         )
 
     @classmethod
@@ -2061,7 +2084,3 @@ class _YearMonthDay:
 
     def __ge__(self, other: _YearMonthDay) -> bool:
         return isinstance(other, _YearMonthDay) and self.__value >= other.__value
-
-
-BCL_EPOCH: Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)
-UNIX_EPOCH: Final[Instant] = Instant.from_unix_time_ticks(0)

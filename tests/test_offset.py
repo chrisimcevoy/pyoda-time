@@ -4,15 +4,8 @@ from typing import Final
 import pytest
 
 from pyoda_time import (
-    MILLISECONDS_PER_HOUR,
-    MILLISECONDS_PER_MINUTE,
-    NANOSECONDS_PER_HOUR,
-    NANOSECONDS_PER_MINUTE,
-    SECONDS_PER_HOUR,
-    SECONDS_PER_MINUTE,
-    TICKS_PER_HOUR,
-    TICKS_PER_MINUTE,
     Offset,
+    PyodaConstants,
 )
 from tests import helpers
 
@@ -79,43 +72,43 @@ class TestOffsetConstruction:
         assert test.seconds == 12345
 
     def test_from_seconds_invalid(self) -> None:
-        seconds = 18 * SECONDS_PER_HOUR + 1
+        seconds = 18 * PyodaConstants.SECONDS_PER_HOUR + 1
         with pytest.raises(ValueError):
             Offset.from_seconds(seconds)
         with pytest.raises(ValueError):
             Offset.from_seconds(-seconds)
 
     def test_from_milliseconds_valid(self) -> None:
-        value = Offset.from_milliseconds(-15 * MILLISECONDS_PER_MINUTE)
-        assert value.seconds == -15 * SECONDS_PER_MINUTE
-        assert value.milliseconds == -15 * MILLISECONDS_PER_MINUTE
+        value = Offset.from_milliseconds(-15 * PyodaConstants.MILLISECONDS_PER_MINUTE)
+        assert value.seconds == -15 * PyodaConstants.SECONDS_PER_MINUTE
+        assert value.milliseconds == -15 * PyodaConstants.MILLISECONDS_PER_MINUTE
 
     def test_from_milliseconds_invalid(self) -> None:
-        millis = 18 * MILLISECONDS_PER_HOUR + 1
+        millis = 18 * PyodaConstants.MILLISECONDS_PER_HOUR + 1
         with pytest.raises(ValueError):
             Offset.from_milliseconds(millis)
         with pytest.raises(ValueError):
             Offset.from_milliseconds(-millis)
 
     def test_from_ticks_valid(self) -> None:
-        value = Offset.from_ticks(-15 * TICKS_PER_MINUTE)
-        assert value.seconds == -15 * SECONDS_PER_MINUTE
-        assert value.ticks == -15 * TICKS_PER_MINUTE
+        value = Offset.from_ticks(-15 * PyodaConstants.TICKS_PER_MINUTE)
+        assert value.seconds == -15 * PyodaConstants.SECONDS_PER_MINUTE
+        assert value.ticks == -15 * PyodaConstants.TICKS_PER_MINUTE
 
     def test_from_ticks_invalid(self) -> None:
-        ticks = 18 * TICKS_PER_HOUR + 1
+        ticks = 18 * PyodaConstants.TICKS_PER_HOUR + 1
         with pytest.raises(ValueError):
             Offset.from_ticks(ticks)
         with pytest.raises(ValueError):
             Offset.from_ticks(-ticks)
 
     def test_from_nanoseconds_valid(self) -> None:
-        value = Offset.from_nanoseconds(-15 * NANOSECONDS_PER_MINUTE)
-        assert value.seconds == -15 * SECONDS_PER_MINUTE
-        assert value.nanoseconds == -15 * NANOSECONDS_PER_MINUTE
+        value = Offset.from_nanoseconds(-15 * PyodaConstants.NANOSECONDS_PER_MINUTE)
+        assert value.seconds == -15 * PyodaConstants.SECONDS_PER_MINUTE
+        assert value.nanoseconds == -15 * PyodaConstants.NANOSECONDS_PER_MINUTE
 
     def test_from_nanoseconds_invalid(self) -> None:
-        nanos = 18 * NANOSECONDS_PER_HOUR + 1
+        nanos = 18 * PyodaConstants.NANOSECONDS_PER_HOUR + 1
         with pytest.raises(ValueError):
             Offset.from_nanoseconds(nanos)
         with pytest.raises(ValueError):
@@ -123,7 +116,7 @@ class TestOffsetConstruction:
 
     def test_from_hours_valid(self) -> None:
         value = Offset.from_hours(-15)
-        assert value.seconds == -15 * SECONDS_PER_HOUR
+        assert value.seconds == -15 * PyodaConstants.SECONDS_PER_HOUR
 
     def test_from_hours_invalid(self) -> None:
         with pytest.raises(ValueError):
@@ -133,7 +126,7 @@ class TestOffsetConstruction:
 
     def test_from_hours_and_minutes_valid(self) -> None:
         value = Offset.from_hours_and_minutes(5, 30)
-        assert value.seconds == 5 * SECONDS_PER_HOUR + 30 * SECONDS_PER_MINUTE
+        assert value.seconds == 5 * PyodaConstants.SECONDS_PER_HOUR + 30 * PyodaConstants.SECONDS_PER_MINUTE
 
 
 class TestOffsetOperators:
