@@ -40,11 +40,11 @@ class _PyodaConstantsMeta(type):
 
     @property
     def BCL_EPOCH(cls) -> Instant:
-        return Instant.from_utc(1, 1, 1, 0, 0)
+        return _BCL_EPOCH
 
     @property
     def UNIX_EPOCH(cls) -> Instant:
-        return Instant.from_unix_time_ticks(0)
+        return _UNIX_EPOCH
 
 
 class PyodaConstants(metaclass=_PyodaConstantsMeta):
@@ -2084,3 +2084,7 @@ class _YearMonthDay:
 
     def __ge__(self, other: _YearMonthDay) -> bool:
         return isinstance(other, _YearMonthDay) and self.__value >= other.__value
+
+
+_BCL_EPOCH: Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)
+_UNIX_EPOCH: Final[Instant] = Instant.from_unix_time_ticks(0)
