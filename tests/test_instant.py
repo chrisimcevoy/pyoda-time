@@ -4,12 +4,10 @@ import pytest
 import pytz
 
 from pyoda_time import (
-    TICKS_PER_MILLISECOND,
-    TICKS_PER_SECOND,
-    UNIX_EPOCH,
     Duration,
     Instant,
     Offset,
+    PyodaConstants,
     _LocalInstant,
 )
 from pyoda_time.utility import _towards_zero_division
@@ -36,7 +34,7 @@ class TestInstant:
 
     def test_from_unix_time_milliseconds_valid(self) -> None:
         actual = Instant.from_unix_time_milliseconds(12345)
-        expected = Instant.from_unix_time_ticks(12345 * TICKS_PER_MILLISECOND)
+        expected = Instant.from_unix_time_ticks(12345 * PyodaConstants.TICKS_PER_MILLISECOND)
         assert actual == expected
 
     def test_from_unix_time_milliseconds_too_large(self) -> None:
@@ -49,7 +47,7 @@ class TestInstant:
 
     def test_from_unix_time_seconds_valid(self) -> None:
         actual = Instant.from_unix_time_seconds(12345)
-        expected = Instant.from_unix_time_ticks(12345 * TICKS_PER_SECOND)
+        expected = Instant.from_unix_time_ticks(12345 * PyodaConstants.TICKS_PER_SECOND)
         assert actual == expected
 
     def test_from_unix_time_seconds_too_large(self) -> None:
@@ -165,7 +163,7 @@ class TestInstant:
 
     def test_default_constructor(self) -> None:
         actual = Instant()
-        assert actual == UNIX_EPOCH
+        assert actual == PyodaConstants.UNIX_EPOCH
 
     # TODO def test_xml_serialization(self):
     # TODO def test_xml_serialization_invalid(self):
@@ -216,8 +214,12 @@ class TestInstant:
     # TODO def test_plus_offset_overflow(self):
 
     def test_from_unix_time_milliseconds_range(self) -> None:
-        smallest_valid = _towards_zero_division(Instant.min_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND)
-        largest_valid = _towards_zero_division(Instant.max_value().to_unix_time_ticks(), TICKS_PER_MILLISECOND)
+        smallest_valid = _towards_zero_division(
+            Instant.min_value().to_unix_time_ticks(), PyodaConstants.TICKS_PER_MILLISECOND
+        )
+        largest_valid = _towards_zero_division(
+            Instant.max_value().to_unix_time_ticks(), PyodaConstants.TICKS_PER_MILLISECOND
+        )
         assert Instant.from_unix_time_milliseconds(smallest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_milliseconds(smallest_valid - 1)
@@ -226,8 +228,12 @@ class TestInstant:
             Instant.from_unix_time_milliseconds(largest_valid + 1)
 
     def test_from_unix_time_seconds_range(self) -> None:
-        smallest_valid = _towards_zero_division(Instant.min_value().to_unix_time_ticks(), TICKS_PER_SECOND)
-        largest_valid = _towards_zero_division(Instant.max_value().to_unix_time_ticks(), TICKS_PER_SECOND)
+        smallest_valid = _towards_zero_division(
+            Instant.min_value().to_unix_time_ticks(), PyodaConstants.TICKS_PER_SECOND
+        )
+        largest_valid = _towards_zero_division(
+            Instant.max_value().to_unix_time_ticks(), PyodaConstants.TICKS_PER_SECOND
+        )
         assert Instant.from_unix_time_seconds(smallest_valid)._is_valid
         with pytest.raises(ValueError):
             Instant.from_unix_time_seconds(smallest_valid - 1)
@@ -246,11 +252,11 @@ class TestInstant:
             Instant.from_unix_time_ticks(largest_valid + 1)
 
     def test_plus_offset(self) -> None:
-        local_instant = UNIX_EPOCH._plus(Offset.from_hours(1))
+        local_instant = PyodaConstants.UNIX_EPOCH._plus(Offset.from_hours(1))
         assert local_instant._time_since_local_epoch == Duration.from_hours(1)
 
     def test_safe_plus_normal_time(self) -> None:
-        local_instant = UNIX_EPOCH._safe_plus(Offset.from_hours(1))
+        local_instant = PyodaConstants.UNIX_EPOCH._safe_plus(Offset.from_hours(1))
         assert local_instant._time_since_local_epoch == Duration.from_hours(1)
 
     @pytest.mark.parametrize(

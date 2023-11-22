@@ -12,7 +12,7 @@ from typing import Any, Callable, Iterable, Protocol, Self, TypeVar
 
 import pytest
 
-from pyoda_time import SECONDS_PER_HOUR, SECONDS_PER_MINUTE, Offset
+from pyoda_time import Offset, PyodaConstants
 from pyoda_time.utility import _Preconditions
 
 
@@ -218,8 +218,8 @@ def create_positive_offset(hours: int, minutes: int, seconds: int) -> Offset:
     _Preconditions._check_argument_range("hours", hours, 0, 23)
     _Preconditions._check_argument_range("minutes", minutes, 0, 59)
     _Preconditions._check_argument_range("seconds", seconds, 0, 59)
-    seconds += minutes * SECONDS_PER_MINUTE
-    seconds += hours * SECONDS_PER_HOUR
+    seconds += minutes * PyodaConstants.SECONDS_PER_MINUTE
+    seconds += hours * PyodaConstants.SECONDS_PER_HOUR
     return Offset.from_seconds(seconds)
 
 

@@ -53,14 +53,15 @@ class _TickArithmetic:
     def ticks_to_days_and_tick_of_day(ticks: int) -> tuple[int, int]:
         """Cautiously converts a number of ticks (which can have any value) into a number of days and a tick within that
         day."""
-        from pyoda_time import TICKS_PER_DAY
+
+        from pyoda_time import PyodaConstants
 
         if ticks >= 0:
             days = int((ticks >> 14) / 52734375)
-            tick_of_day = ticks - days * TICKS_PER_DAY
+            tick_of_day = ticks - days * PyodaConstants.TICKS_PER_DAY
         else:
-            days = _towards_zero_division(ticks + 1, TICKS_PER_DAY) - 1
-            tick_of_day = ticks - (days + 1) * TICKS_PER_DAY + TICKS_PER_DAY
+            days = _towards_zero_division(ticks + 1, PyodaConstants.TICKS_PER_DAY) - 1
+            tick_of_day = ticks - (days + 1) * PyodaConstants.TICKS_PER_DAY + PyodaConstants.TICKS_PER_DAY
 
         return days, tick_of_day
 
@@ -71,9 +72,10 @@ class _TickArithmetic:
 
         Only call this method from places where there are suitable constraints on the input.
         """
-        from pyoda_time import TICKS_PER_DAY
 
-        return days * TICKS_PER_DAY + tick_of_day
+        from pyoda_time import PyodaConstants
+
+        return days * PyodaConstants.TICKS_PER_DAY + tick_of_day
 
 
 def _towards_zero_division(x: int | float, y: int) -> int:
