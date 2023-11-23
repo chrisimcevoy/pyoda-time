@@ -4,14 +4,14 @@ from typing import Annotated
 
 import pytest
 
-from pyoda_time.utility import private, sealed
+from pyoda_time.utility import _private, _sealed
 
 
 def test_foo() -> None:
     """Proof-of-concept for porting a sealed C# class with no public constructor."""
 
-    @sealed
-    @private
+    @_sealed
+    @_private
     class Foo:
         arg: Annotated[int, "set via public classmethod"]
 
