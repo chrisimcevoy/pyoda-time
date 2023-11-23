@@ -259,3 +259,8 @@ def assert_argument_null(func: Callable[..., TOut], *args: Any) -> TOut:
     # TODO: In Noda Time ArgumentNullException is thrown
     with pytest.raises(TypeError):
         return func(*args)
+
+
+def assert_overflow(func: Callable[[TArg], TOut], param: TArg) -> None:
+    with pytest.raises(OverflowError):
+        func(param)

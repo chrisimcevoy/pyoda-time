@@ -11,6 +11,7 @@ from pyoda_time import (
     _LocalInstant,
 )
 from pyoda_time.utility import _towards_zero_division
+from tests import helpers
 
 
 class TestInstant:
@@ -24,9 +25,9 @@ class TestInstant:
 
     # TODO def test_in_zone(self):
 
-    # TODO def test_with_offset(self):
+    # TODO def test_with_offset(self): [requires OffsetDateTime]
 
-    # TODO def test_with_offset_non_iso_calendar(self):
+    # TODO def test_with_offset_non_iso_calendar(self): [requires CalendarSystem.GetIslamicCalendar]
 
     def test_from_ticks_since_unix_epoch(self) -> None:
         instant = Instant.from_unix_time_ticks(12345)
@@ -211,7 +212,9 @@ class TestInstant:
         assert Instant.min_value() == Instant.max_value() + huge_and_negative
         assert Instant.min_value() == Instant.max_value() - huge_and_positive
 
-    # TODO def test_plus_offset_overflow(self):
+    def test_plus_offset_overflow(self) -> None:
+        helpers.assert_overflow(Instant.min_value()._plus, Offset.from_seconds(-1))
+        helpers.assert_overflow(Instant.max_value()._plus, Offset.from_seconds(1))
 
     def test_from_unix_time_milliseconds_range(self) -> None:
         smallest_valid = _towards_zero_division(

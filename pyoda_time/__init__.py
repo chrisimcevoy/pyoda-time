@@ -1674,7 +1674,7 @@ class _LocalInstant:
         if nanoseconds is not None:
             days = nanoseconds._floor_days
             if days < Instant._MIN_DAYS or days > Instant._MAX_DAYS:
-                raise ValueError("Operation would overflow bounds of local date/time")
+                raise OverflowError("Operation would overflow bounds of local date/time")
             self.__duration = nanoseconds
         elif days is not None:
             self.__duration = Duration._ctor(days=days, nano_of_day=nano_of_day)
