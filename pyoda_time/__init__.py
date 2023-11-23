@@ -1,13 +1,30 @@
-from __future__ import annotations
+from __future__ import annotations as _annotations
 
+__all__: list[str] = [
+    "CalendarSystem",
+    "DateInterval",
+    "DateTimeZone",
+    "Duration",
+    "Instant",
+    "IsoDayOfWeek",
+    "LocalDate",
+    "LocalTime",
+    "Offset",
+    "PyodaConstants",
+]
+
+import abc as _abc
 import datetime as _datetime
-from abc import ABC
-from enum import IntEnum
-from typing import Annotated, Final, Iterable, Self, final, overload
+import enum as _enum
+import typing as _typing
 
 from .calendars import (
-    Era,
-    HebrewMonthNumbering,
+    Era as _Era,
+)
+from .calendars import (
+    HebrewMonthNumbering as _HebrewMonthNumbering,
+)
+from .calendars import (
     _BadiYearMonthDayCalculator,
     _CopticYearMonthDayCalculator,
     _EraCalculator,
@@ -22,11 +39,11 @@ from .utility import (
     _csharp_modulo,
     _int32_overflow,
     _Preconditions,
+    _private,
+    _sealed,
     _TickArithmetic,
     _to_ticks,
     _towards_zero_division,
-    private,
-    sealed,
 )
 
 
@@ -48,29 +65,29 @@ class _PyodaConstantsMeta(type):
 
 
 class PyodaConstants(metaclass=_PyodaConstantsMeta):
-    HOURS_PER_DAY: Final[int] = 24
-    SECONDS_PER_MINUTE: Final[int] = 60
-    MINUTES_PER_HOUR: Final[int] = 60
-    SECONDS_PER_HOUR: Final[int] = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
-    SECONDS_PER_DAY: Final[int] = SECONDS_PER_HOUR * HOURS_PER_DAY
-    MILLISECONDS_PER_SECOND: Final[int] = 1000
-    MILLISECONDS_PER_MINUTE: Final[int] = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE
-    MILLISECONDS_PER_HOUR: Final[int] = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR
-    MILLISECONDS_PER_DAY: Final[int] = MILLISECONDS_PER_HOUR * HOURS_PER_DAY
-    NANOSECONDS_PER_TICK: Final[int] = 100
-    NANOSECONDS_PER_MILLISECOND: Final[int] = 1000000
-    NANOSECONDS_PER_SECOND: Final[int] = 1000000000
-    NANOSECONDS_PER_MINUTE: Final[int] = NANOSECONDS_PER_SECOND * SECONDS_PER_MINUTE
-    NANOSECONDS_PER_HOUR: Final[int] = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR
-    NANOSECONDS_PER_DAY: Final[int] = NANOSECONDS_PER_HOUR * HOURS_PER_DAY
-    TICKS_PER_MILLISECOND: Final[int] = 10_000
-    TICKS_PER_SECOND: Final[int] = TICKS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
-    TICKS_PER_MINUTE: Final[int] = TICKS_PER_SECOND * SECONDS_PER_MINUTE
-    TICKS_PER_HOUR: Final[int] = TICKS_PER_MINUTE * MINUTES_PER_HOUR
-    TICKS_PER_DAY: Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
+    HOURS_PER_DAY: _typing.Final[int] = 24
+    SECONDS_PER_MINUTE: _typing.Final[int] = 60
+    MINUTES_PER_HOUR: _typing.Final[int] = 60
+    SECONDS_PER_HOUR: _typing.Final[int] = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+    SECONDS_PER_DAY: _typing.Final[int] = SECONDS_PER_HOUR * HOURS_PER_DAY
+    MILLISECONDS_PER_SECOND: _typing.Final[int] = 1000
+    MILLISECONDS_PER_MINUTE: _typing.Final[int] = MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE
+    MILLISECONDS_PER_HOUR: _typing.Final[int] = MILLISECONDS_PER_MINUTE * MINUTES_PER_HOUR
+    MILLISECONDS_PER_DAY: _typing.Final[int] = MILLISECONDS_PER_HOUR * HOURS_PER_DAY
+    NANOSECONDS_PER_TICK: _typing.Final[int] = 100
+    NANOSECONDS_PER_MILLISECOND: _typing.Final[int] = 1000000
+    NANOSECONDS_PER_SECOND: _typing.Final[int] = 1000000000
+    NANOSECONDS_PER_MINUTE: _typing.Final[int] = NANOSECONDS_PER_SECOND * SECONDS_PER_MINUTE
+    NANOSECONDS_PER_HOUR: _typing.Final[int] = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR
+    NANOSECONDS_PER_DAY: _typing.Final[int] = NANOSECONDS_PER_HOUR * HOURS_PER_DAY
+    TICKS_PER_MILLISECOND: _typing.Final[int] = 10_000
+    TICKS_PER_SECOND: _typing.Final[int] = TICKS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
+    TICKS_PER_MINUTE: _typing.Final[int] = TICKS_PER_SECOND * SECONDS_PER_MINUTE
+    TICKS_PER_HOUR: _typing.Final[int] = TICKS_PER_MINUTE * MINUTES_PER_HOUR
+    TICKS_PER_DAY: _typing.Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
 
 
-class _CalendarOrdinal(IntEnum):
+class _CalendarOrdinal(_enum.IntEnum):
     """Enumeration of calendar ordinal values.
 
     Used for converting between a compact integer representation and a calendar system. We use 6 bits to store the
@@ -100,7 +117,7 @@ class _CalendarOrdinal(IntEnum):
     SIZE = 19
 
 
-class IsoDayOfWeek(IntEnum):
+class IsoDayOfWeek(_enum.IntEnum):
     """Equates the days of the week with their numerical value according to ISO-8601."""
 
     NONE = 0
@@ -163,7 +180,7 @@ class _CalendarSystemMeta(type):
         return CalendarSystem._for_ordinal(_CalendarOrdinal.UM_AL_QURA)
 
     @property
-    def ids(cls) -> Iterable[str]:
+    def ids(cls) -> _typing.Iterable[str]:
         """Returns the IDs of all calendar systems available within Pyoda Time.
 
         The order of the keys is not guaranteed.
@@ -171,9 +188,9 @@ class _CalendarSystemMeta(type):
         return CalendarSystem._ids()
 
 
-@final
-@private
-@sealed
+@_typing.final
+@_private
+@_sealed
 class CalendarSystem(metaclass=_CalendarSystemMeta):
     """Maps the non-calendar-specific "local timeline" to human concepts such as years, months and days.
 
@@ -193,44 +210,44 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
     # IDs and names are separated out (usually with the ID either being the same as the name,
     # or the base ID being the same as a name and then other IDs being formed from it.) The
     # differentiation is only present for clarity.
-    __GREGORIAN_NAME: Final[str] = "Gregorian"
-    __GREGORIAN_ID: Final[str] = __GREGORIAN_NAME
+    __GREGORIAN_NAME: _typing.Final[str] = "Gregorian"
+    __GREGORIAN_ID: _typing.Final[str] = __GREGORIAN_NAME
 
-    __ISO_NAME: Final[str] = "ISO"
-    __ISO_ID: Final[str] = __ISO_NAME
+    __ISO_NAME: _typing.Final[str] = "ISO"
+    __ISO_ID: _typing.Final[str] = __ISO_NAME
 
-    __COPTIC_NAME: Final[str] = "Coptic"
-    __COPTIC_ID: Final[str] = __COPTIC_NAME
+    __COPTIC_NAME: _typing.Final[str] = "Coptic"
+    __COPTIC_ID: _typing.Final[str] = __COPTIC_NAME
 
-    __BADI_NAME: Final[str] = "Badi"
-    __BADI_ID: Final[str] = __BADI_NAME
+    __BADI_NAME: _typing.Final[str] = "Badi"
+    __BADI_ID: _typing.Final[str] = __BADI_NAME
 
-    __JULIAN_NAME: Final[str] = "Julian"
-    __JULIAN_ID: Final[str] = __JULIAN_NAME
+    __JULIAN_NAME: _typing.Final[str] = "Julian"
+    __JULIAN_ID: _typing.Final[str] = __JULIAN_NAME
 
-    __ISLAMIC_NAME: Final[str] = "Hijri"
-    __ISLAMIC_ID_BASE: Final[str] = __ISLAMIC_NAME
+    __ISLAMIC_NAME: _typing.Final[str] = "Hijri"
+    __ISLAMIC_ID_BASE: _typing.Final[str] = __ISLAMIC_NAME
     # Not part of IslamicCalendars as we want to be able to call it without triggering type initialization.
     # TODO def _get_islamic_id()
 
-    __PERSIAN_NAME: Final[str] = "Persian"
-    __PERSIAN_ID_BASE: Final[str] = __PERSIAN_NAME
-    __PERSIAN_SIMPLE_ID: Final[str] = __PERSIAN_ID_BASE + " Simple"
-    __PERSIAN_ASTRONOMICAL_ID: Final[str] = __PERSIAN_ID_BASE + " Algorithmic"
-    __PERSIAN_ARITHMETIC_ID: Final[str] = __PERSIAN_ID_BASE + " Arithmetic"
+    __PERSIAN_NAME: _typing.Final[str] = "Persian"
+    __PERSIAN_ID_BASE: _typing.Final[str] = __PERSIAN_NAME
+    __PERSIAN_SIMPLE_ID: _typing.Final[str] = __PERSIAN_ID_BASE + " Simple"
+    __PERSIAN_ASTRONOMICAL_ID: _typing.Final[str] = __PERSIAN_ID_BASE + " Algorithmic"
+    __PERSIAN_ARITHMETIC_ID: _typing.Final[str] = __PERSIAN_ID_BASE + " Arithmetic"
 
-    __HEBREW_NAME: Final[str] = "Hebrew"
-    __HEBREW_ID_BASE: Final[str] = __HEBREW_NAME
-    __HEBREW_CIVIL_ID: Final[str] = __HEBREW_ID_BASE + " Civil"
-    __HEBREW_SCRIPTURAL_ID: Final[str] = __HEBREW_ID_BASE + " Scriptural"
+    __HEBREW_NAME: _typing.Final[str] = "Hebrew"
+    __HEBREW_ID_BASE: _typing.Final[str] = __HEBREW_NAME
+    __HEBREW_CIVIL_ID: _typing.Final[str] = __HEBREW_ID_BASE + " Civil"
+    __HEBREW_SCRIPTURAL_ID: _typing.Final[str] = __HEBREW_ID_BASE + " Scriptural"
 
-    __UM_AL_QURA_NAME: Final[str] = "Um Al Qura"
-    __UM_AL_QURA_ID: Final[str] = __UM_AL_QURA_NAME
+    __UM_AL_QURA_NAME: _typing.Final[str] = "Um Al Qura"
+    __UM_AL_QURA_ID: _typing.Final[str] = __UM_AL_QURA_NAME
 
     # While we could implement some of these as auto-props, it probably adds more confusion than convenience.
-    __CALENDAR_BY_ORDINAL: Final[dict[_CalendarOrdinal, CalendarSystem]] = {}
+    __CALENDAR_BY_ORDINAL: _typing.Final[dict[_CalendarOrdinal, CalendarSystem]] = {}
 
-    __ID_ORDINAL_MAP: Final[dict[str, _CalendarOrdinal]] = {
+    __ID_ORDINAL_MAP: _typing.Final[dict[str, _CalendarOrdinal]] = {
         __BADI_ID: _CalendarOrdinal.BADI,
         __COPTIC_ID: _CalendarOrdinal.COPTIC,
         __GREGORIAN_ID: _CalendarOrdinal.GREGORIAN,
@@ -280,7 +297,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         return cls._for_ordinal_uncached(ordinal)
 
     @classmethod
-    def _ids(cls) -> Iterable[str]:
+    def _ids(cls) -> _typing.Iterable[str]:
         """Returns an iterable of all valid IDs.
 
         The public static property is implemented in the metaclass. This classmethod just exists to expose the keys of
@@ -289,42 +306,42 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         yield from cls.__ID_ORDINAL_MAP.keys()
 
     @classmethod
-    def get_hebrew_calendar(cls, month_numbering: HebrewMonthNumbering) -> CalendarSystem:
+    def get_hebrew_calendar(cls, month_numbering: _HebrewMonthNumbering) -> CalendarSystem:
         _Preconditions._check_argument_range("month_numbering", int(month_numbering), 1, 2)
         match month_numbering:
-            case HebrewMonthNumbering.CIVIL:
+            case _HebrewMonthNumbering.CIVIL:
                 return CalendarSystem.__ctor(
                     ordinal=_CalendarOrdinal.HEBREW_CIVIL,
                     id_=cls.__HEBREW_CIVIL_ID,
                     name=cls.__HEBREW_NAME,
                     year_month_day_calculator=_HebrewYearMonthDayCalculator(month_numbering),
-                    single_era=Era.anno_mundi,
+                    single_era=_Era.anno_mundi,
                 )
-            case HebrewMonthNumbering.SCRIPTURAL:
+            case _HebrewMonthNumbering.SCRIPTURAL:
                 return CalendarSystem.__ctor(
                     ordinal=_CalendarOrdinal.HEBREW_SCRIPTURAL,
                     id_=cls.__HEBREW_SCRIPTURAL_ID,
                     name=cls.__HEBREW_NAME,
                     year_month_day_calculator=_HebrewYearMonthDayCalculator(month_numbering),
-                    single_era=Era.anno_mundi,
+                    single_era=_Era.anno_mundi,
                 )
             case _:
                 raise ValueError(f"Unknown HebrewMonthNumbering: {month_numbering}")
 
     # endregion
 
-    __ordinal: Annotated[_CalendarOrdinal, "Set by private constructor"]
-    __id: Annotated[str, "Set by private constructor"]
-    __name: Annotated[str, "Set by private constructor"]
-    __year_month_day_calculator: Annotated[_YearMonthDayCalculator, "Set by private constructor"]
-    __era_calculator: Annotated[_EraCalculator, "Set by private constructor"]
-    __min_year: Annotated[int, "Set by private constructor"]
-    __max_year: Annotated[int, "Set by private constructor"]
-    __min_days: Annotated[int, "Set by private constructor"]
-    __max_days: Annotated[int, "Set by private constructor"]
+    __ordinal: _typing.Annotated[_CalendarOrdinal, "Set by private constructor"]
+    __id: _typing.Annotated[str, "Set by private constructor"]
+    __name: _typing.Annotated[str, "Set by private constructor"]
+    __year_month_day_calculator: _typing.Annotated[_YearMonthDayCalculator, "Set by private constructor"]
+    __era_calculator: _typing.Annotated[_EraCalculator, "Set by private constructor"]
+    __min_year: _typing.Annotated[int, "Set by private constructor"]
+    __max_year: _typing.Annotated[int, "Set by private constructor"]
+    __min_days: _typing.Annotated[int, "Set by private constructor"]
+    __max_days: _typing.Annotated[int, "Set by private constructor"]
 
     @classmethod
-    @overload
+    @_typing.overload
     def __ctor(
         cls,
         *,
@@ -337,7 +354,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def __ctor(
         cls,
         *,
@@ -345,7 +362,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         id_: str,
         name: str,
         year_month_day_calculator: _YearMonthDayCalculator,
-        single_era: Era,
+        single_era: _Era,
     ) -> CalendarSystem:
         ...
 
@@ -358,7 +375,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         name: str,
         year_month_day_calculator: _YearMonthDayCalculator,
         era_calculator: _EraCalculator | None = None,
-        single_era: Era | None = None,
+        single_era: _Era | None = None,
     ) -> CalendarSystem:
         """Private initialiser which emulates the two private constructors on the corresponding Noda Time class."""
         self: CalendarSystem = super().__new__(cls)
@@ -420,11 +437,11 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
 
     # region Era-based members
 
-    def eras(self) -> Iterable[Era]:
+    def eras(self) -> _typing.Iterable[_Era]:
         """Gets a read-only iterable of eras used in this calendar system."""
         yield from self.__era_calculator._eras
 
-    def get_absolute_year(self, year_of_era: int, era: Era) -> int:
+    def get_absolute_year(self, year_of_era: int, era: _Era) -> int:
         """Returns the "absolute year" (the one used throughout most of the API, without respect to eras) from a year-
         of-era and an era.
 
@@ -439,7 +456,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         """
         return self.__era_calculator._get_absolute_year(year_of_era, era)
 
-    def get_max_year_of_era(self, era: Era) -> int:
+    def get_max_year_of_era(self, era: _Era) -> int:
         """Returns the maximum valid year-of-era in the given era.
 
         Note that depending on the calendar system, it's possible that only part of the returned year falls within the
@@ -452,7 +469,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         """
         return self.__era_calculator._get_max_year_of_era(era)
 
-    def get_min_year_of_era(self, era: Era) -> int:
+    def get_min_year_of_era(self, era: _Era) -> int:
         """Returns the minimum valid year-of-era in the given era.
 
         Note that depending on the calendar system, it's possible that only part of the returned year falls within the
@@ -561,7 +578,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         # TODO: _Preconditions._debug_check_argument_range()
         return self.__era_calculator._get_year_of_era(absolute_year)
 
-    def _get_era(self, absolute_year: int) -> Era:
+    def _get_era(self, absolute_year: int) -> _Era:
         # TODO: _Preconditions._debug_check_argument_range()
         return self.__era_calculator._get_era(absolute_year)
 
@@ -583,7 +600,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__BADI_ID,
                     name=cls.__BADI_NAME,
                     year_month_day_calculator=_BadiYearMonthDayCalculator(),
-                    single_era=Era.bahai,
+                    single_era=_Era.bahai,
                 )
             case _CalendarOrdinal.COPTIC:
                 return cls.__ctor(
@@ -591,7 +608,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__COPTIC_ID,
                     name=cls.__COPTIC_NAME,
                     year_month_day_calculator=_CopticYearMonthDayCalculator(),
-                    single_era=Era.anno_martyrum,
+                    single_era=_Era.anno_martyrum,
                 )
             case _CalendarOrdinal.GREGORIAN:
                 return cls.__ctor(
@@ -602,9 +619,9 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     era_calculator=cls.iso.__era_calculator,
                 )
             case _CalendarOrdinal.HEBREW_CIVIL:
-                return cls.get_hebrew_calendar(HebrewMonthNumbering.CIVIL)
+                return cls.get_hebrew_calendar(_HebrewMonthNumbering.CIVIL)
             case _CalendarOrdinal.HEBREW_SCRIPTURAL:
-                return cls.get_hebrew_calendar(HebrewMonthNumbering.SCRIPTURAL)
+                return cls.get_hebrew_calendar(_HebrewMonthNumbering.SCRIPTURAL)
             case _CalendarOrdinal.ISO:
                 gregorian_calculator = _GregorianYearMonthDayCalculator()
                 gregorian_era_calculator = _GJEraCalculator(gregorian_calculator)
@@ -629,7 +646,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                 raise ValueError(f"CalendarOrdinal '{ordinal.name}' not mapped to CalendarSystem yet")
 
 
-@sealed
+@_sealed
 class DateInterval:
     """An interval between two dates."""
 
@@ -657,12 +674,12 @@ class DateInterval:
         self.__end: LocalDate = end
 
 
-class DateTimeZone(ABC):
+class DateTimeZone(_abc.ABC):
     """Represents a time zone - a mapping between UTC and local time.
     A time zone maps UTC instants to local times - or, equivalently, to the offset from UTC at any particular instant.
     """
 
-    _UTC_ID: Final[str] = "UTC"
+    _UTC_ID: _typing.Final[str] = "UTC"
 
     def __init__(self, id_: str, is_fixed: bool, min_offset: Offset, max_offset: Offset) -> None:
         """Initializes a new instance of the DateTimeZone class.
@@ -707,13 +724,13 @@ class DateTimeZone(ABC):
         return self.__max_offset
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class Duration:
     """Represents a fixed (and calendar-independent) length of time."""
 
-    _MAX_DAYS: Final[int] = (1 << 24) - 1
-    _MIN_DAYS: Final[int] = ~_MAX_DAYS
+    _MAX_DAYS: _typing.Final[int] = (1 << 24) - 1
+    _MIN_DAYS: _typing.Final[int] = ~_MAX_DAYS
 
     def __init__(self) -> None:
         self.__days = 0
@@ -730,7 +747,7 @@ class Duration:
         return self
 
     @classmethod
-    @overload
+    @_typing.overload
     def __ctor(
         cls,
         *,
@@ -750,7 +767,7 @@ class Duration:
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def __ctor(cls, *, days: int, nano_of_day: int, no_validation: bool) -> Duration:
         """Trusted constructor with no validation.
 
@@ -951,21 +968,21 @@ class _OffsetMeta(type):
         return Offset.from_hours(18)
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class Offset(metaclass=_OffsetMeta):
     """An offset from UTC in seconds."""
 
-    __MIN_HOURS: Final[int] = -18
-    __MAX_HOURS: Final[int] = 18
-    __MIN_SECONDS: Final[int] = -18 * PyodaConstants.SECONDS_PER_HOUR
-    __MAX_SECONDS: Final[int] = 18 * PyodaConstants.SECONDS_PER_HOUR
-    __MIN_MILLISECONDS: Final[int] = -18 * PyodaConstants.MILLISECONDS_PER_HOUR
-    __MAX_MILLISECONDS: Final[int] = 18 * PyodaConstants.MILLISECONDS_PER_HOUR
-    __MIN_TICKS: Final[int] = -18 * PyodaConstants.TICKS_PER_HOUR
-    __MAX_TICKS: Final[int] = 18 * PyodaConstants.TICKS_PER_HOUR
-    __MIN_NANOSECONDS: Final[int] = -18 * PyodaConstants.NANOSECONDS_PER_HOUR
-    __MAX_NANOSECONDS: Final[int] = 18 * PyodaConstants.NANOSECONDS_PER_HOUR
+    __MIN_HOURS: _typing.Final[int] = -18
+    __MAX_HOURS: _typing.Final[int] = 18
+    __MIN_SECONDS: _typing.Final[int] = -18 * PyodaConstants.SECONDS_PER_HOUR
+    __MAX_SECONDS: _typing.Final[int] = 18 * PyodaConstants.SECONDS_PER_HOUR
+    __MIN_MILLISECONDS: _typing.Final[int] = -18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MAX_MILLISECONDS: _typing.Final[int] = 18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MIN_TICKS: _typing.Final[int] = -18 * PyodaConstants.TICKS_PER_HOUR
+    __MAX_TICKS: _typing.Final[int] = 18 * PyodaConstants.TICKS_PER_HOUR
+    __MIN_NANOSECONDS: _typing.Final[int] = -18 * PyodaConstants.NANOSECONDS_PER_HOUR
+    __MAX_NANOSECONDS: _typing.Final[int] = 18 * PyodaConstants.NANOSECONDS_PER_HOUR
 
     def __init__(self) -> None:
         self.__seconds = 0
@@ -1339,8 +1356,8 @@ class Offset(metaclass=_OffsetMeta):
     # endregion
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class Instant:
     """Represents an instant on the global timeline, with nanosecond resolution.
 
@@ -1351,15 +1368,15 @@ class Instant:
     """
 
     # These correspond to -9998-01-01 and 9999-12-31 respectively.
-    _MIN_DAYS: Final[int] = -4371222
-    _MAX_DAYS: Final[int] = 2932896
+    _MIN_DAYS: _typing.Final[int] = -4371222
+    _MAX_DAYS: _typing.Final[int] = 2932896
 
-    __MIN_TICKS: Final[int] = _MIN_DAYS * PyodaConstants.TICKS_PER_DAY
-    __MAX_TICKS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.TICKS_PER_DAY - 1
-    __MIN_MILLISECONDS: Final[int] = _MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY
-    __MAX_MILLISECONDS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY - 1
-    __MIN_SECONDS: Final[int] = _MIN_DAYS * PyodaConstants.SECONDS_PER_DAY
-    __MAX_SECONDS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1
+    __MIN_TICKS: _typing.Final[int] = _MIN_DAYS * PyodaConstants.TICKS_PER_DAY
+    __MAX_TICKS: _typing.Final[int] = (_MAX_DAYS + 1) * PyodaConstants.TICKS_PER_DAY - 1
+    __MIN_MILLISECONDS: _typing.Final[int] = _MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY
+    __MAX_MILLISECONDS: _typing.Final[int] = (_MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY - 1
+    __MIN_SECONDS: _typing.Final[int] = _MIN_DAYS * PyodaConstants.SECONDS_PER_DAY
+    __MAX_SECONDS: _typing.Final[int] = (_MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1
 
     def __init__(self) -> None:
         self.__duration = Duration.zero()
@@ -1371,7 +1388,7 @@ class Instant:
         return self
 
     @classmethod
-    @overload
+    @_typing.overload
     def __ctor(cls, *, duration: Duration) -> Instant:
         """Constructor which constructs a new instance with the given duration, which is trusted to be valid.
 
@@ -1380,7 +1397,7 @@ class Instant:
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def __ctor(cls, *, days: int, deliberately_invalid: bool) -> Instant:
         """Constructor which should *only* be used to construct the invalid instances."""
         ...
@@ -1419,11 +1436,11 @@ class Instant:
             return self._from_untrusted_duration(self.__duration + other)
         raise TypeError("Unsupported operand type")
 
-    @overload
+    @_typing.overload
     def __sub__(self, other: Instant) -> Duration:
         ...
 
-    @overload
+    @_typing.overload
     def __sub__(self, other: Duration) -> Instant:
         ...
 
@@ -1451,7 +1468,7 @@ class Instant:
         return Instant._ctor(days=cls._MAX_DAYS, nano_of_day=PyodaConstants.NANOSECONDS_PER_DAY - 1)
 
     @classmethod
-    def _before_min_value(cls) -> Self:
+    def _before_min_value(cls) -> _typing.Self:
         """Instant which is invalid *except* for comparison purposes; it is earlier than any valid value.
 
         This must never be exposed.
@@ -1459,7 +1476,7 @@ class Instant:
         return cls.__ctor(days=Duration._MIN_DAYS, deliberately_invalid=True)
 
     @classmethod
-    def _after_max_value(cls) -> Self:
+    def _after_max_value(cls) -> _typing.Self:
         """Instant which is invalid *except* for comparison purposes; it is later than any valid value.
 
         This must never be exposed.
@@ -1628,8 +1645,8 @@ class Instant:
         return _LocalInstant._ctor(nanoseconds=as_duration)
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class _LocalInstant:
     """Represents a local date and time without reference to a calendar system. Essentially.
 
@@ -1642,12 +1659,12 @@ class _LocalInstant:
         self.__duration = Duration()
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, nanoseconds: Duration) -> _LocalInstant:
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, days: int, nano_of_day: int) -> _LocalInstant:
         ...
 
@@ -1693,26 +1710,26 @@ class _LocalInstant:
         return _LocalInstant.__ctor(days=Instant._after_max_value()._days_since_epoch, deliberately_invalid=True)
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class LocalDate:
     """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
     zone or time of day."""
 
-    @overload
+    @_typing.overload
     def __init__(self, *, year: int, month: int, day: int):
         ...
 
-    @overload
+    @_typing.overload
     def __init__(self, *, year: int, month: int, day: int, calendar: CalendarSystem):
         ...
 
-    @overload
-    def __init__(self, *, era: Era, year_of_era: int, month: int, day: int):
+    @_typing.overload
+    def __init__(self, *, era: _Era, year_of_era: int, month: int, day: int):
         ...
 
-    @overload
-    def __init__(self, *, era: Era, year_of_era: int, month: int, day: int, calendar: CalendarSystem):
+    @_typing.overload
+    def __init__(self, *, era: _Era, year_of_era: int, month: int, day: int, calendar: CalendarSystem):
         ...
 
     def __init__(
@@ -1721,7 +1738,7 @@ class LocalDate:
         month: int | None = None,
         day: int | None = None,
         calendar: CalendarSystem | None = None,
-        era: Era | None = None,
+        era: _Era | None = None,
         year_of_era: int | None = None,
     ):
         calendar = calendar or CalendarSystem.iso
@@ -1738,17 +1755,17 @@ class LocalDate:
             raise TypeError
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, year_month_day_calendar: _YearMonthDayCalendar) -> LocalDate:
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, days_since_epoch: int) -> LocalDate:
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, days_since_epoch: int, calendar: CalendarSystem) -> LocalDate:
         ...
 
@@ -1820,7 +1837,7 @@ class LocalDate:
         return self.calendar._get_year_of_era(self.__year_month_day_calendar._year)
 
     @property
-    def era(self) -> Era:
+    def era(self) -> _Era:
         """The era of this local date."""
         return self.calendar._get_era(self.__year_month_day_calendar._year)
 
@@ -1846,21 +1863,21 @@ class LocalDate:
         return self.calendar._compare(self._year_month_day, other._year_month_day)
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class LocalTime:
     """LocalTime is an immutable struct representing a time of day, with no reference to a particular calendar, time
     zone or date."""
 
-    @overload
+    @_typing.overload
     def __init__(self, *, hour: int, minute: int) -> None:
         ...
 
-    @overload
+    @_typing.overload
     def __init__(self, *, hour: int, minute: int, second: int) -> None:
         ...
 
-    @overload
+    @_typing.overload
     def __init__(self, *, hour: int, minute: int, second: int, millisecond: int) -> None:
         ...
 
@@ -1902,36 +1919,36 @@ class LocalTime:
         return self.__nanoseconds
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class _YearMonthDayCalendar:
     """A compact representation of a year, month, day and calendar ordinal (integer ID) in a single 32-bit integer."""
 
     # These constants are internal so they can be used in YearMonthDay
-    _CALENDAR_BITS: Final[int] = 6  # Up to 64 calendars.
-    _DAY_BITS: Final[int] = 6  # Up to 64 days in a month.
-    _MONTH_BITS: Final[int] = 5  # Up to 32 months per year.
-    _YEAR_BITS: Final[int] = 15  # 32K range; only need -10K to +10K.
+    _CALENDAR_BITS: _typing.Final[int] = 6  # Up to 64 calendars.
+    _DAY_BITS: _typing.Final[int] = 6  # Up to 64 days in a month.
+    _MONTH_BITS: _typing.Final[int] = 5  # Up to 32 months per year.
+    _YEAR_BITS: _typing.Final[int] = 15  # 32K range; only need -10K to +10K.
 
     # Just handy constants to use for shifting and masking.
-    __CALENDAR_DAY_BITS: Final[int] = _CALENDAR_BITS + _DAY_BITS
-    __CALENDAR_DAY_MONTH_BITS: Final[int] = __CALENDAR_DAY_BITS + _MONTH_BITS
+    __CALENDAR_DAY_BITS: _typing.Final[int] = _CALENDAR_BITS + _DAY_BITS
+    __CALENDAR_DAY_MONTH_BITS: _typing.Final[int] = __CALENDAR_DAY_BITS + _MONTH_BITS
 
-    __CALENDAR_MASK: Final[int] = (1 << _CALENDAR_BITS) - 1
-    __DAY_MASK: Final[int] = ((1 << _DAY_BITS) - 1) << _CALENDAR_BITS
-    __MONTH_MASK: Final[int] = ((1 << _MONTH_BITS) - 1) << __CALENDAR_DAY_BITS
-    __YEAR_MASK: Final[int] = ((1 << _YEAR_BITS) - 1) << __CALENDAR_DAY_MONTH_BITS
+    __CALENDAR_MASK: _typing.Final[int] = (1 << _CALENDAR_BITS) - 1
+    __DAY_MASK: _typing.Final[int] = ((1 << _DAY_BITS) - 1) << _CALENDAR_BITS
+    __MONTH_MASK: _typing.Final[int] = ((1 << _MONTH_BITS) - 1) << __CALENDAR_DAY_BITS
+    __YEAR_MASK: _typing.Final[int] = ((1 << _YEAR_BITS) - 1) << __CALENDAR_DAY_MONTH_BITS
 
     def __init__(self) -> None:
         self.__value: int = 0
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, year_month_day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar:
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, year: int, month: int, day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar:
         ...
 
@@ -2002,24 +2019,24 @@ class _YearMonthDayCalendar:
         return _YearMonthDay._ctor(raw_value=self.__value >> self._CALENDAR_BITS)
 
 
-@final
-@sealed
+@_typing.final
+@_sealed
 class _YearMonthDay:
     """A compact representation of a year, month and day in a single 32-bit integer."""
 
-    __DAY_MASK: Final[int] = (1 << _YearMonthDayCalendar._DAY_BITS) - 1
-    __MONTH_MASK: Final[int] = ((1 << _YearMonthDayCalendar._MONTH_BITS) - 1) << _YearMonthDayCalendar._DAY_BITS
+    __DAY_MASK: _typing.Final[int] = (1 << _YearMonthDayCalendar._DAY_BITS) - 1
+    __MONTH_MASK: _typing.Final[int] = ((1 << _YearMonthDayCalendar._MONTH_BITS) - 1) << _YearMonthDayCalendar._DAY_BITS
 
     def __init__(self) -> None:
         self.__value: int = 0
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, raw_value: int) -> _YearMonthDay:
         ...
 
     @classmethod
-    @overload
+    @_typing.overload
     def _ctor(cls, *, year: int, month: int, day: int) -> _YearMonthDay:
         ...
 
@@ -2086,5 +2103,5 @@ class _YearMonthDay:
         return isinstance(other, _YearMonthDay) and self.__value >= other.__value
 
 
-_BCL_EPOCH: Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)
-_UNIX_EPOCH: Final[Instant] = Instant.from_unix_time_ticks(0)
+_BCL_EPOCH: _typing.Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)
+_UNIX_EPOCH: _typing.Final[Instant] = Instant.from_unix_time_ticks(0)

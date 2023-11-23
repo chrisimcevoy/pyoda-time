@@ -1,25 +1,31 @@
-from __future__ import annotations
+from __future__ import annotations as _annotations
 
-import base64
-import enum
-import functools
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Annotated, Final, final, overload
+__all__: list[str] = [
+    "Era",
+    "HebrewMonthNumbering",
+]
 
-if TYPE_CHECKING:
-    from . import CalendarSystem, _YearMonthDay, _YearMonthDayCalendar
-from .utility import _csharp_modulo, _Preconditions, _towards_zero_division, private, sealed
+import abc as _abc
+import base64 as _base64
+import enum as _enum
+import functools as _functools
+import typing as _typing
+
+if _typing.TYPE_CHECKING:
+    from . import CalendarSystem as _CalendarSystem
+    from . import _YearMonthDay, _YearMonthDayCalendar
+from .utility import _csharp_modulo, _Preconditions, _private, _sealed, _towards_zero_division
 
 
 class _YearStartCacheEntry:
     """Type containing as much logic as possible for how the cache of "start of year" data works."""
 
-    __CACHE_INDEX_BITS: Final[int] = 10
-    __CACHE_SIZE: Final[int] = 1 << __CACHE_INDEX_BITS
-    __CACHE_INDEX_MASK: Final[int] = __CACHE_SIZE - 1
-    __ENTRY_VALIDATION_BITS: Final[int] = 7
-    __ENTRY_VALIDATION_MASK: Final[int] = (1 << __ENTRY_VALIDATION_BITS) - 1
-    _INVALID_ENTRY_YEAR: Final[int] = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
+    __CACHE_INDEX_BITS: _typing.Final[int] = 10
+    __CACHE_SIZE: _typing.Final[int] = 1 << __CACHE_INDEX_BITS
+    __CACHE_INDEX_MASK: _typing.Final[int] = __CACHE_SIZE - 1
+    __ENTRY_VALIDATION_BITS: _typing.Final[int] = 7
+    __ENTRY_VALIDATION_MASK: _typing.Final[int] = (1 << __ENTRY_VALIDATION_BITS) - 1
+    _INVALID_ENTRY_YEAR: _typing.Final[int] = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
 
     def __init__(self, year: int, days: int) -> None:
         self.__value = (days << self.__ENTRY_VALIDATION_BITS) | self.__get_validator(year)
@@ -59,7 +65,7 @@ class _YearStartCacheEntry:
         return self.__value >> self.__ENTRY_VALIDATION_BITS
 
 
-class _YearMonthDayCalculator(ABC):
+class _YearMonthDayCalculator(_abc.ABC):
     """The core of date calculations in Pyoda Time.
 
     This class *only* cares about absolute years, and only
@@ -99,16 +105,16 @@ class _YearMonthDayCalculator(ABC):
         self.__days_at_start_of_year_1 = days_at_start_of_year_1
         # Cache to speed up working out when a particular year starts.
         # See the ``YearStartCacheEntry`` documentation and ``GetStartOfYearInDays`` for more details.
-        self.__year_cache: Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
+        self.__year_cache: _typing.Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
 
     # region Abstract methods
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
         """Returns the number of days from the start of the given year to the start of the given month."""
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _calculate_start_of_year_days(self, year: int) -> int:
         """Compute the start of the given year in days since 1970-01-01 ISO.
 
@@ -119,23 +125,23 @@ class _YearMonthDayCalculator(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_months_in_year(self, year: int) -> int:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_days_in_month(self, year: int, month: int) -> int:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _is_leap_year(self, year: int) -> bool:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _add_months(self, year_month_day: _YearMonthDay, months: int) -> _YearMonthDay:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_year_month_day_from_year_and_day_of_year(self, year: int, day_of_year: int) -> _YearMonthDay:
         """This is supposed to be an abstract overload of YearMonthDayCalendar.GetYearMonthDay.
 
@@ -144,13 +150,13 @@ class _YearMonthDayCalculator(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_days_in_year(self, year: int) -> int:
         """Returns the number of days in the given year, which will always be within 1 year of the valid range for the
         calculator."""
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _months_between(self, start: _YearMonthDay, end: _YearMonthDay) -> int:
         """Find the months between ``start`` and ``end``.
 
@@ -158,7 +164,7 @@ class _YearMonthDayCalculator(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _set_year(self, year_month_day: _YearMonthDay, year: int) -> _YearMonthDay:
         """Adjusts the given YearMonthDay to the specified year, potentially adjusting other fields as required."""
         raise NotImplementedError
@@ -224,11 +230,11 @@ class _YearMonthDayCalculator(ABC):
             + year_month_day._day
         )
 
-    @overload
+    @_typing.overload
     def _get_year_month_day(self, *, year: int, day_of_year: int) -> _YearMonthDay:
         ...
 
-    @overload
+    @_typing.overload
     def _get_year_month_day(self, *, days_since_epoch: int) -> _YearMonthDay:
         ...
 
@@ -297,33 +303,33 @@ class _YearMonthDayCalculator(ABC):
     # endregion
 
 
-@sealed
+@_sealed
 class _BadiYearMonthDayCalculator(_YearMonthDayCalculator):
     # named constants to avoid use of raw numbers in the code
-    __AVERAGE_DAYS_PER_10_years: Final[int] = 3652
-    __DAYS_IN_AYYAMI_HA_IN_LEAP_YEAR: Final[int] = 5
-    __DAYS_IN_AYYAMI_HA_IN_NORMAL_YEAR: Final[int] = 4
+    __AVERAGE_DAYS_PER_10_years: _typing.Final[int] = 3652
+    __DAYS_IN_AYYAMI_HA_IN_LEAP_YEAR: _typing.Final[int] = 5
+    __DAYS_IN_AYYAMI_HA_IN_NORMAL_YEAR: _typing.Final[int] = 4
 
-    _DAYS_IN_MONTH: Final[int] = 19
-    __FIRST_YEAR_OF_STANDARDIZED_CALENDAR: Final[int] = 172
-    __GREGORIAN_YEAR_OF_FIRST_BADI_YEAR: Final[int] = 1844
+    _DAYS_IN_MONTH: _typing.Final[int] = 19
+    __FIRST_YEAR_OF_STANDARDIZED_CALENDAR: _typing.Final[int] = 172
+    __GREGORIAN_YEAR_OF_FIRST_BADI_YEAR: _typing.Final[int] = 1844
 
     # There are 19 months in a year. Between the 18th and 19th month are the "days of Ha" (Ayyam-i-Ha).
     # In order to make everything else in Noda Time work appropriately, Ayyam-i-Ha are counted as
     # extra days at the end of month 18.
-    _MONTH_18: Final[int] = 18
-    __MONTH_19: Final[int] = 19
-    __MONTHS_IN_YEAR: Final[int] = 19
+    _MONTH_18: _typing.Final[int] = 18
+    __MONTH_19: _typing.Final[int] = 19
+    __MONTHS_IN_YEAR: _typing.Final[int] = 19
 
-    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: Final[int] = -45941
-    __BADI_MAX_YEAR: Final[int] = 1000  # current lookup tables are pre-calculated for a thousand years
-    __BADI_MIN_YEAR: Final[int] = 1
+    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: _typing.Final[int] = -45941
+    __BADI_MAX_YEAR: _typing.Final[int] = 1000  # current lookup tables are pre-calculated for a thousand years
+    __BADI_MIN_YEAR: _typing.Final[int] = 1
 
     # This is the base64 representation of information for years 172 to 1000.
     # NazRuzDate falls on March 19, 20, 21, or 22.
     # DaysInAyymiHa can be 4,5.
     # For each year, the value in the array is (NawRuzDate - 19) + 10 * (DaysInAyyamiHa - 4)
-    year_info_raw = base64.b64decode(
+    year_info_raw = _base64.b64decode(
         "AgELAgIBCwICAQsCAgEBCwIBAQsCAQELAgEBCwIBAQsCAQELAgEBCwIBAQELAQEBCwEBAQsBAQELAQEB"
         "CwEBAQsBAQELAQEBCwEBAQEKAQEBCgEBAQsCAgILAgICCwICAgsCAgILAgICCwICAgELAgIBCwICAQsC"
         "AgELAgIBCwICAQsCAgELAgIBCwICAQELAgEBCwIBAQsCAQELAgEBCwIBAQsCAQELAgEBCwIBAQELAQEB"
@@ -598,9 +604,9 @@ class _EraMeta(type):
         return Era._ctor("BE", "Eras_Bahai")
 
 
-@final
-@private
-@sealed
+@_typing.final
+@_private
+@_sealed
 class Era(metaclass=_EraMeta):
     """Represents an era used in a calendar.
 
@@ -621,7 +627,7 @@ class Era(metaclass=_EraMeta):
     __resource_identifier: str
 
     @classmethod
-    @functools.cache
+    @_functools.cache
     def _ctor(cls, name: str, resource_identifier: str) -> Era:
         """Internal constructor implementation.
 
@@ -650,7 +656,7 @@ class Era(metaclass=_EraMeta):
         return self.name
 
 
-class _EraCalculator(ABC):
+class _EraCalculator(_abc.ABC):
     """Takes responsibility for all era-based calculations for a calendar.
 
     YearMonthDay arguments can be assumed to be valid for the relevant calendar, but other arguments should be
@@ -660,36 +666,36 @@ class _EraCalculator(ABC):
     def __init__(self, *eras: Era):
         self._eras = eras
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_min_year_of_era(self, era: Era) -> int:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_max_year_of_era(self, era: Era) -> int:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_era(self, absolute_year: int) -> Era:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_year_of_era(self, absolute_year: int) -> int:
         raise NotImplementedError
 
-    @abstractmethod
+    @_abc.abstractmethod
     def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
         raise NotImplementedError
 
 
-@final
-@sealed
-@private
+@_typing.final
+@_sealed
+@_private
 class _SingleEraCalculator(_EraCalculator):
     """Implementation of EraCalculator for calendars which only have a single era."""
 
-    __min_year: Annotated[int, "Set by internal constructor"]
-    __max_year: Annotated[int, "Set by internal constructor"]
-    __era: Annotated[Era, "Set by internal constructor"]
+    __min_year: _typing.Annotated[int, "Set by internal constructor"]
+    __max_year: _typing.Annotated[int, "Set by internal constructor"]
+    __era: _typing.Annotated[Era, "Set by internal constructor"]
 
     @classmethod
     def _ctor(cls, *, era: Era, ymd_calculator: _YearMonthDayCalculator) -> _SingleEraCalculator:
@@ -726,7 +732,7 @@ class _SingleEraCalculator(_EraCalculator):
         return self.__era
 
 
-@final
+@_typing.final
 class _GJEraCalculator(_EraCalculator):
     """Era calculator for Gregorian and Julian calendar systems, which use BC and AD."""
 
@@ -765,7 +771,7 @@ class _GJEraCalculator(_EraCalculator):
         return self.__max_year_of_ad if era == Era.common else self.__max_year_of_bc
 
 
-class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, ABC):
+class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, _abc.ABC):
     """Subclass of YearMonthDayCalculator for calendars with the following attributes:
     - A fixed number of months
     - Occasional leap years which are always 1 day longer than non-leap years
@@ -854,9 +860,9 @@ class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, ABC):
             return diff if simple_addition >= end else diff + 1
 
 
-class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
-    _NON_LEAP_DAYS_PER_MONTH: Final[tuple] = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    _LEAP_DAYS_PER_MONTH: Final[tuple] = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
+    _NON_LEAP_DAYS_PER_MONTH: _typing.Final[tuple] = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    _LEAP_DAYS_PER_MONTH: _typing.Final[tuple] = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
     @staticmethod
     def __generate_total_days_by_month(*month_lengths: int) -> list[int]:
@@ -865,8 +871,8 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
             ret.append(ret[i] + month_lengths[i])
         return ret
 
-    __NON_LEAP_TOTAL_DAYS_BY_MONTH: Final[list[int]] = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
-    __LEAP_TOTAL_DAYS_BY_MONTH: Final[list[int]] = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
+    __NON_LEAP_TOTAL_DAYS_BY_MONTH: _typing.Final[list[int]] = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
+    __LEAP_TOTAL_DAYS_BY_MONTH: _typing.Final[list[int]] = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
 
     def __init__(
         self,
@@ -913,7 +919,7 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
     def _get_days_in_year(self, year: int) -> int:
         return 366 if self._is_leap_year(year) else 365
 
-    @final
+    @_typing.final
     def _get_days_in_month(self, year: int, month: int) -> int:
         # February is awkward
         if month == 2:
@@ -932,22 +938,24 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
         )
 
 
-@final
+@_typing.final
 class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
-    __MIN_GREGORIAN_YEAR: Final[int] = -9998
-    __MAX_GREGORIAN_YEAR: Final[int] = 9999
+    __MIN_GREGORIAN_YEAR: _typing.Final[int] = -9998
+    __MAX_GREGORIAN_YEAR: _typing.Final[int] = 9999
 
-    __FIRST_OPTIMIZED_YEAR: Final[int] = 1900
-    __LAST_OPTIMIZED_YEAR: Final[int] = 2100
-    __FIRST_OPTIMIZED_DAY: Final[int] = -25567
-    __LAST_OPTIMIZED_DAY: Final[int] = 47846
+    __FIRST_OPTIMIZED_YEAR: _typing.Final[int] = 1900
+    __LAST_OPTIMIZED_YEAR: _typing.Final[int] = 2100
+    __FIRST_OPTIMIZED_DAY: _typing.Final[int] = -25567
+    __LAST_OPTIMIZED_DAY: _typing.Final[int] = 47846
     # The 0-based days-since-unix-epoch for the start of each month
-    __MONTH_START_DAYS: Final[list[int]] = list(range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1))
+    __MONTH_START_DAYS: _typing.Final[list[int]] = list(
+        range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1)
+    )
     # The 1-based days-since-unix-epoch for the start of each year
-    __YEAR_START_DAYS: Final[list[int]] = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
+    __YEAR_START_DAYS: _typing.Final[list[int]] = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
 
-    __DAYS_FROM_0000_to_1970: Final[int] = 719527
-    __AVERAGE_DAYS_PER_10_YEARS: Final[int] = 3652
+    __DAYS_FROM_0000_to_1970: _typing.Final[int] = 719527
+    __AVERAGE_DAYS_PER_10_YEARS: _typing.Final[int] = 3652
 
     @classmethod
     def _get_gregorian_year_month_day_calendar_from_days_since_epoch(
@@ -955,7 +963,7 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
     ) -> _YearMonthDayCalendar:
         # TODO: unchecked
         if days_since_epoch < cls.__FIRST_OPTIMIZED_DAY or days_since_epoch > cls.__LAST_OPTIMIZED_DAY:
-            return CalendarSystem.iso._get_year_month_day_calendar_from_days_since_epoch(days_since_epoch)
+            return _CalendarSystem.iso._get_year_month_day_calendar_from_days_since_epoch(days_since_epoch)
         raise NotImplementedError("We need to figure out the static constructor stuff first :(")
 
     def __init__(self) -> None:
@@ -1018,7 +1026,7 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
         return ((year & 3) == 0) and ((year % 100) != 0 or (year % 400) == 0)
 
 
-class HebrewMonthNumbering(enum.IntEnum):
+class HebrewMonthNumbering(_enum.IntEnum):
     """The month numbering to use for the Hebrew calendar.
 
     When requesting a Hebrew calendar with ``CalendarSystem.get_hebrew_calendar()``, a month numbering
@@ -1088,21 +1096,21 @@ class _HebrewScripturalCalculator:
     month numbering.
     """
 
-    _MAX_YEAR: Final[int] = 9999
-    _MIN_YEAR: Final[int] = 1
+    _MAX_YEAR: _typing.Final[int] = 9999
+    _MIN_YEAR: _typing.Final[int] = 1
     # Use the bottom two bits of the day value to indicate Heshvan/Kislev.
     # Using the top bits causes issues for negative day values (only relevant for
     # invalid years, but still problematic in general).
-    __IS_HESHVAN_LONG_CACHE_BIT: Final[int] = 1 << 0
-    __IS_KISLEV_SHORT_CACHE_BIT: Final[int] = 1 << 1
+    __IS_HESHVAN_LONG_CACHE_BIT: _typing.Final[int] = 1 << 0
+    __IS_KISLEV_SHORT_CACHE_BIT: _typing.Final[int] = 1 << 1
     # Number of bits to shift the elapsed days in order to get the cache value.
-    __ELAPSED_DAYS_CACHE_SHIFT: Final[int] = 2
+    __ELAPSED_DAYS_CACHE_SHIFT: _typing.Final[int] = 2
 
     # Cache of when each year starts (in  terms of absolute days). This is the heart of
     # the algorithm, so just caching this is highly effective.
     # Each entry additionally encodes the length of Heshvan and Kislev. We could encode
     # more information too, but those are the tricky bits.
-    __YEAR_CACHE: Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
+    __YEAR_CACHE: _typing.Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
 
     @staticmethod
     def _is_leap_year(year: int) -> bool:
@@ -1349,11 +1357,11 @@ class _HebrewScripturalCalculator:
         return cls._elapsed_days(year + 1) - cls._elapsed_days(year)
 
 
-@sealed
+@_sealed
 class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
-    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: Final[int] = -2092590
-    __MONTHS_PER_LEAP_CYCLE: Final[int] = 235
-    __YEARS_PER_LEAP_CYCLE: Final[int] = 19
+    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: _typing.Final[int] = -2092590
+    __MONTHS_PER_LEAP_CYCLE: _typing.Final[int] = 235
+    __YEARS_PER_LEAP_CYCLE: _typing.Final[int] = 19
 
     def __init__(self, month_numbering: HebrewMonthNumbering) -> None:
         super().__init__(
@@ -1362,7 +1370,7 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
             3654,  # Average length of 10 years
             self.__UNIX_EPOCH_DAY_AT_START_OF_YEAR_1,
         )
-        self.__month_numbering: Final[HebrewMonthNumbering] = month_numbering
+        self.__month_numbering: _typing.Final[HebrewMonthNumbering] = month_numbering
 
     def __calendar_to_civil_month(self, year: int, month: int) -> int:
         return (
@@ -1550,9 +1558,9 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
         return lhs._day - rhs._day
 
 
-@sealed
+@_sealed
 class _JulianYearMonthDayCalculator(_GJYearMonthDayCalculator):
-    __AVERAGE_DAYS_PER_10_JULIAN_YEARS: Final[int] = 3653  # Ideally 365.25 per year
+    __AVERAGE_DAYS_PER_10_JULIAN_YEARS: _typing.Final[int] = 3653  # Ideally 365.25 per year
 
     def __init__(self) -> None:
         super().__init__(-9997, 9998, self.__AVERAGE_DAYS_PER_10_JULIAN_YEARS, -719164)
@@ -1580,16 +1588,16 @@ class _JulianYearMonthDayCalculator(_GJYearMonthDayCalculator):
         return relative_year * 365 + leap_years - (366 + 352)
 
 
-class _FixedMonthYearMonthDayCalculator(_RegularYearMonthDayCalculator, ABC):
+class _FixedMonthYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
     """Abstract implementation of a year/month/day calculator based around months which always have 30 days.
 
     As the month length is fixed various calculations can be optimised. This implementation assumes any additional days
     after twelve months fall into a thirteenth month.
     """
 
-    __DAYS_IN_MONTH: Final[int] = 30
+    __DAYS_IN_MONTH: _typing.Final[int] = 30
 
-    __AVERAGE_DAYS_PER_10_YEARS: Final[int] = 3653  # Ideally 365.25 days per year...
+    __AVERAGE_DAYS_PER_10_YEARS: _typing.Final[int] = 3653  # Ideally 365.25 days per year...
 
     def __init__(self, min_year: int, max_year: int, days_at_start_of_year_1: int) -> None:
         super().__init__(min_year, max_year, 13, self.__AVERAGE_DAYS_PER_10_YEARS, days_at_start_of_year_1)

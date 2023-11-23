@@ -1,8 +1,10 @@
-from datetime import datetime, timezone
-from typing import Any, TypeVar
+__all__: list[str] = []
 
-_T = TypeVar("_T")
-_Ttype = TypeVar("_Ttype", bound=type)
+import datetime as _datetime
+import typing as _typing
+
+_T = _typing.TypeVar("_T")
+_Ttype = _typing.TypeVar("_Ttype", bound=type)
 
 
 class _Preconditions:
@@ -34,7 +36,7 @@ class _Preconditions:
         )
 
     @classmethod
-    def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: Any) -> None:
+    def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: _typing.Any) -> None:
         if not expession:
             if message_args:
                 message = message.format(*message_args)
@@ -88,13 +90,13 @@ def _towards_zero_division(x: int | float, y: int) -> int:
     return int((Decimal(x) / y).quantize(0, ROUND_DOWN))
 
 
-def _to_ticks(dt: datetime) -> int:
+def _to_ticks(dt: _datetime.datetime) -> int:
     """Get a value akin to C#'s DateTime.Ticks property from a python datetime."""
     # Gratefully stolen from https://stackoverflow.com/a/29368771
-    return int((dt - datetime(1, 1, 1, tzinfo=timezone.utc)).total_seconds() * 10000000)
+    return int((dt - _datetime.datetime(1, 1, 1, tzinfo=_datetime.timezone.utc)).total_seconds() * 10000000)
 
 
-def sealed(cls: _Ttype) -> _Ttype:
+def _sealed(cls: _Ttype) -> _Ttype:
     """Prevents the decorated class from being subclassed.
 
     This is intended to loosely emulate the behaviour of the `sealed` keyword in C#.
@@ -110,7 +112,7 @@ def sealed(cls: _Ttype) -> _Ttype:
     return cls
 
 
-def private(klass: _Ttype) -> _Ttype:
+def _private(klass: _Ttype) -> _Ttype:
     """Prevents the decorated class from being instantiated.
 
     This is used to decorate Python classes which have been ported from C#, where the C# class has no public
@@ -119,13 +121,13 @@ def private(klass: _Ttype) -> _Ttype:
 
     msg = f"{klass.__name__} is not intended to be initialised directly."
 
-    def __init__(*_args: Any, **_kwargs: Any) -> None:
+    def __init__(*_args: _typing.Any, **_kwargs: _typing.Any) -> None:
         raise TypeError(msg)
 
-    def __new__(*_args: Any, **_kwargs: Any) -> _Ttype:
+    def __new__(*_args: _typing.Any, **_kwargs: _typing.Any) -> _Ttype:
         raise TypeError(msg)
 
-    def __call__(*_args: Any, **_kwargs: Any) -> _Ttype:
+    def __call__(*_args: _typing.Any, **_kwargs: _typing.Any) -> _Ttype:
         raise TypeError(msg)
 
     # Use setattr to stop mypy shouting
