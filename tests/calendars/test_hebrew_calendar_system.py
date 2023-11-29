@@ -1,6 +1,6 @@
 import pytest
 
-from pyoda_time import _YearMonthDay
+from pyoda_time import CalendarSystem, LocalDate, _YearMonthDay
 from pyoda_time.calendars import HebrewMonthNumbering, _HebrewScripturalCalculator, _HebrewYearMonthDayCalculator
 
 
@@ -11,7 +11,7 @@ class TestHebrewCalendarSystem:
     # TODO: def test_set_year (requires LocalDatePattern)
     # TODO: def test_add_months_months_between (requires LocalDatePattern)
     # TODO: def test_months_between (requires LocalDatePattern)
-    # TODO: def test_months_between_time_of_day(self) (requires LocalDateTime)
+    # TODO: def test_months_between_time_of_day(self) -> None:  (requires Period.Between())
 
     @pytest.mark.parametrize(
         "numbering",
@@ -59,21 +59,21 @@ class TestHebrewCalendarSystem:
             _HebrewScripturalCalculator._get_days_from_start_of_year_to_start_of_month(5502, 0)
 
     # TODO: requires LocalDate.plus_months()
-    # @pytest.mark.parametrize(
-    #     "month_numbering",
-    #     (
-    #         HebrewMonthNumbering.CIVIL,
-    #         HebrewMonthNumbering.SCRIPTURAL,
-    #     ),
-    # )
-    # def test_plus_months_overflow(self, month_numbering: HebrewMonthNumbering) -> None:
-    #     calendar = CalendarSystem.get_hebrew_calendar(month_numbering)
-    #     # TODO: It would be nice to have an easy way of getting the smallest/largest LocalDate for
-    #     #  a calendar. Or possibly FromDayOfYear as well... instead, we'll just add/subtract 8 months instead
-    #     early_date = LocalDate(year=calendar.min_year, month=1, day=1, calendar=calendar)
-    #     late_date = LocalDate(year=calendar.max_year, month=12, day=1, calendar=calendar)
-    #
-    #     with pytest.raises(OverflowError):
-    #         early_date.plus_months(-7)
-    #     with pytest.raises(OverflowError):
-    #         late_date.plus_months(7)
+    @pytest.mark.parametrize(
+        "month_numbering",
+        (
+            HebrewMonthNumbering.CIVIL,
+            HebrewMonthNumbering.SCRIPTURAL,
+        ),
+    )
+    def test_plus_months_overflow(self, month_numbering: HebrewMonthNumbering) -> None:
+        calendar = CalendarSystem.get_hebrew_calendar(month_numbering)
+        # TODO: It would be nice to have an easy way of getting the smallest/largest LocalDate for
+        #  a calendar. Or possibly FromDayOfYear as well... instead, we'll just add/subtract 8 months instead
+        early_date = LocalDate(year=calendar.min_year, month=1, day=1, calendar=calendar)
+        late_date = LocalDate(year=calendar.max_year, month=12, day=1, calendar=calendar)
+
+        with pytest.raises(OverflowError):
+            early_date.plus_months(-7)
+        with pytest.raises(OverflowError):
+            late_date.plus_months(7)

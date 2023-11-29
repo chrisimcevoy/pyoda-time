@@ -33,6 +33,32 @@ _SUPPORTED_IDS: Final[list[str]] = list(CalendarSystem.ids)
 _SUPPORTED_CALENDARS: Final[list[CalendarSystem]] = [CalendarSystem.for_id(id_) for id_ in _SUPPORTED_IDS]
 
 
+def test_supported_ids() -> None:
+    """This is a manual test to ensure that the Calendar IDs in pyoda time match those in noda time."""
+    noda_time_calendar_ids = [
+        "ISO",
+        "Gregorian",
+        "Coptic",
+        "Badi",
+        "Julian",
+        "Hijri Civil-Indian",
+        "Hijri Civil-Base15",
+        "Hijri Civil-Base16",
+        "Hijri Civil-HabashAlHasib",
+        "Hijri Astronomical-Indian",
+        "Hijri Astronomical-Base15",
+        "Hijri Astronomical-Base16",
+        "Hijri Astronomical-HabashAlHasib",
+        "Persian Simple",
+        "Persian Arithmetic",
+        "Persian Algorithmic",
+        "Um Al Qura",
+        "Hebrew Civil",
+        "Hebrew Scriptural",
+    ]
+    assert sorted(_SUPPORTED_IDS) == sorted(noda_time_calendar_ids)
+
+
 class TestCalendarSystem:
     @pytest.mark.parametrize("calendar", _SUPPORTED_CALENDARS, ids=lambda x: x.id)
     def test_max_date(self, calendar: CalendarSystem) -> None:
@@ -109,10 +135,10 @@ class TestCalendarSystemIds:
     def test_for_ordinal_uncached_invalid(self) -> None:
         # In noda time, they use:
         # `CalendarSystem.ForOrdinalUncached((CalendarOrdinal)9999))`
-        with pytest.raises(ValueError):
-            _CalendarOrdinal(9999)
-        with pytest.raises(ValueError):
-            CalendarSystem._for_ordinal(_CalendarOrdinal.SIZE)
+        with pytest.raises(RuntimeError):
+            CalendarSystem._for_ordinal_uncached(9999)  # type: ignore
+        with pytest.raises(RuntimeError):
+            CalendarSystem._for_ordinal_uncached(_CalendarOrdinal.SIZE)
 
 
 class TestCalendarSystemTestValidation:
