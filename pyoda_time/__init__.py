@@ -9,6 +9,7 @@ __all__: list[str] = [
     "IsoDayOfWeek",
     "LocalDate",
     "LocalTime",
+    "LocalDateTime",
     "Offset",
     "PyodaConstants",
 ]
@@ -25,14 +26,23 @@ from .calendars import (
     HebrewMonthNumbering as _HebrewMonthNumbering,
 )
 from .calendars import (
+    IslamicEpoch as _IslamicEpoch,
+)
+from .calendars import (
+    IslamicLeapYearPattern as _IslamicLeapYearPattern,
+)
+from .calendars import (
     _BadiYearMonthDayCalculator,
     _CopticYearMonthDayCalculator,
     _EraCalculator,
     _GJEraCalculator,
     _GregorianYearMonthDayCalculator,
     _HebrewYearMonthDayCalculator,
+    _IslamicYearMonthDayCalculator,
     _JulianYearMonthDayCalculator,
+    _PersianYearMonthDayCalculator,
     _SingleEraCalculator,
+    _UmAlQuraYearMonthDayCalculator,
     _YearMonthDayCalculator,
 )
 from .utility import (
@@ -68,6 +78,7 @@ class PyodaConstants(metaclass=_PyodaConstantsMeta):
     HOURS_PER_DAY: _typing.Final[int] = 24
     SECONDS_PER_MINUTE: _typing.Final[int] = 60
     MINUTES_PER_HOUR: _typing.Final[int] = 60
+    MINUTES_PER_DAY: _typing.Final[int] = MINUTES_PER_HOUR * HOURS_PER_DAY
     SECONDS_PER_HOUR: _typing.Final[int] = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
     SECONDS_PER_DAY: _typing.Final[int] = SECONDS_PER_HOUR * HOURS_PER_DAY
     MILLISECONDS_PER_SECOND: _typing.Final[int] = 1000
@@ -109,8 +120,8 @@ class _CalendarOrdinal(_enum.IntEnum):
     ISLAMIC_ASTRONOMICAL_HABASH_AL_HASIB = 12
     ISLAMIC_CIVIL_BASE15 = 13
     ISLAMIC_CIVIL_BASE16 = 14
-    ISLAMIC_CIVIL_Indian = 15
-    ISLAMIC_CIVIL_HASBASH_AL_HASIB = 16
+    ISLAMIC_CIVIL_INDIAN = 15
+    ISLAMIC_CIVIL_HABASH_AL_HASIB = 16
     UM_AL_QURA = 17
     BADI = 18
     # Not a real ordinal; just present to keep a count. Increase this as the number increases...
@@ -227,8 +238,13 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
 
     __ISLAMIC_NAME: _typing.Final[str] = "Hijri"
     __ISLAMIC_ID_BASE: _typing.Final[str] = __ISLAMIC_NAME
-    # Not part of IslamicCalendars as we want to be able to call it without triggering type initialization.
-    # TODO def _get_islamic_id()
+
+    @staticmethod
+    def _get_islamic_id(base: str, leap_year_pattern: _IslamicLeapYearPattern, epoch: _IslamicEpoch) -> str:
+        def to_camel_case(s: str) -> str:
+            return "".join(x.capitalize() for x in s.split("_"))
+
+        return f"{base} {to_camel_case(epoch.name)}-{to_camel_case(leap_year_pattern.name)}"
 
     __PERSIAN_NAME: _typing.Final[str] = "Persian"
     __PERSIAN_ID_BASE: _typing.Final[str] = __PERSIAN_NAME
@@ -253,13 +269,36 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         __GREGORIAN_ID: _CalendarOrdinal.GREGORIAN,
         __HEBREW_CIVIL_ID: _CalendarOrdinal.HEBREW_CIVIL,
         __HEBREW_SCRIPTURAL_ID: _CalendarOrdinal.HEBREW_SCRIPTURAL,
-        # TODO: Islamic IDs
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE15, _IslamicEpoch.CIVIL
+        ): _CalendarOrdinal.ISLAMIC_CIVIL_BASE15,
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE15, _IslamicEpoch.ASTRONOMICAL
+        ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE15,
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE16, _IslamicEpoch.CIVIL
+        ): _CalendarOrdinal.ISLAMIC_CIVIL_BASE16,
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE16, _IslamicEpoch.ASTRONOMICAL
+        ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16,
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.INDIAN, _IslamicEpoch.CIVIL
+        ): _CalendarOrdinal.ISLAMIC_CIVIL_INDIAN,
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.INDIAN, _IslamicEpoch.ASTRONOMICAL
+        ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_INDIAN,
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.CIVIL
+        ): _CalendarOrdinal.ISLAMIC_CIVIL_HABASH_AL_HASIB,
+        _get_islamic_id(
+            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.ASTRONOMICAL
+        ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_HABASH_AL_HASIB,
         __ISO_ID: _CalendarOrdinal.ISO,
         __JULIAN_ID: _CalendarOrdinal.JULIAN,
-        # TODO: __PERSIAN_SIMPLE_ID: _CalendarOrdinal.PERSIAN_SIMPLE,
-        # TODO: __PERSIAN_ARITHMETIC_ID: _CalendarOrdinal.PERSIAN_ARITHMETIC,
-        # TODO: __PERSIAN_ASTRONOMICAL_ID: _CalendarOrdinal.PERSIAN_ASTRONOMICAL,
-        # TODO: __UM_AL_QURA_ID: _CalendarOrdinal.UM_AL_QURA,
+        __PERSIAN_SIMPLE_ID: _CalendarOrdinal.PERSIAN_SIMPLE,
+        __PERSIAN_ARITHMETIC_ID: _CalendarOrdinal.PERSIAN_ARITHMETIC,
+        __PERSIAN_ASTRONOMICAL_ID: _CalendarOrdinal.PERSIAN_ASTRONOMICAL,
+        __UM_AL_QURA_ID: _CalendarOrdinal.UM_AL_QURA,
     }
 
     # region Public factory members for calendars
@@ -328,6 +367,44 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
             case _:
                 raise ValueError(f"Unknown HebrewMonthNumbering: {month_numbering}")
 
+    @classmethod
+    def get_islamic_calendar(cls, leap_year_pattern: _IslamicLeapYearPattern, epoch: _IslamicEpoch) -> CalendarSystem:
+        _Preconditions._check_argument_range("leap_year_pattern", int(leap_year_pattern), 1, 4)
+        _Preconditions._check_argument_range("epoch", int(epoch), 1, 2)
+        match (epoch, leap_year_pattern):
+            # Civil
+            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.BASE15):
+                ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_BASE15
+            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.BASE16):
+                ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_BASE16
+            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.INDIAN):
+                ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_INDIAN
+            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.HABASH_AL_HASIB):
+                ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_HABASH_AL_HASIB
+            # Astronomical
+            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.BASE15):
+                ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE15
+            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.BASE16):
+                ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16
+            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.INDIAN):
+                ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_INDIAN
+            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.HABASH_AL_HASIB):
+                ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_HABASH_AL_HASIB
+            case _:
+                raise KeyError(
+                    f"No Islamic Calendar found for leap year pattern {leap_year_pattern.name} and epoch {epoch.name}"
+                )
+        if ordinal in cls.__CALENDAR_BY_ORDINAL:
+            return cls.__CALENDAR_BY_ORDINAL[ordinal]
+        calculator = _IslamicYearMonthDayCalculator(leap_year_pattern, epoch)
+        return CalendarSystem.__ctor(
+            ordinal=ordinal,
+            id_=cls._get_islamic_id(cls.__ISLAMIC_ID_BASE, leap_year_pattern=leap_year_pattern, epoch=epoch),
+            name=cls.__ISLAMIC_NAME,
+            year_month_day_calculator=calculator,
+            single_era=_Era.anno_hegirae,
+        )
+
     # endregion
 
     __ordinal: _typing.Annotated[_CalendarOrdinal, "Set by private constructor"]
@@ -378,6 +455,8 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         single_era: _Era | None = None,
     ) -> CalendarSystem:
         """Private initialiser which emulates the two private constructors on the corresponding Noda Time class."""
+        if ordinal in cls.__CALENDAR_BY_ORDINAL:
+            return cls.__CALENDAR_BY_ORDINAL[ordinal]
         self: CalendarSystem = super().__new__(cls)
         self.__ordinal = ordinal
         self.__id = id_
@@ -622,6 +701,22 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                 return cls.get_hebrew_calendar(_HebrewMonthNumbering.CIVIL)
             case _CalendarOrdinal.HEBREW_SCRIPTURAL:
                 return cls.get_hebrew_calendar(_HebrewMonthNumbering.SCRIPTURAL)
+            case _CalendarOrdinal.ISLAMIC_CIVIL_BASE15:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE15, _IslamicEpoch.CIVIL)
+            case _CalendarOrdinal.ISLAMIC_CIVIL_BASE16:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE16, _IslamicEpoch.CIVIL)
+            case _CalendarOrdinal.ISLAMIC_CIVIL_INDIAN:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.INDIAN, _IslamicEpoch.CIVIL)
+            case _CalendarOrdinal.ISLAMIC_CIVIL_HABASH_AL_HASIB:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.CIVIL)
+            case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE15:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE15, _IslamicEpoch.ASTRONOMICAL)
+            case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE16, _IslamicEpoch.ASTRONOMICAL)
+            case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_INDIAN:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.INDIAN, _IslamicEpoch.ASTRONOMICAL)
+            case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_HABASH_AL_HASIB:
+                return cls.get_islamic_calendar(_IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.ASTRONOMICAL)
             case _CalendarOrdinal.ISO:
                 gregorian_calculator = _GregorianYearMonthDayCalculator()
                 gregorian_era_calculator = _GJEraCalculator(gregorian_calculator)
@@ -641,9 +736,42 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     year_month_day_calculator=julian_calculator,
                     era_calculator=_GJEraCalculator(julian_calculator),
                 )
+            case _CalendarOrdinal.PERSIAN_ARITHMETIC:
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__PERSIAN_ARITHMETIC_ID,
+                    name=cls.__PERSIAN_NAME,
+                    year_month_day_calculator=_PersianYearMonthDayCalculator.Arithmetic(),
+                    single_era=_Era.anno_persico,
+                )
+            case _CalendarOrdinal.PERSIAN_ASTRONOMICAL:
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__PERSIAN_ASTRONOMICAL_ID,
+                    name=cls.__PERSIAN_NAME,
+                    year_month_day_calculator=_PersianYearMonthDayCalculator.Astronomical(),
+                    single_era=_Era.anno_persico,
+                )
+            case _CalendarOrdinal.PERSIAN_SIMPLE:
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__PERSIAN_SIMPLE_ID,
+                    name=cls.__PERSIAN_NAME,
+                    year_month_day_calculator=_PersianYearMonthDayCalculator.Simple(),
+                    single_era=_Era.anno_persico,
+                )
+            case _CalendarOrdinal.UM_AL_QURA:
+                return cls.__ctor(
+                    ordinal=ordinal,
+                    id_=cls.__UM_AL_QURA_ID,
+                    name=cls.__UM_AL_QURA_NAME,
+                    year_month_day_calculator=_UmAlQuraYearMonthDayCalculator(),
+                    single_era=_Era.anno_hegirae,
+                )
             case _:
-                # TODO map all CalendarOrdinals to CalendarSystems and rephrase this error
-                raise ValueError(f"CalendarOrdinal '{ordinal.name}' not mapped to CalendarSystem yet")
+                raise RuntimeError(
+                    f"CalendarOrdinal '{getattr(ordinal, "name", ordinal)}' not mapped to CalendarSystem."
+                )
 
 
 @_sealed
@@ -815,19 +943,19 @@ class Duration:
     def __le__(self, other: Duration) -> bool:
         if isinstance(other, Duration):
             return self < other or self == other
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     def __lt__(self, other: Duration) -> bool:
         if isinstance(other, Duration):
             return self.__days < other.__days or (
                 self.__days == other.__days and self.__nano_of_day < other.__nano_of_day
             )
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Duration):
             return self.__days == other.__days and self.__nano_of_day == other.__nano_of_day
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     def __neg__(self) -> Duration:
         old_days = self.__days
@@ -892,7 +1020,7 @@ class Duration:
                 days += 1
                 nanos -= PyodaConstants.NANOSECONDS_PER_DAY
             return Duration._ctor(days=days, nano_of_day=nanos)
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     def __sub__(self, other: Duration) -> Duration:
         if isinstance(other, Duration):
@@ -902,7 +1030,7 @@ class Duration:
                 days -= 1
                 nanos += PyodaConstants.NANOSECONDS_PER_DAY
             return Duration._ctor(days=days, nano_of_day=nanos)
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     @classmethod
     def epsilon(cls) -> Duration:
@@ -1085,7 +1213,9 @@ class Offset(metaclass=_OffsetMeta):
         :return: A new ``Offset`` representing the sum of the given values.
         :raises ValueError: The result of the operation is outside the range of Offset.
         """
-        return self.from_seconds(self.seconds + other.seconds)
+        if isinstance(other, Offset):
+            return self.from_seconds(self.seconds + other.seconds)
+        return NotImplemented
 
     @staticmethod
     def add(left: Offset, right: Offset) -> Offset:
@@ -1114,7 +1244,9 @@ class Offset(metaclass=_OffsetMeta):
         :return: A new ``Offset`` representing the difference of the given values.
         :raises ValueError: The result of the operation is outside the range of Offset.
         """
-        return self.from_seconds(self.seconds - other.seconds)
+        if isinstance(other, Offset):
+            return self.from_seconds(self.seconds - other.seconds)
+        return NotImplemented
 
     @staticmethod
     def subtract(minuend: Offset, subtrahend: Offset) -> Offset:
@@ -1419,22 +1551,22 @@ class Instant:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Instant):
             return self.__duration == other.__duration
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     def __lt__(self, other: Instant) -> bool:
         if isinstance(other, Instant):
             return self.__duration < other.__duration
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     def __le__(self, other: Instant) -> bool:
         if isinstance(other, Instant):
             return self < other or self == other
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     def __add__(self, other: Duration) -> Instant:
         if isinstance(other, Duration):
             return self._from_untrusted_duration(self.__duration + other)
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     @_typing.overload
     def __sub__(self, other: Instant) -> Duration:
@@ -1449,7 +1581,7 @@ class Instant:
             return self.__duration - other.__duration
         if isinstance(other, Duration):
             return self._from_trusted_duration(self.__duration - other)
-        raise TypeError("Unsupported operand type")
+        return NotImplemented
 
     @classmethod
     def min_value(cls) -> Instant:
@@ -1655,6 +1787,16 @@ class _LocalInstant:
     than it used to be... almost solely for time zones.
     """
 
+    @classmethod
+    def before_min_value(cls) -> _LocalInstant:
+        # TODO: In Noda Time this is a public static readonly field
+        return _LocalInstant.__ctor(days=Instant._before_min_value()._days_since_epoch, deliberately_invalid=True)
+
+    @classmethod
+    def after_max_value(cls) -> _LocalInstant:
+        # TODO: In Noda Time this is a public static readonly field
+        return _LocalInstant.__ctor(days=Instant._after_max_value()._days_since_epoch, deliberately_invalid=True)
+
     def __init__(self) -> None:
         self.__duration = Duration()
 
@@ -1689,25 +1831,39 @@ class _LocalInstant:
         self.__duration = Duration._ctor(days=days, nano_of_day=0)
         return self
 
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, _LocalInstant):
-            return self.__duration == other.__duration
-        raise TypeError("Unsupported operand type")
+    @property
+    def _is_valid(self) -> bool:
+        return Instant._MIN_DAYS < self._days_since_epoch < Instant._MAX_DAYS
 
     @property
     def _time_since_local_epoch(self) -> Duration:
         """Number of nanoseconds since the local unix epoch."""
         return self.__duration
 
-    @classmethod
-    def before_min_value(cls) -> _LocalInstant:
-        # In Noda Time this is a public static readonly field
-        return _LocalInstant.__ctor(days=Instant._before_min_value()._days_since_epoch, deliberately_invalid=True)
+    @property
+    def _days_since_epoch(self) -> int:
+        return self.__duration._floor_days
 
-    @classmethod
-    def after_max_value(cls) -> _LocalInstant:
-        # In Noda Time this is a public static readonly field
-        return _LocalInstant.__ctor(days=Instant._after_max_value()._days_since_epoch, deliberately_invalid=True)
+    @property
+    def _nanosecond_of_day(self) -> int:
+        return self.__duration._nanosecond_of_floor_day
+
+    # region Operators
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, _LocalInstant):
+            return self.__duration == other.__duration
+        return NotImplemented
+
+    # endregion
+
+    # region Object overrides
+
+    # endregion
+
+    # region IEquatable<LocalInstant> Members
+
+    # endregion
 
 
 @_typing.final
@@ -1715,6 +1871,10 @@ class _LocalInstant:
 class LocalDate:
     """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
     zone or time of day."""
+
+    @_typing.overload
+    def __init__(self) -> None:
+        ...
 
     @_typing.overload
     def __init__(self, *, year: int, month: int, day: int):
@@ -1734,9 +1894,9 @@ class LocalDate:
 
     def __init__(
         self,
-        year: int | None = None,
-        month: int | None = None,
-        day: int | None = None,
+        year: int = 1,
+        month: int = 1,
+        day: int = 1,
         calendar: CalendarSystem | None = None,
         era: _Era | None = None,
         year_of_era: int | None = None,
@@ -1746,11 +1906,12 @@ class LocalDate:
         if era is not None and year_of_era is not None and month is not None and day is not None:
             year = calendar.get_absolute_year(year_of_era, era)
 
-        if year is not None and month is not None and day is not None:
+        elif year is not None and month is not None and day is not None:
             calendar._validate_year_month_day(year, month, day)
             self.__year_month_day_calendar = _YearMonthDayCalendar._ctor(
                 year=year, month=month, day=day, calendar_ordinal=calendar._ordinal
             )
+
         else:
             raise TypeError
 
@@ -1850,10 +2011,59 @@ class LocalDate:
     def _year_month_day(self) -> _YearMonthDay:
         return self.__year_month_day_calendar._to_year_month_day()
 
+    def __add__(self, other: LocalTime) -> LocalDateTime:
+        # TODO: overload for LocalDate + Period
+        if isinstance(other, LocalTime):
+            return LocalDateTime._ctor(local_date=self, local_time=other)
+        return NotImplemented
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, LocalDate):
+            return self.__year_month_day_calendar == other.__year_month_day_calendar
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, LocalDate):
+            return not self == other
+        return NotImplemented
+
     def __lt__(self, other: LocalDate) -> bool:
         if isinstance(other, LocalDate):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
             return self.__trusted_compare_to(other) < 0
-        raise TypeError
+        return NotImplemented
+
+    def __le__(self, other: LocalDate) -> bool:
+        if isinstance(other, LocalDate):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
+            return self.__trusted_compare_to(other) <= 0
+
+    def __gt__(self, other: LocalDate) -> bool:
+        if isinstance(other, LocalDate):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
+            return self.__trusted_compare_to(other) > 0
+        return NotImplemented
+
+    def __ge__(self, other: LocalDate) -> bool:
+        if isinstance(other, LocalDate):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
+            return self.__trusted_compare_to(other) >= 0
 
     def __trusted_compare_to(self, other: LocalDate) -> int:
         """Performs a comparison with another date, trusting that the calendar of the other date is already correct.
@@ -1861,6 +2071,59 @@ class LocalDate:
         This avoids duplicate calendar checks.
         """
         return self.calendar._compare(self._year_month_day, other._year_month_day)
+
+    def with_calendar(self, calendar: CalendarSystem) -> LocalDate:
+        """Creates a new LocalDate representing the same physical date, but in a different calendar.
+
+        The returned LocalDate is likely to have different field values to this one. For example, January 1st 1970 in
+        the Gregorian calendar was December 19th 1969 in the Julian calendar.
+
+        :param calendar: The calendar system to convert this local date to.
+        :return: The converted LocalDate
+        """
+        _Preconditions._check_not_null(calendar, "calendar")
+        return LocalDate._ctor(days_since_epoch=self._days_since_epoch, calendar=calendar)
+
+    def plus_years(self, years: int) -> LocalDate:
+        """Returns a new LocalDate representing the current value with the given number of years added.
+
+        If the resulting date is invalid, lower fields (typically the day of month) are reduced to find a valid value.
+        For example, adding one year to February 29th 2012 will return February 28th 2013; subtracting one year from
+        February 29th 2012 will return February 28th 2011.
+
+        :param years: The number of years to add.
+        :return: The current value plus the given number of years.
+        """
+        from .fields import _DatePeriodFields
+
+        return _DatePeriodFields._years_field.add(self, years)
+
+    def plus_months(self, months: int) -> LocalDate:
+        """Returns a new LocalDate representing the current value with the given number of months added.
+
+        This method does not try to maintain the year of the current value, so adding four months to a value in October
+        will result in a value in the following February.
+
+        If the resulting date is invalid, the day of month is reduced to find a valid value. For example, adding one
+        month to January 30th 2011 will return February 28th 2011; subtracting one month from March 30th 2011 will
+        return February 28th 2011.
+
+        :param months: The number of months to add
+        :return: The current date plus the given number of months
+        """
+        from .fields import _DatePeriodFields
+
+        return _DatePeriodFields._months_field.add(self, months)
+
+    def at(self, time: LocalTime) -> LocalDateTime:
+        """Combines this <see ``LocalDate`` with the given ``LocalTime`` into a single ``LocalDateTime``.
+
+        Fluent alternative to ``+``.
+
+        :param time: The time to combine with this date.
+        :return: The ``LocalDateTime`` representation of the given time on this date.
+        """
+        return self + time
 
 
 @_typing.final
@@ -1913,10 +2176,369 @@ class LocalTime:
         self.__nanoseconds = nanoseconds
         return self
 
+    @classmethod
+    def from_nanoseconds_since_midnight(cls, nanoseconds: int) -> LocalTime:
+        """Factory method for creating a local time from the number of nanoseconds which have elapsed since midnight.
+
+        :param nanoseconds: The number of nanoseconds, in the range [0, 86,399,999,999,999]
+        :return: The resulting time.
+        """
+        # Avoid the method calls which give a decent exception unless we're actually going to fail.
+        if nanoseconds < 0 or nanoseconds > PyodaConstants.NANOSECONDS_PER_DAY - 1:
+            _Preconditions._check_argument_range("nanoseconds", nanoseconds, 0, PyodaConstants.NANOSECONDS_PER_DAY - 1)
+        return LocalTime._ctor(nanoseconds=nanoseconds)
+
+    @classmethod
+    def from_ticks_since_midnight(cls, ticks: int) -> LocalTime:
+        """Factory method for creating a local time from the number of ticks which have elapsed since midnight.
+
+        :param ticks: The number of ticks, in the range [0, 863,999,999,999]
+        :return: The resulting time.
+        """
+        # Avoid the method calls which give a decent exception unless we're actually going to fail.
+        if ticks < 0 or ticks > PyodaConstants.TICKS_PER_DAY - 1:
+            _Preconditions._check_argument_range("ticks", ticks, 0, PyodaConstants.TICKS_PER_DAY - 1)
+        return LocalTime._ctor(nanoseconds=_int32_overflow(ticks * PyodaConstants.NANOSECONDS_PER_TICK))
+
+    @classmethod
+    def from_milliseconds_since_midnight(cls, milliseconds: int) -> LocalTime:
+        """Factory method for creating a local time from the number of milliseconds which have elapsed since midnight.
+
+        :param milliseconds: The number of milliseconds, in the range [0, 86,399,999]
+        :return: The resulting time.
+        """
+        # Avoid the method calls which give a decent exception unless we're actually going to fail.
+        if milliseconds < 0 or milliseconds > PyodaConstants.MILLISECONDS_PER_DAY - 1:
+            _Preconditions._check_argument_range(
+                "milliseconds", milliseconds, 0, PyodaConstants.MILLISECONDS_PER_DAY - 1
+            )
+        return cls._ctor(nanoseconds=_int32_overflow(milliseconds * PyodaConstants.NANOSECONDS_PER_MILLISECOND))
+
+    @classmethod
+    def from_seconds_since_midnight(cls, seconds: int) -> LocalTime:
+        """Factory method for creating a local time from the number of seconds which have elapsed since midnight.
+
+        :param seconds: The number of seconds, in the range [0, 86,399]
+        :return: The resulting time.
+        """
+        # Avoid the method calls which give a decent exception unless we're actually going to fail.
+        if seconds < 0 or seconds > PyodaConstants.SECONDS_PER_DAY - 1:
+            _Preconditions._check_argument_range("seconds", seconds, 0, PyodaConstants.SECONDS_PER_DAY - 1)
+        return cls._ctor(nanoseconds=_int32_overflow(seconds * PyodaConstants.NANOSECONDS_PER_SECOND))
+
+    @classmethod
+    def from_minutes_since_midnight(cls, minutes: int) -> LocalTime:
+        """Factory method for creating a local time from the number of minutes which have elapsed since midnight.
+
+        :param minutes: The number of minutes, in the range [0, 1439]
+        :return: The resulting time.
+        """
+        # Avoid the method calls which give a decent exception unless we're actually going to fail.
+        if minutes < 0 or minutes > PyodaConstants.MINUTES_PER_DAY - 1:
+            _Preconditions._check_argument_range("minutes", minutes, 0, PyodaConstants.MINUTES_PER_DAY - 1)
+        return cls._ctor(nanoseconds=_int32_overflow(minutes * PyodaConstants.NANOSECONDS_PER_MINUTE))
+
+    @classmethod
+    def from_hours_since_midnight(cls, hours: int) -> LocalTime:
+        """Factory method for creating a local time from the number of hours which have elapsed since midnight.
+
+        :param hours: The number of hours, in the range [0, 23]
+        :return: The resulting time.
+        """
+        # Avoid the method calls which give a decent exception unless we're actually going to fail.
+        if hours < 0 or hours > PyodaConstants.HOURS_PER_DAY - 1:
+            _Preconditions._check_argument_range("hours", hours, 0, PyodaConstants.HOURS_PER_DAY - 1)
+        return cls._ctor(nanoseconds=_int32_overflow(hours * PyodaConstants.NANOSECONDS_PER_HOUR))
+
+    @property
+    def hour(self) -> int:
+        """The hour of day of this local time, in the range 0 to 23 inclusive."""
+        # Effectively nanoseconds / NanosecondsPerHour, but apparently rather more efficient.
+        return _towards_zero_division((self.__nanoseconds >> 11), 439453125)
+
+    @property
+    def clock_hour_of_half_day(self) -> int:
+        """The hour of the half-day of this local time, in the range 1 to 12 inclusive."""
+        # TODO: unchecked
+        hour_of_half_day = _int32_overflow(_csharp_modulo(self.hour, 12))
+        return 12 if hour_of_half_day == 0 else hour_of_half_day
+
+    @property
+    def minute(self) -> int:
+        """The minute of this local time, in the range 0 to 59 inclusive."""
+        # TODO: unchecked
+        # Effectively nanoseconds / NanosecondsPerMinute, but apparently rather more efficient.
+        minute_of_day = _towards_zero_division((self.__nanoseconds >> 11), 29296875)
+        return _csharp_modulo(minute_of_day, PyodaConstants.MINUTES_PER_HOUR)
+
+    @property
+    def second(self) -> int:
+        """The second of this local time within the minute, in the range 0 to 59 inclusive."""
+        # TODO: unchecked
+        second_of_day = _towards_zero_division(self.__nanoseconds, PyodaConstants.NANOSECONDS_PER_SECOND)
+        return _csharp_modulo(second_of_day, PyodaConstants.SECONDS_PER_MINUTE)
+
+    @property
+    def millisecond(self) -> int:
+        """The millisecond of this local time within the second, in the range 0 to 999 inclusive."""
+        # TODO: unchecked
+        millisecond_of_day = _towards_zero_division(self.__nanoseconds, PyodaConstants.NANOSECONDS_PER_MILLISECOND)
+        return _csharp_modulo(millisecond_of_day, PyodaConstants.MILLISECONDS_PER_SECOND)
+
+    @property
+    def tick_of_second(self) -> int:
+        """The tick of this local time within the second, in the range 0 to 9,999,999 inclusive."""
+        # TODO: unchecked
+        return _int32_overflow(_csharp_modulo(self.tick_of_day, PyodaConstants.TICKS_PER_SECOND))
+
+    @property
+    def tick_of_day(self) -> int:
+        """The tick of this local time within the day, in the range 0 to 863,999,999,999 inclusive.
+
+        If the value does not fall on a tick boundary, it will be truncated towards zero.
+        """
+        return _towards_zero_division(self.__nanoseconds, PyodaConstants.NANOSECONDS_PER_TICK)
+
+    @property
+    def nanosecond_of_second(self) -> int:
+        """The nanosecond of this local time within the second, in the range 0 to 999,999,999 inclusive."""
+        # TODO: unchecked
+        return _int32_overflow(_csharp_modulo(self.__nanoseconds, PyodaConstants.NANOSECONDS_PER_SECOND))
+
     @property
     def nanosecond_of_day(self) -> int:
         """The nanosecond of this local time within the day, in the range 0 to 86,399,999,999,999 inclusive."""
         return self.__nanoseconds
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, LocalTime):
+            return self.__nanoseconds == other.__nanoseconds
+        return NotImplemented
+
+    def on(self, date: LocalDate) -> LocalDateTime:
+        """Combines this ``LocalTime`` with the given ``LocalDate`` into a single ``LocalDateTime``.
+
+        Fluent alternative to ``+``.
+
+        :param date: The date to combine with this time
+        :return: The ``LocalDateTime`` representation of the given time on this date.
+        """
+        return date + self
+
+
+class _LocalDateTimeMeta(type):
+    pass
+
+
+@_typing.final
+@_sealed
+class LocalDateTime(metaclass=_LocalDateTimeMeta):
+    def __init__(
+        self,
+        year: int = 1,
+        month: int = 1,
+        day: int = 1,
+        hour: int = 0,
+        minute: int = 0,
+        second: int = 0,
+        millisecond: int = 0,
+        calendar: CalendarSystem = CalendarSystem.iso,
+    ) -> None:
+        self.__date = LocalDate(year=year, month=month, day=day, calendar=calendar)
+        self.__time = LocalTime(hour=hour, minute=minute, second=second, millisecond=millisecond)
+
+    @classmethod
+    @_typing.overload
+    def _ctor(cls, *, local_instant: _LocalInstant) -> LocalDateTime:
+        ...
+
+    @classmethod
+    @_typing.overload
+    def _ctor(cls, *, local_date: LocalDate, local_time: LocalTime) -> LocalDateTime:
+        ...
+
+    @classmethod
+    def _ctor(
+        cls,
+        *,
+        local_instant: _LocalInstant | None = None,
+        local_date: LocalDate | None = None,
+        local_time: LocalTime | None = None,
+    ) -> LocalDateTime:
+        self = super().__new__(cls)
+        if local_instant is not None and local_time is None and local_date is None:
+            self.__date = LocalDate._ctor(days_since_epoch=local_instant._days_since_epoch)
+            self.__time = LocalTime._ctor(nanoseconds=local_instant._nanosecond_of_day)
+        elif local_instant is None and local_date is not None and local_time is not None:
+            self.__date = local_date
+            self.__time = local_time
+        else:
+            raise TypeError
+        return self
+
+    @property
+    def year(self) -> int:
+        """The year of this local date and time.
+
+        This returns the "absolute year", so, for the ISO calendar, a value of 0 means 1 BC, for example.
+        """
+        return self.__date.year
+
+    @property
+    def year_of_era(self) -> int:
+        """The year of this local date and time within its era."""
+        return self.__date.year_of_era
+
+    @property
+    def era(self) -> _Era:
+        """The era of this local date and time."""
+        return self.__date.era
+
+    @property
+    def month(self) -> int:
+        """The month of this local date and time within the year."""
+        return self.__date.month
+
+    @property
+    def day_of_year(self) -> int:
+        """The day of this local date and time within the year."""
+        return self.__date.day_of_year
+
+    @property
+    def day(self) -> int:
+        """The day of this local date and time within the month."""
+        return self.__date.day
+
+    @property
+    def day_of_week(self) -> IsoDayOfWeek:
+        """The week day of this local date and time expressed as an ``IsoDayOfWeek``."""
+        return self.__date.day_of_week
+
+    @property
+    def hour(self) -> int:
+        """The hour of day of this local date and time, in the range 0 to 23 inclusive."""
+        return self.__time.hour
+
+    @property
+    def clock_hour_of_half_day(self) -> int:
+        """The hour of the half-day of this local date and time, in the range 1 to 12 inclusive."""
+        return self.__time.clock_hour_of_half_day
+
+    @property
+    def minute(self) -> int:
+        """The minute of this local date and time, in the range 0 to 59 inclusive."""
+        return self.__time.minute
+
+    @property
+    def second(self) -> int:
+        """The second of this local date and time within the minute, in the range 0 to 59 inclusive."""
+        return self.__time.second
+
+    @property
+    def millisecond(self) -> int:
+        """The millisecond of this local date and time within the second, in the range 0 to 999 inclusive."""
+        return self.__time.millisecond
+
+    @property
+    def tick_of_second(self) -> int:
+        """The tick of this local time within the second, in the range 0 to 9,999,999 inclusive."""
+        return self.__time.tick_of_second
+
+    @property
+    def tick_of_day(self) -> int:
+        """The tick of this local date and time within the day, in the range 0 to 863,999,999,999 inclusive."""
+        return self.__time.tick_of_day
+
+    @property
+    def nanosecond_of_second(self) -> int:
+        """The nanosecond of this local time within the second, in the range 0 to 999,999,999 inclusive."""
+        return self.__time.nanosecond_of_second
+
+    @property
+    def nanosecond_of_day(self) -> int:
+        """The nanosecond of this local date and time within the day, in the range 0 to 86,399,999,999,999 inclusive."""
+        return self.__time.nanosecond_of_day
+
+    @property
+    def time(self) -> LocalTime:
+        """The time portion of this local date and time as a ``LocalTime``."""
+        return self.__time
+
+    @property
+    def date(self) -> LocalDate:
+        """The date portion of this local date and time as a ``LocalDate``."""
+        return self.__date
+
+    # TODO def to_datetime_unspecified(self):
+
+    def _to_local_instant(self) -> _LocalInstant:
+        return _LocalInstant._ctor(days=self.date._days_since_epoch, nano_of_day=self.time.nanosecond_of_day)
+
+    def with_calendar(self, calendar: CalendarSystem) -> LocalDateTime:
+        """Creates a new LocalDateTime representing the same physical date and time, but in a different calendar. The
+        returned LocalDateTime is likely to have different date field values to this one. For example, January 1st 1970
+        in the Gregorian calendar was December 19th 1969 in the Julian calendar.
+
+        :param calendar: The calendar system to convert this local date to.
+        :return: The converted LocalDateTime.
+        """
+        _Preconditions._check_not_null(calendar, "calendar")
+        return LocalDateTime._ctor(local_date=self.date.with_calendar(calendar), local_time=self.time)
+
+    def plus_years(self, years: int) -> LocalDateTime:
+        """Returns a new LocalDateTime representing the current value with the given number of years added.
+
+        If the resulting date is invalid, lower fields (typically the day of month) are reduced to find a valid value.
+        For example, adding one year to February 29th 2012 will return February 28th 2013; subtracting one year from
+        February 29th 2012 will return February 28th 2011.
+
+        :param years: The number of years to add
+        :return: The current value plus the given number of years.
+        """
+        return LocalDateTime._ctor(local_date=self.__date.plus_years(years), local_time=self.__time)
+
+    def plus_months(self, months: int) -> LocalDateTime:
+        """Returns a new LocalDateTime representing the current value with the given number of months added.
+
+        This method does not try to maintain the year of the current value, so adding four months to a value in October
+        will result in a value in the following February.
+
+        If the resulting date is invalid, the day of month is reduced to find a valid value. For example, adding one
+        month to January 30th 2011 will return February 28th 2011; subtracting one month from March 30th 2011 will
+        return February 28th 2011.
+
+        :param months: The number of months to add
+        :return: The current value plus the given number of months.
+        """
+        return LocalDateTime._ctor(local_date=self.__date.plus_months(months), local_time=self.__time)
+
+    # @classmethod
+    # TODO: def from_datetime(cls, datetime: _datetime.datetime) -> LocalDateTime:
+
+    # @classmethod
+    # TODO: def from_datetime(cls, datetime: _datetime.datetime, calendar: CalendarSystem) -> LocalDateTime:
+
+    # region Implementation of IEquatable<LocalDateTime>
+
+    def equals(self, other: LocalDateTime) -> bool:
+        """Indicates whether the current object is equal to another object of the same type. See the type documentation
+        for a description of equality semantics.
+
+        :param other: An object to compare with this object.
+        :return: True if the current object is equal to the ``other`` parameter; otherwise, False.
+        """
+        return self.__date == other.__date and self.__time == other.__time
+
+    # endregion
+
+    # region Operators
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, LocalDateTime):
+            return self.equals(other)
+        return NotImplemented
+
+    # endregion
 
 
 @_typing.final
@@ -2018,6 +2640,11 @@ class _YearMonthDayCalendar:
     def _to_year_month_day(self) -> _YearMonthDay:
         return _YearMonthDay._ctor(raw_value=self.__value >> self._CALENDAR_BITS)
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, _YearMonthDayCalendar):
+            return self.__value == other.__value
+        return NotImplemented
+
 
 @_typing.final
 @_sealed
@@ -2071,6 +2698,9 @@ class _YearMonthDay:
     def _day(self) -> int:
         return (self.__value & self.__DAY_MASK) + 1
 
+    def _with_calendar(self, calendar: CalendarSystem) -> _YearMonthDayCalendar:
+        return _YearMonthDayCalendar._ctor(year_month_day=self.__value, calendar_ordinal=calendar._ordinal)
+
     def _with_calendar_ordinal(self, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar:
         return _YearMonthDayCalendar._ctor(year_month_day=self.__value, calendar_ordinal=calendar_ordinal)
 
@@ -2085,22 +2715,34 @@ class _YearMonthDay:
         return self.__value
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, _YearMonthDay) and self.__value == other.__value
+        if isinstance(other, _YearMonthDay):
+            return self.__value == other.__value
+        return NotImplemented
 
     def __ne__(self, other: object) -> bool:
-        return not (self == other)
+        if isinstance(other, _YearMonthDay):
+            return not (self == other)
+        return NotImplemented
 
     def __lt__(self, other: _YearMonthDay) -> bool:
-        return isinstance(other, _YearMonthDay) and self.__value < other.__value
+        if isinstance(other, _YearMonthDay):
+            return self.__value < other.__value
+        return NotImplemented
 
     def __le__(self, other: _YearMonthDay) -> bool:
-        return isinstance(other, _YearMonthDay) and self.__value <= other.__value
+        if isinstance(other, _YearMonthDay):
+            return self.__value <= other.__value
+        return NotImplemented
 
     def __gt__(self, other: _YearMonthDay) -> bool:
-        return isinstance(other, _YearMonthDay) and self.__value > other.__value
+        if isinstance(other, _YearMonthDay):
+            return self.__value > other.__value
+        return NotImplemented
 
     def __ge__(self, other: _YearMonthDay) -> bool:
-        return isinstance(other, _YearMonthDay) and self.__value >= other.__value
+        if isinstance(other, _YearMonthDay):
+            return self.__value >= other.__value
+        return NotImplemented
 
 
 _BCL_EPOCH: _typing.Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)

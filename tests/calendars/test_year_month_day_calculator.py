@@ -1,13 +1,19 @@
+import itertools
 from typing import Final
 
 import pytest
 
 from pyoda_time.calendars import (
     HebrewMonthNumbering,
+    IslamicEpoch,
+    IslamicLeapYearPattern,
     _CopticYearMonthDayCalculator,
     _GregorianYearMonthDayCalculator,
     _HebrewYearMonthDayCalculator,
+    _IslamicYearMonthDayCalculator,
     _JulianYearMonthDayCalculator,
+    _PersianYearMonthDayCalculator,
+    _UmAlQuraYearMonthDayCalculator,
     _YearMonthDayCalculator,
 )
 
@@ -17,14 +23,15 @@ NON_ISLAMIC_CALCULATORS: Final[list[_YearMonthDayCalculator]] = [
     _JulianYearMonthDayCalculator(),
     _HebrewYearMonthDayCalculator(HebrewMonthNumbering.CIVIL),
     _HebrewYearMonthDayCalculator(HebrewMonthNumbering.SCRIPTURAL),
-    # TODO: PersianSimple
-    # TODO: PersianArithmetic
-    # TODO: PersianAstronomical
-    # TODO: UmAlQura
+    _PersianYearMonthDayCalculator.Simple(),
+    _PersianYearMonthDayCalculator.Arithmetic(),
+    _PersianYearMonthDayCalculator.Astronomical(),
+    _UmAlQuraYearMonthDayCalculator(),
 ]
 
 ISLAMIC_CALCULATORS: Final[list[_YearMonthDayCalculator]] = [
-    # TODO: Islamic YearMonthDayCalculators
+    _IslamicYearMonthDayCalculator(leap_year_pattern=leap_year_pattern, epoch=epoch)
+    for epoch, leap_year_pattern in itertools.product(IslamicEpoch, IslamicLeapYearPattern)
 ]
 
 ALL_CALCULATORS: Final[list[_YearMonthDayCalculator]] = NON_ISLAMIC_CALCULATORS + ISLAMIC_CALCULATORS

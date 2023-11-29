@@ -3,6 +3,8 @@ from __future__ import annotations as _annotations
 __all__: list[str] = [
     "Era",
     "HebrewMonthNumbering",
+    "IslamicEpoch",
+    "IslamicLeapYearPattern",
 ]
 
 import abc as _abc
@@ -13,7 +15,10 @@ import typing as _typing
 
 if _typing.TYPE_CHECKING:
     from . import CalendarSystem as _CalendarSystem
-    from . import _YearMonthDay, _YearMonthDayCalendar
+    from . import (
+        _YearMonthDay,
+        _YearMonthDayCalendar,
+    )
 from .utility import _csharp_modulo, _Preconditions, _private, _sealed, _towards_zero_division
 
 
@@ -798,6 +803,8 @@ class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, _abc.ABC):
         current_month: int = year_month_day._month
         current_day: int = year_month_day._day
         new_day: int = self._get_days_in_month(year, current_month)
+        from pyoda_time import _YearMonthDay
+
         return _YearMonthDay._ctor(year=year, month=current_month, day=min(current_day, new_day))
 
     def _add_months(self, year_month_day: _YearMonthDay, months: int) -> _YearMonthDay:
@@ -835,6 +842,8 @@ class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, _abc.ABC):
         day_to_use = min(day_to_use, max_day)
         if (year_to_use < self._min_year) or (year_to_use > self._max_year):
             raise OverflowError("Date computation would overflow calendar bounds.")
+        from pyoda_time import _YearMonthDay
+
         return _YearMonthDay._ctor(year=year_to_use, month=month_to_use, day=day_to_use)
 
     def _months_between(self, start: _YearMonthDay, end: _YearMonthDay) -> int:
@@ -1558,6 +1567,202 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
         return lhs._day - rhs._day
 
 
+class IslamicEpoch(_enum.IntEnum):
+    """The epoch to use when constructing an Islamic calendar.
+
+    The Islamic, or Hijri, calendar can either be constructed starting on July 15th 622CE (in the Julian calendar) or on
+    the following day. The former is the "astronomical" or "Thursday" epoch; the latter is the "civil" or "Friday"
+    epoch.
+    """
+
+    # Epoch beginning on July 15th 622CE (Julian), which is July 18th 622 CE in the Gregorian calendar.
+    # This is the epoch used by the BCL HijriCalendar.
+    ASTRONOMICAL = 1
+    # Epoch beginning on July 16th 622CE (Julian), which is July 19th 622 CE in the Gregorian calendar.
+    CIVIL = 2
+
+
+class IslamicLeapYearPattern(_enum.IntEnum):
+    """The pattern of leap years to use when constructing an Islamic calendar.
+
+    The Islamic, or Hijri, calendar is a lunar calendar of 12 months, each of 29 or 30 days. The calendar can be defined
+    in either observational or tabular terms; Noda Time implements a tabular calendar, where a pattern of leap years (in
+    which the last month has an extra day) repeats every 30 years, according to one of the patterns within this enum.
+
+    While the patterns themselves are reasonably commonly documented (see e.g.
+    https://en.wikipedia.org/wiki/Tabular_Islamic_calendar)
+    there is little standardization in terms of naming the patterns. I hope the current names do not
+    cause offence to anyone; suggestions for better names would be welcome.
+    """
+
+    # A pattern of leap years in 2, 5, 7, 10, 13, 15, 18, 21, 24, 26 and 29.
+    # This pattern and <see cref="Base16"/> are the most commonly used ones,
+    # and only differ in whether the 15th or 16th year is deemed leap.
+    BASE15 = 1
+    # A pattern of leap years in 2, 5, 7, 10, 13, 16, 18, 21, 24, 26 and 29.
+    # This pattern and <see cref="Base15"/> are the most commonly used ones,
+    # and only differ in whether the 15th or 16th year is deemed leap. This is
+    # the pattern used by the BCL HijriCalendar.
+    BASE16 = 2
+    # A pattern of leap years in 2, 5, 8, 10, 13, 16, 19, 21, 24, 27 and 29.
+    INDIAN = 3
+    # A pattern of leap years in 2, 5, 8, 11, 13, 16, 19, 21, 24, 27 and 30.
+    HABASH_AL_HASIB = 4
+
+
+@_sealed
+class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
+    # Days in a pair of months, in days.
+    __MONTH_PAIR_LENGTH: _typing.Final[int] = 59
+
+    # The length of a long month, in days.
+    __LONG_MONTH_LENGTH: _typing.Final[int] = 30
+
+    # The length of a short month, in days.
+    __SHORT_MONTH_LENGTH: _typing.Final[int] = 29
+
+    # The typical number of days in 10 years.
+    __AVERAGE_DAYS_PER_10_YEARS: _typing.Final[int] = 3544  # Ideally 354.36667 per year
+
+    # The number of days in a non-leap year.
+    __DAYS_PER_NON_LEAP_YEAR: _typing.Final[int] = 354
+
+    # The number of days in a leap year.
+    __DAYS_PER_LEAP_YEAR: _typing.Final[int] = 355
+
+    # The days for the civil (Friday) epoch of July 16th 622CE.
+    __DAYS_AT_CIVIL_EPOCH: _typing.Final[int] = -492148
+
+    # The days for the civil (Thursday) epoch of July 15th 622CE.
+    __DAYS_AT_ASTRONOMICAL_EPOCH: _typing.Final[int] = __DAYS_AT_CIVIL_EPOCH - 1
+
+    # The length of the cycle of two leap years.
+    __LEAP_YEAR_CYCLE_LENGTH: _typing.Final[int] = 30
+
+    # The number of days in a leap cycle.
+    __DAYS_PER_LEAP_CYCLE = 19 * __DAYS_PER_NON_LEAP_YEAR + 11 * __DAYS_PER_LEAP_YEAR
+
+    @staticmethod
+    def __generate_total_days_by_month(
+        long_month_length: int, short_month_length: int
+    ) -> _typing.Generator[int, _typing.Any, None]:
+        days = 0
+        for i in range(1, 13):
+            yield days
+            days_in_month = long_month_length if (i & 1) == 1 else short_month_length
+            days += days_in_month
+
+    # The number of days preceding the 1-indexed month - so [0, 0, 30, 59, ...]
+    __TOTAL_DAYS_BY_MONTH: _typing.Final[list[int]] = [
+        # Here, the month number is 1-based, so odd months are long.
+        # This doesn't take account of leap years, but that doesn't matter - because
+        # it's not used on the last iteration, and leap years only affect the final month
+        # in the Islamic calendar.
+        0,
+        *__generate_total_days_by_month(__LONG_MONTH_LENGTH, __SHORT_MONTH_LENGTH),
+    ]
+
+    def __init__(self, leap_year_pattern: IslamicLeapYearPattern, epoch: IslamicEpoch) -> None:
+        super().__init__(1, 9665, 12, self.__AVERAGE_DAYS_PER_10_YEARS, self.__get_year_10_days(epoch))
+
+        # The pattern of leap years within a cycle, one bit per year, for this calendar.
+        self.__leap_year_pattern_bits: _typing.Final[int] = self.__get_leap_year_pattern_bits(leap_year_pattern)
+
+    def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
+        # The number of days at the *start* of a month isn't affected by
+        # the year as the only month length which varies by year is the last one.
+        return self.__TOTAL_DAYS_BY_MONTH[month]
+
+    def _get_year_month_day_from_year_and_day_of_year(self, year: int, day_of_year: int) -> _YearMonthDay:
+        from . import _YearMonthDay
+
+        month: int
+        day: int
+        # Special case the last day in a leap year
+        if day_of_year == self.__DAYS_PER_LEAP_YEAR:
+            month = 12
+            day = 30
+        else:
+            day_of_year_zero_based = day_of_year - 1
+            month = _towards_zero_division((day_of_year_zero_based * 2), self.__MONTH_PAIR_LENGTH) + 1
+            day = ((day_of_year_zero_based % self.__MONTH_PAIR_LENGTH) % self.__LONG_MONTH_LENGTH) + 1
+        return _YearMonthDay._ctor(year=year, month=month, day=day)
+
+    def _is_leap_year(self, year: int) -> bool:
+        # Handle negative years in order to make calculations near the start of the calendar work cleanly.
+        year_of_cycle = (
+            _csharp_modulo(year, self.__LEAP_YEAR_CYCLE_LENGTH)
+            if year >= 0
+            else _csharp_modulo(year, self.__LEAP_YEAR_CYCLE_LENGTH) + self.__LEAP_YEAR_CYCLE_LENGTH
+        )
+        key: int = 1 << year_of_cycle
+        return (self.__leap_year_pattern_bits & key) > 0
+
+    def _get_days_in_year(self, year: int) -> int:
+        return self.__DAYS_PER_LEAP_YEAR if self._is_leap_year(year) else self.__DAYS_PER_NON_LEAP_YEAR
+
+    def _get_days_in_month(self, year: int, month: int) -> int:
+        if month == 12 and self._is_leap_year(year):
+            return self.__LONG_MONTH_LENGTH
+        # Note: month is 1-based here, so even months are the short ones
+        return self.__SHORT_MONTH_LENGTH if (month & 1) == 0 else self.__LONG_MONTH_LENGTH
+
+    def _calculate_start_of_year_days(self, year: int) -> int:
+        # The first cycle starts in year 1, not year 0.
+        # We try to cope with years outside the normal range, in order to allow arithmetic at the boundaries.
+        cycle: int = (
+            _towards_zero_division(year - 1, self.__LEAP_YEAR_CYCLE_LENGTH)
+            if year > 0
+            else _towards_zero_division(year - self.__LEAP_YEAR_CYCLE_LENGTH, self.__LEAP_YEAR_CYCLE_LENGTH)
+        )
+        year_at_start_of_cycle = (cycle * self.__LEAP_YEAR_CYCLE_LENGTH) + 1
+        days = self._days_at_start_of_year_1 + cycle * self.__DAYS_PER_LEAP_CYCLE
+
+        # We've got the days at the start of the cycle (e.g. at the start of year 1, 31, 61 etc).
+        # Now go from that year to (but not including) the year we're looking for, adding the right
+        # number of days in each year. So if we're trying to find the start of year 34, we would
+        # find the days at the start of year 31, then add the days *in* year 31, the days in year 32,
+        # and the days in year 33.
+        # If this ever proves to be a bottleneck, we could create an array for each IslamicLeapYearPattern
+        # with "the number of days for the first n years in a cycle".
+        for i in range(year_at_start_of_cycle, year):
+            days += self._get_days_in_year(i)
+        return days
+
+    @staticmethod
+    def __get_leap_year_pattern_bits(leap_year_pattern: IslamicLeapYearPattern) -> int:
+        """Returns the pattern of leap years within a cycle, one bit per year, for the specified pattern.
+
+        Note that although cycle years are usually numbered 1-30, the bit pattern is for 0-29; cycle year 30 is
+        represented by bit 0.
+        """
+
+        # When reading bit patterns, don't forget to read right to left...
+        match leap_year_pattern:
+            case IslamicLeapYearPattern.BASE15:
+                return 623158436  # 0b100101001001001010010010100100
+            case IslamicLeapYearPattern.BASE16:
+                return 623191204  # 0b100101001001010010010010100100
+            case IslamicLeapYearPattern.INDIAN:
+                return 690562340  # 0b101001001010010010010100100100
+            case IslamicLeapYearPattern.HABASH_AL_HASIB:
+                return 153692453  # 0b001001001010010010100100100101
+            case _:
+                # TODO: ArgumentOutOfRangeException? leap_year_pattern.name?
+                raise ValueError(f"Leap year pattern {leap_year_pattern} not recognised")
+
+    @classmethod
+    def __get_year_10_days(cls, epoch: IslamicEpoch) -> int:
+        match epoch:
+            case IslamicEpoch.ASTRONOMICAL:
+                return cls.__DAYS_AT_ASTRONOMICAL_EPOCH
+            case IslamicEpoch.CIVIL:
+                return cls.__DAYS_AT_CIVIL_EPOCH
+            case _:
+                # TODO: ArgumentOutOfRangeException?
+                raise ValueError(f"Epoch {epoch.name} not recognised")
+
+
 @_sealed
 class _JulianYearMonthDayCalculator(_GJYearMonthDayCalculator):
     __AVERAGE_DAYS_PER_10_JULIAN_YEARS: _typing.Final[int] = 3653  # Ideally 365.25 per year
@@ -1656,3 +1861,302 @@ class _CopticYearMonthDayCalculator(_FixedMonthYearMonthDayCalculator):
 
         # Adjust to account for difference between 1687-01-01 and 1686-04-23.
         return ret + (365 - 112)
+
+
+class _PersianYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
+    """Base class for the three variants of the Persian (Solar Hijri) calendar.
+
+    Concrete subclasses are nested to allow different start dates and leap year calculations.
+
+    The constructor uses IsLeapYear to precompute lots of data; it is therefore important that the implementation of
+    IsLeapYear in subclasses uses no instance fields.
+    """
+
+    __DAYS_PER_NON_LEAP_YEAR: _typing.Final[int] = (31 * 6) + (30 * 5) + 29
+    __DAYS_PER_LEAP_YEAR: _typing.Final[int] = __DAYS_PER_NON_LEAP_YEAR + 1
+    # Approximation; it'll be pretty close in all variants.
+    __AVERAGE_DAYS_PER_10_YEARS: _typing.Final[int] = _towards_zero_division(
+        (__DAYS_PER_NON_LEAP_YEAR * 25 + __DAYS_PER_LEAP_YEAR * 8) * 10, 33
+    )
+    _MAX_PERSIAN_YEAR: _typing.Final[int] = 9377
+
+    @staticmethod
+    def __generate_total_days_by_month() -> list[int]:
+        days = 0
+        ret = [0]
+        for i in range(1, 13):
+            ret.append(days)
+            days_in_month = 31 if i <= 6 else 30
+            # This doesn't take account of leap years, but that doesn't matter - because
+            # it's not used on the last iteration, and leap years only affect the final month
+            # in the Persian calendar.
+            days += days_in_month
+        return ret
+
+    # The number of days preceding the 1-indexed month - so [0, 0, 31, 62, 93, ...]
+    __total_days_by_month: list[int] = __generate_total_days_by_month()
+
+    def __init__(self, days_at_start_of_year_1: int) -> None:
+        super().__init__(1, self._MAX_PERSIAN_YEAR, 12, self.__AVERAGE_DAYS_PER_10_YEARS, days_at_start_of_year_1)
+        self.__start_of_year_in_days_cache: _typing.Final[list[int]] = []
+        start_of_year = self._days_at_start_of_year_1 - self._get_days_in_year(0)
+        for year in range(0, self._max_year + 2):
+            self.__start_of_year_in_days_cache.append(start_of_year)
+            start_of_year += self._get_days_in_year(year)
+
+    def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
+        return self.__total_days_by_month[month]
+
+    def _get_start_of_year_in_days(self, year: int) -> int:
+        # TODO: _Preconditions._debug_check_argument()
+        return self.__start_of_year_in_days_cache[year]
+
+    def _calculate_start_of_year_days(self, year: int) -> int:
+        # This would only be called from GetStartOfYearInDays, which is overridden.
+        raise NotImplementedError
+
+    def _get_year_month_day_from_year_and_day_of_year(self, year: int, day_of_year: int) -> _YearMonthDay:
+        day_of_year_zero_based = day_of_year - 1
+        month: int
+        day: int
+        if day_of_year == self.__DAYS_PER_LEAP_YEAR:
+            # Last day of a leap year.
+            month = 12
+            day = 30
+        elif day_of_year_zero_based < 6 * 31:
+            # In the first 6 months, all of which are 31 days long.
+            month = _towards_zero_division(day_of_year_zero_based, 31) + 1
+            day = _csharp_modulo(day_of_year_zero_based, 31) + 1
+        else:
+            # Last 6 months (other than last day of leap year).
+            # Work out where we are within that 6 month block, then use simple arithmetic.
+            day_of_second_half = day_of_year_zero_based - 6 * 31
+            month = _towards_zero_division(day_of_second_half, 30) + 7
+            day = _csharp_modulo(day_of_second_half, 30) + 1
+        from . import _YearMonthDay
+
+        return _YearMonthDay._ctor(year=year, month=month, day=day)
+
+    def _get_days_in_month(self, year: int, month: int) -> int:
+        return 31 if month < 7 else 30 if (month < 12 or self._is_leap_year(year)) else 29
+
+    def _get_days_in_year(self, year: int) -> int:
+        return self.__DAYS_PER_LEAP_YEAR if self._is_leap_year(year) else self.__DAYS_PER_NON_LEAP_YEAR
+
+    # Pyoda time implementation note:
+    # These methods exist to maintain a similar internal API to Noda Time,
+    # where the concrete persian calendars are nested inside the abstract base class.
+    @staticmethod
+    def Simple() -> _PersianSimpleYearMonthDayCalculator:
+        return _PersianSimpleYearMonthDayCalculator()
+
+    @staticmethod
+    def Arithmetic() -> _PersianArithmeticYearMonthDayCalculator:
+        return _PersianArithmeticYearMonthDayCalculator()
+
+    @staticmethod
+    def Astronomical() -> _PersianAstronomicalYearMonthDayCalculator:
+        return _PersianAstronomicalYearMonthDayCalculator()
+
+
+class _PersianSimpleYearMonthDayCalculator(_PersianYearMonthDayCalculator):
+    """Persian calendar using the simple 33-year cycle of 1, 5, 9, 13, 17, 22, 26, or 30.
+
+    This corresponds to System.Globalization.PersianCalendar before .NET 4.6.
+    """
+
+    __LEAP_YEAR_PATTERN_BITS: _typing.Final[int] = (
+        (1 << 1) | (1 << 5) | (1 << 9) | (1 << 13) | (1 << 17) | (1 << 22) | (1 << 26) | (1 << 30)
+    )
+    __LEAP_YEAR_CYCLE_LENGTH: _typing.Final[int] = 33
+
+    # The ticks for the epoch of March 21st 622CE.
+    __DAYS_AT_START_OF_YEAR_1_CONSTANT: _typing.Final[int] = -492268
+
+    def __init__(self) -> None:
+        super().__init__(self.__DAYS_AT_START_OF_YEAR_1_CONSTANT)
+
+    def _is_leap_year(self, year: int) -> bool:
+        # Handle negative years in order to make calculations near the start of the calendar work cleanly.
+        year_of_cycle = (
+            _csharp_modulo(year, self.__LEAP_YEAR_CYCLE_LENGTH)
+            if year >= 0
+            else _csharp_modulo(year, self.__LEAP_YEAR_CYCLE_LENGTH) + self.__LEAP_YEAR_CYCLE_LENGTH
+        )
+        # Note the shift of 1L rather than 1, to avoid issues where shifting by 32
+        # would get us back to 1.
+        key = 1 << year_of_cycle
+        return (self.__LEAP_YEAR_PATTERN_BITS & key) > 0
+
+
+class _PersianArithmeticYearMonthDayCalculator(_PersianYearMonthDayCalculator):
+    """Persian calendar based on Birashk's subcycle/cycle/grand cycle scheme."""
+
+    def __init__(self) -> None:
+        super().__init__(-492267)
+
+    def _is_leap_year(self, year: int) -> bool:
+        # Offset the cycles for easier arithmetic.
+        offset_year = year - 474 if year > 0 else year - 473
+        cycle_year = _csharp_modulo(offset_year, 2820) + 474
+        return ((cycle_year + 38) * 31) % 128 < 31
+
+
+class _PersianAstronomicalYearMonthDayCalculator(_PersianYearMonthDayCalculator):
+    """Persian calendar based on stored BCL 4.6 information (avoids complex arithmetic for midday in Tehran)."""
+
+    # Ugly, but the simplest way of embedding a big chunk of binary data...
+    __astronomical_leap_year_bits: bytes = _base64.b64decode(
+        "ICIiIkJERESEiIiICBEREREiIiJCREREhIiIiAgRERERIiIiIkRERISIiIiIEBERESEiIiJEREREiIiI"
+        + "iBAREREhIiIiQkRERISIiIgIERERESIiIkJERESEiIiICBEREREiIiIiRERERIiIiIgQERERISIiIkJE"
+        + "RESEiIiICBEREREiIiIiREREhIiIiAgRERERISIiIkRERESIiIiIEBERESEiIiJCREREhIiIiAgRERER"
+        + "IiIiIkRERISIiIgIERERESEiIiJEREREiIiIiBAREREhIiIiQkRERISIiIgIERERESIiIiJEREREiIiI"
+        + "iBAREREhIiIiQkRERIiIiIgQERERISIiIiJERESEiIiICBEREREiIiIiRERERIiIiIgQERERISIiIkJE"
+        + "RESEiIiICBEREREiIiIiRERERIiIiAgRERERIiIiIkJERESEiIiIEBERESEiIiJCRERERIiIiAgRERER"
+        + "IiIiIkRERESIiIiIEBERESEiIiJCREREhIiIiAgREREhIiIiIkRERESIiIiIEBERESIiIiJEREREiIiI"
+        + "iBAREREhIiIiQkRERISIiIgIERERESIiIiJEREREiIiIiBAREREiIiIiRERERIiIiIgQERERISIiIkJE"
+        + "RESEiIiICBERESEiIiJCREREhIiIiAgRERERIiIiIkRERESIiIiIEBERESIiIiJEREREiIiIiBAREREh"
+        + "IiIiQkRERISIiIgIERERISIiIkJERESEiIiICBEREREiIiIiRERERIiIiAgRERERIiIiIkRERESIiIgI"
+        + "ERERESIiIiJEREREiIiIiBAREREhIiIiQkRERIiIiIgQERERISIiIkJERESIiIiIEBERESEiIiJCRERE"
+        + "iIiIiBAREREhIiIiQkRERIiIiIgQERERISIiIkRERESIiIiIEBERESIiIiJEREREiIiIiBAREREiIiIi"
+        + "RERERIiIiAgRERERIiIiIkRERISIiIgIERERESIiIkJERESEiIiIEBERESEiIiJEREREiIiIiBAREREi"
+        + "IiIiRERERIiIiAgRERERIiIiIkRERISIiIgQERERISIiIkJERESIiIiIEBERESEiIiJERESEiIiICBER"
+        + "ESEiIiJCREREhIiIiBAREREhIiIiREREhIiIiAgRERERIiIiQkRERIiIiIgQERERIiIiIkRERISIiIgQ"
+        + "ERERISIiIkRERESIiIgIERERISIiIkJERESIiIiIEBERESIiIkJERESIiIiIEBERESIiIiJERESEiIiI"
+        + "EBERESEiIiJERESEiIiICBERESEiIiJEREREiIiICBERESEiIiJERESEiIiICBERESEiIiJEREREiIiI"
+        + "CBERESEiIiJERESEiIiICBERESEiIiJERESEiIiICBERESEiIiJERESEiIiIEBERESIiIiJERESEiIiI"
+        + "EBERESIiIkJERESIiIgIERERISIiIkRERESIiIgIERERISIiIkRERISIiIgQERERIiIiQkRERIiIiAgR"
+        + "EREhIiIiREREhIiIiBAREREiIiJCREREiIiICBERESEC"
+    )
+
+    def __init__(self) -> None:
+        super().__init__(-492267)
+
+    def _is_leap_year(self, year: int) -> bool:
+        return (self.__astronomical_leap_year_bits[year >> 3] & (1 << (year & 7))) != 0
+
+
+class _UmAlQuraYearMonthDayCalculator(_RegularYearMonthDayCalculator):
+    """Implementation of the Um Al Qura calendar, using the tabular data in the BCL.
+
+    This is fetched on construction and cached - we just need to know the length of each month of each year, which is
+    cheap as the current implementation only covers 183 years.
+    """
+
+    __AVERAGE_DAYS_PER_10_YEARS: _typing.Final[int] = 3544
+
+    # These four members are generated by UmAlQuraYearMonthDayCalculatorTest.GenerateData.
+    __COMPUTED_MIN_YEAR: _typing.Final[int] = 1318
+    __COMPUTED_MAX_YEAR: _typing.Final[int] = 1500
+    __COMPUTED_DAYS_AT_START_OF_MIN_YEAR: _typing.Final[int] = -25448
+    __GENERATED_DATA: _typing.Final[str] = (
+        "AAAF1A3SHaQdSBqUFSwKbBVqG1QXSBaSFSYKVhSuCWwVagtUGqoaVBSsCVwSugXYDaoNVAqqCVYStgV0"
+        + "CuoXZA7IDpIMqgVWCrYVtA2oHZIbJBpKFJoFWgraFtQWpBVKFJYJLhJuBWwK6hrUGqQVLBJaBLoJuhW0"
+        + "C6gbUhqkFVQJrBNsBugO0g6kDUoKlhVWCrQVqhukG0gakhUqCloUugq0FaoNVA0qClYUrglcEuwK2Baq"
+        + "FVQUqglaEroFtAuyG2QXSBaUFKoFagrqFtQXpBeIFxIVKgpaC1oW1A2oG5IbJBVMEqwFXAraBtQWqhVU"
+        + "EpoJOhK6BXQLagtUGqoVNBJcBNwKuhW0DagNSgqWFS4KnBVcC1gXUhskFkoMlhlWCrQWqg2kHUoclBUq"
+        + "CloVWgbYDrINpA0qCloUtgl0E3QHaBbSFqQVTAlsEtoF2A2yHWQaqBpUFKwJXBLaGtQWqBZSFSYKVhSu"
+        + "CmwVag1UHSYAAA=="
+    )
+
+    __COMPUTED_DAYS_AT_START_OF_YEAR_1: _typing.Final[int] = __COMPUTED_DAYS_AT_START_OF_MIN_YEAR + (
+        int(((1 - __COMPUTED_MIN_YEAR) / 10.0) * __AVERAGE_DAYS_PER_10_YEARS)
+    )
+
+    __MONTH_LENGTHS: _typing.ClassVar[dict[int, int]] = dict()
+    __YEAR_LENGTHS: _typing.ClassVar[dict[int, int]] = dict()
+    __YEAR_START_DAYS: _typing.ClassVar[dict[int, int]] = dict()
+
+    @staticmethod
+    def _ctor(
+        generated_data: str,
+        month_lengths: dict[int, int],
+        year_lengths: dict[int, int],
+        year_start_days: dict[int, int],
+        computed_days_at_start_of_min_year: int,
+    ) -> None:
+        """Simulates the static constructor on the equivalent noda time class."""
+        data = _base64.b64decode(generated_data)
+        for i in range(int(len(data) / 2)):
+            month_lengths[i] = (data[i * 2] << 8) | (data[i * 2 + 1])
+
+        # Populate arrays from index 1
+        total_days = 0
+        for year in range(1, len(month_lengths)):
+            year_start_days[year] = computed_days_at_start_of_min_year + total_days
+            month_bits = month_lengths[year]
+            year_length = 29 * 12
+            for month in range(1, 13):
+                year_length += (month_bits >> month) & 1
+            year_lengths[year] = year_length
+            total_days += year_length
+
+        # Fill in the cache with dummy data for before/after the min/max year, pretending
+        # that both of the "extra" years were 354 days long.
+        year_start_days[0] = computed_days_at_start_of_min_year - 354
+        year_start_days[len(year_start_days) - 1] = computed_days_at_start_of_min_year + total_days
+        year_lengths[0] = 354
+        year_lengths[len(year_start_days) - 1] = 354
+
+    _ctor(
+        generated_data=__GENERATED_DATA,
+        month_lengths=__MONTH_LENGTHS,
+        year_lengths=__YEAR_LENGTHS,
+        year_start_days=__YEAR_START_DAYS,
+        computed_days_at_start_of_min_year=__COMPUTED_DAYS_AT_START_OF_MIN_YEAR,
+    )
+
+    del _ctor
+
+    def __init__(self) -> None:
+        super().__init__(
+            self.__COMPUTED_MIN_YEAR,
+            self.__COMPUTED_MAX_YEAR,
+            12,
+            self.__AVERAGE_DAYS_PER_10_YEARS,
+            self.__COMPUTED_DAYS_AT_START_OF_YEAR_1,
+        )
+
+    def _get_start_of_year_in_days(self, year: int) -> int:
+        # No need to use the YearMonthDayCalculator cache, given that we've got the value in array already.
+        return self.__YEAR_START_DAYS[year - self.__COMPUTED_MIN_YEAR + 1]
+
+    def _calculate_start_of_year_days(self, year: int) -> int:
+        # Only called from the base GetStartOfYearInDays implementation.
+        raise NotImplementedError
+
+    def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
+        # While we could do something clever to find the Hamming distance on the masked value here,
+        # it's considerably simpler just to iterate...
+        month_bits = self.__MONTH_LENGTHS[year - self.__COMPUTED_MIN_YEAR + 1]
+        extra_days = 0
+        for i in range(1, month):
+            extra_days += (month_bits >> i) & 1
+        return (month - 1) * 29 + extra_days
+
+    def _get_days_in_month(self, year: int, month: int) -> int:
+        month_bits = self.__MONTH_LENGTHS[year - self.__COMPUTED_MIN_YEAR + 1]
+        return 29 + ((month_bits >> month) & 1)
+
+    def _get_days_in_year(self, year: int) -> int:
+        # Fine for one year either side of min/max.
+        return self.__YEAR_LENGTHS[year - self.__COMPUTED_MIN_YEAR + 1]
+
+    def _get_year_month_day_from_year_and_day_of_year(self, year: int, day_of_year: int) -> _YearMonthDay:
+        from . import _YearMonthDay
+
+        days_left = day_of_year
+        month_bits = self.__MONTH_LENGTHS[year - self.__COMPUTED_MIN_YEAR + 1]
+        for month in range(1, 13):
+            month_length = 29 + ((month_bits >> month) & 1)
+            if days_left <= month_length:
+                return _YearMonthDay._ctor(year=year, month=month, day=days_left)
+            days_left -= month_length
+        # This should throw...
+        _Preconditions._check_argument_range("day_of_year", day_of_year, 1, self._get_days_in_year(year))
+        raise RuntimeError(
+            f"Bug in Pyoda Time: year {year} has {self._get_days_in_year(year)} days but {day_of_year} isn't valid"
+        )
+
+    def _is_leap_year(self, year: int) -> bool:
+        return self.__YEAR_LENGTHS[year - self.__COMPUTED_MIN_YEAR + 1] == 355
