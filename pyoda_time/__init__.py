@@ -2,6 +2,7 @@ from __future__ import annotations as _annotations
 
 __all__: list[str] = [
     "CalendarSystem",
+    "DateAdjusters",
     "DateInterval",
     "DateTimeZone",
     "Duration",
@@ -772,6 +773,20 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                 raise RuntimeError(
                     f"CalendarOrdinal '{getattr(ordinal, "name", ordinal)}' not mapped to CalendarSystem."
                 )
+
+
+class DateAdjusters:
+    # TODO: In Noda Time, these are properties which return functions. Any reason not to just use staticmethod?
+
+    @staticmethod
+    def end_of_month(date: LocalDate) -> LocalDate:
+        """A date adjuster to move to the last day of the current month."""
+        return LocalDate(
+            year=date.year,
+            month=date.month,
+            day=date.calendar.get_days_in_month(date.year, date.month),
+            calendar=date.calendar,
+        )
 
 
 @_sealed
@@ -2124,6 +2139,12 @@ class LocalDate:
         :return: The ``LocalDateTime`` representation of the given time on this date.
         """
         return self + time
+
+    # region Formatting
+
+    # TODO: def __str__(self): [requires LocalDatePattern.BclSupport]
+
+    # endregion
 
 
 @_typing.final
