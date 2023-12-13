@@ -12,7 +12,10 @@ __all__: list[str] = [
     "LocalTime",
     "LocalDateTime",
     "Offset",
+    "OffsetDateTime",
+    "OffsetTime",
     "PyodaConstants",
+    "ZonedDateTime",
 ]
 
 import abc as _abc
@@ -46,6 +49,7 @@ from .calendars import (
     _UmAlQuraYearMonthDayCalculator,
     _YearMonthDayCalculator,
 )
+from .time_zones import ZoneInterval as _ZoneInterval
 from .utility import (
     _csharp_modulo,
     _int32_overflow,
@@ -817,7 +821,13 @@ class DateInterval:
         self.__end: LocalDate = end
 
 
-class DateTimeZone(_abc.ABC):
+class _DateTimeZoneMeta(_abc.ABCMeta):
+    @property
+    def utc(cls) -> DateTimeZone:
+        return _FixedDateTimeZone(Offset.zero)
+
+
+class DateTimeZone(_abc.ABC, metaclass=_DateTimeZoneMeta):
     """Represents a time zone - a mapping between UTC and local time.
     A time zone maps UTC instants to local times - or, equivalently, to the offset from UTC at any particular instant.
     """
@@ -865,6 +875,17 @@ class DateTimeZone(_abc.ABC):
     def max_offset(self) -> Offset:
         """The greatest (most positive) offset within this time zone, over all time."""
         return self.__max_offset
+
+    # region Core abstract/virtual methods
+
+    def get_utc_offset(self, instant: Instant) -> Offset:
+        return self.get_zone_interval(instant).wall_offset
+
+    @_abc.abstractmethod
+    def get_zone_interval(self, instant: Instant) -> _ZoneInterval:
+        raise NotImplementedError
+
+    # endregion
 
 
 @_typing.final
@@ -1092,6 +1113,60 @@ class Duration:
             new_days -= 1
             new_nanos += PyodaConstants.NANOSECONDS_PER_DAY
         return Duration._ctor(days=new_days, nano_of_day=new_nanos)
+
+    def _minus_small_nanoseconds(self, small_nanos: int) -> Duration:
+        # TODO: unchecked
+        # TODO: Preconditions.DebugCheckArgumentRange
+        new_days = self.__days
+        new_nanos = self.__nano_of_day - small_nanos
+        if new_nanos >= PyodaConstants.NANOSECONDS_PER_DAY:
+            new_days += 1
+            new_nanos -= PyodaConstants.NANOSECONDS_PER_DAY
+        elif new_nanos < 0:
+            new_days -= 1
+            new_nanos += PyodaConstants.NANOSECONDS_PER_DAY
+        return Duration._ctor(days=new_days, nano_of_day=new_nanos)
+
+    def __hash__(self) -> int:
+        return self.__days ^ hash(self.__nano_of_day)
+
+
+@_sealed
+@_typing.final
+class _FixedDateTimeZone(DateTimeZone):
+    def __init__(self, offset: Offset, id_: str | None = None, name: str | None = None) -> None:
+        if id_ is None:
+            id_ = self.__make_id(offset)
+        if name is None:
+            name = id_
+        super().__init__(id_, True, offset, offset)
+        self.__interval = _ZoneInterval(
+            name=name,
+            start=Instant._before_min_value(),
+            end=Instant._after_max_value(),
+            wall_offset=offset,
+            savings=Offset.zero,
+        )
+
+    def __make_id(self, offset: Offset) -> str:
+        if offset == Offset.zero:
+            return self._UTC_ID
+        return self._UTC_ID + str(offset)
+
+    @classmethod
+    def _get_fixed_zone_or_null(cls, id_: str) -> DateTimeZone | None:
+        if not id_.startswith(cls._UTC_ID):
+            return None
+        if id_ == cls._UTC_ID:
+            return cls.utc
+        # TODO: requires OffsetPattern
+        raise NotImplementedError("OffsetPattern is required")
+
+    def get_zone_interval(self, instant: Instant) -> _ZoneInterval:
+        return self.__interval
+
+    def get_utc_offset(self, instant: Instant) -> Offset:
+        return self.max_offset
 
 
 class _OffsetMeta(type):
@@ -1502,6 +1577,124 @@ class Offset(metaclass=_OffsetMeta):
 
     # endregion
 
+    def __str__(self) -> str:
+        hours = int(self.seconds / PyodaConstants.SECONDS_PER_HOUR)
+        symbol = "+" if hours >= 0 else "-"
+        return "Z" if self == Offset.zero else f"{symbol}{hours:0>2}"
+
+
+class OffsetDateTime:
+    def __init__(self, local_date_time: LocalDateTime, offset: Offset) -> None:
+        self.__local_date = local_date_time.date
+        self.__offset_time = OffsetTime._ctor(
+            nanosecond_of_day=local_date_time.nanosecond_of_day, offset_seconds=offset.seconds
+        )
+
+    @classmethod
+    @_typing.overload
+    def _ctor(cls, *, local_date: LocalDate, offset_time: OffsetTime) -> OffsetDateTime:
+        ...
+
+    @classmethod
+    @_typing.overload
+    def _ctor(cls, *, instant: Instant, offset: Offset) -> OffsetDateTime:
+        ...
+
+    @classmethod
+    @_typing.overload
+    def _ctor(cls, *, instant: Instant, offset: Offset, calendar: CalendarSystem) -> OffsetDateTime:
+        ...
+
+    @classmethod
+    def _ctor(
+        cls,
+        *,
+        local_date: LocalDate | None = None,
+        offset_time: OffsetTime | None = None,
+        instant: Instant | None = None,
+        offset: Offset | None = None,
+        calendar: CalendarSystem | None = None,
+    ) -> OffsetDateTime:
+        if instant is not None and offset is not None:
+            days = instant._days_since_epoch
+            nano_of_day = instant._nanosecond_of_day + offset.nanoseconds
+            if nano_of_day >= PyodaConstants.NANOSECONDS_PER_DAY:
+                days += 1
+                nano_of_day -= PyodaConstants.NANOSECONDS_PER_DAY
+            elif nano_of_day < 0:
+                days -= 1
+                nano_of_day += PyodaConstants.NANOSECONDS_PER_DAY
+            local_date = (
+                LocalDate._ctor(days_since_epoch=days)
+                if calendar is None
+                else LocalDate._ctor(days_since_epoch=days, calendar=calendar)
+            )
+            offset_time = OffsetTime._ctor(nanosecond_of_day=nano_of_day, offset_seconds=offset.seconds)
+        if local_date is not None and offset_time is not None:
+            self = super().__new__(cls)
+            self.__local_date = local_date
+            self.__offset_time = offset_time
+            return self
+        raise TypeError
+
+    @property
+    def nanosecond_of_day(self) -> int:
+        return self.__offset_time.nanosecond_of_day
+
+    @property
+    def local_date_time(self) -> LocalDateTime:
+        return LocalDateTime._ctor(local_date=self.date, local_time=self.time_of_day)
+
+    @property
+    def date(self) -> LocalDate:
+        return self.__local_date
+
+    @property
+    def time_of_day(self) -> LocalTime:
+        return LocalTime._ctor(nanoseconds=self.nanosecond_of_day)
+
+
+class OffsetTime:
+    __NANOSECONDS_BITS: _typing.Final[int] = 47
+    __NANOSECONDS_MASK: _typing.Final[int] = (1 << __NANOSECONDS_BITS) - 1
+
+    def __init__(self, time: LocalTime, offset: Offset) -> None:
+        nanosecond_of_day = time.nanosecond_of_day
+        offset_seconds = offset.seconds
+        self.__nanoseconds_and_offset = nanosecond_of_day | (offset_seconds << self.__NANOSECONDS_BITS)
+
+    @classmethod
+    @_typing.overload
+    def _ctor(cls, *, nanosecond_of_day_zero_offset: int) -> OffsetTime:
+        ...
+
+    @classmethod
+    @_typing.overload
+    def _ctor(cls, *, nanosecond_of_day: int, offset_seconds: int) -> OffsetTime:
+        ...
+
+    @classmethod
+    def _ctor(
+        cls,
+        *,
+        nanosecond_of_day_zero_offset: int | None = None,
+        nanosecond_of_day: int | None = None,
+        offset_seconds: int | None = None,
+    ) -> OffsetTime:
+        self = super().__new__(cls)
+        if nanosecond_of_day_zero_offset is not None:
+            # TODO: Preconditions.DebugCheckArgument
+            self.__nanoseconds_and_offset = nanosecond_of_day_zero_offset
+        elif nanosecond_of_day is not None and offset_seconds is not None:
+            self.__nanoseconds_and_offset = nanosecond_of_day | (offset_seconds << self.__NANOSECONDS_BITS)
+        else:
+            raise ValueError
+        return self
+
+    @property
+    def nanosecond_of_day(self) -> int:
+        return self.__nanoseconds_and_offset & self.__NANOSECONDS_MASK
+
 
 @_typing.final
 @_sealed
@@ -1740,6 +1933,7 @@ class Instant:
         day_of_month: int,
         hour_of_day: int,
         minute_of_hour: int,
+        second_of_minute: int = 0,
     ) -> Instant:
         """Returns a new Instant corresponding to the given UTC date and time in the ISO calendar.
 
@@ -1747,12 +1941,18 @@ class Instant:
         some situations where an Instant is required, such as time zone testing.
         """
         days = LocalDate(year=year, month=month_of_year, day=day_of_month)._days_since_epoch
-        nano_of_day = LocalTime(hour=hour_of_day, minute=minute_of_hour).nanosecond_of_day
+        nano_of_day = LocalTime(hour=hour_of_day, minute=minute_of_hour, second=second_of_minute).nanosecond_of_day
         return Instant._ctor(days=days, nano_of_day=nano_of_day)
+
+    def __hash__(self) -> int:
+        return hash(self.__duration)
 
     def plus_ticks(self, ticks: int) -> Instant:
         """Returns a new value of this instant with the given number of ticks added to it."""
         return self._from_untrusted_duration(self.__duration + Duration.from_ticks(ticks))
+
+    def plus_nanoseconds(self, nanoseconds: int) -> Instant:
+        return self._from_untrusted_duration(self.__duration + Duration.from_nanoseconds(nanoseconds))
 
     @property
     def _is_valid(self) -> bool:
@@ -1790,6 +1990,33 @@ class Instant:
         if as_duration._floor_days > self._MAX_DAYS:
             return _LocalInstant.after_max_value()
         return _LocalInstant._ctor(nanoseconds=as_duration)
+
+    def in_zone(self, zone: DateTimeZone, calendar: CalendarSystem) -> ZonedDateTime:
+        _Preconditions._check_not_null(zone, "zone")
+        _Preconditions._check_not_null(calendar, "calendar")
+        return ZonedDateTime(instant=self, zone=zone, calendar=calendar)
+
+    @property
+    def _nanosecond_of_day(self) -> int:
+        return self.__duration._nanosecond_of_floor_day
+
+    def in_utc(self) -> ZonedDateTime:
+        offset_date_time = OffsetDateTime._ctor(
+            local_date=LocalDate._ctor(days_since_epoch=self.__duration._floor_days),
+            offset_time=OffsetTime._ctor(nanosecond_of_day_zero_offset=self.__duration._nanosecond_of_floor_day),
+        )
+        return ZonedDateTime._ctor(offset_date_time=offset_date_time, zone=DateTimeZone.utc)
+
+    def __str__(self) -> str:
+        if not self._is_valid:
+            if self == self._before_min_value():
+                # TODO: Instant._before_min_value.__str__()
+                return super().__str__()
+            if self == self._after_max_value():
+                # TODO: Instant._after_max_value.__str__()
+                return super().__str__()
+        ldt = self.in_utc().local_date_time
+        return f"{ldt.year:0>4}-{ldt.month:0>2}-{ldt.day:0>2}T{ldt.hour:0>2}:{ldt.minute:0>2}:{ldt.second:0>2}Z"
 
 
 @_typing.final
@@ -1865,9 +2092,22 @@ class _LocalInstant:
 
     # region Operators
 
+    def minus(self, offset: Offset) -> Instant:
+        return Instant._from_untrusted_duration(self.__duration._minus_small_nanoseconds(offset.nanoseconds))
+
     def __eq__(self, other: object) -> bool:
         if isinstance(other, _LocalInstant):
             return self.__duration == other.__duration
+        return NotImplemented
+
+    def __lt__(self, other: _LocalInstant) -> bool:
+        if isinstance(other, _LocalInstant):
+            return self.__duration < other.__duration
+        return NotImplemented
+
+    def __le__(self, other: _LocalInstant) -> bool:
+        if isinstance(other, _LocalInstant):
+            return self.__duration <= other.__duration
         return NotImplemented
 
     # endregion
@@ -2130,6 +2370,11 @@ class LocalDate:
 
         return _DatePeriodFields._months_field.add(self, months)
 
+    def plus_days(self, days: int) -> LocalDate:
+        from .fields import _DatePeriodFields
+
+        return _DatePeriodFields._days_field.add(self, days)
+
     def at(self, time: LocalTime) -> LocalDateTime:
         """Combines this <see ``LocalDate`` with the given ``LocalTime`` into a single ``LocalDateTime``.
 
@@ -2186,7 +2431,7 @@ class LocalTime:
             hour * PyodaConstants.NANOSECONDS_PER_HOUR
             + minute * PyodaConstants.NANOSECONDS_PER_MINUTE
             + second * PyodaConstants.NANOSECONDS_PER_SECOND
-            + millisecond * PyodaConstants.MILLISECONDS_PER_SECOND
+            + millisecond * PyodaConstants.NANOSECONDS_PER_MILLISECOND
         )
 
     @classmethod
@@ -2275,7 +2520,7 @@ class LocalTime:
     def hour(self) -> int:
         """The hour of day of this local time, in the range 0 to 23 inclusive."""
         # Effectively nanoseconds / NanosecondsPerHour, but apparently rather more efficient.
-        return _towards_zero_division((self.__nanoseconds >> 11), 439453125)
+        return _towards_zero_division((self.__nanoseconds >> 13), 439453125)
 
     @property
     def clock_hour_of_half_day(self) -> int:
@@ -2481,7 +2726,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         return self.__time.nanosecond_of_day
 
     @property
-    def time(self) -> LocalTime:
+    def time_of_day(self) -> LocalTime:
         """The time portion of this local date and time as a ``LocalTime``."""
         return self.__time
 
@@ -2493,7 +2738,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
     # TODO def to_datetime_unspecified(self):
 
     def _to_local_instant(self) -> _LocalInstant:
-        return _LocalInstant._ctor(days=self.date._days_since_epoch, nano_of_day=self.time.nanosecond_of_day)
+        return _LocalInstant._ctor(days=self.date._days_since_epoch, nano_of_day=self.__time.nanosecond_of_day)
 
     def with_calendar(self, calendar: CalendarSystem) -> LocalDateTime:
         """Creates a new LocalDateTime representing the same physical date and time, but in a different calendar. The
@@ -2504,7 +2749,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         :return: The converted LocalDateTime.
         """
         _Preconditions._check_not_null(calendar, "calendar")
-        return LocalDateTime._ctor(local_date=self.date.with_calendar(calendar), local_time=self.time)
+        return LocalDateTime._ctor(local_date=self.date.with_calendar(calendar), local_time=self.__time)
 
     def plus_years(self, years: int) -> LocalDateTime:
         """Returns a new LocalDateTime representing the current value with the given number of years added.
@@ -2532,6 +2777,11 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         :return: The current value plus the given number of months.
         """
         return LocalDateTime._ctor(local_date=self.__date.plus_months(months), local_time=self.__time)
+
+    def plus_ticks(self, ticks: int) -> LocalDateTime:
+        from .fields import _TimePeriodField
+
+        return _TimePeriodField._ticks._add_local_date_time(self, ticks)
 
     # @classmethod
     # TODO: def from_datetime(cls, datetime: _datetime.datetime) -> LocalDateTime:
@@ -2764,6 +3014,64 @@ class _YearMonthDay:
         if isinstance(other, _YearMonthDay):
             return self.__value >= other.__value
         return NotImplemented
+
+
+class ZonedDateTime:
+    @classmethod
+    def _ctor(cls, offset_date_time: OffsetDateTime, zone: DateTimeZone) -> ZonedDateTime:
+        self = super().__new__(cls)
+        self.__offset_date_time = offset_date_time
+        self.__zone = zone
+        return self
+
+    @_typing.overload
+    def __init__(self, *, instant: Instant, zone: DateTimeZone) -> None:
+        ...
+
+    @_typing.overload
+    def __init__(self, *, local_date_time: LocalDateTime, zone: DateTimeZone, offset: Offset) -> None:
+        ...
+
+    @_typing.overload
+    def __init__(self, *, instant: Instant, zone: DateTimeZone, calendar: CalendarSystem) -> None:
+        ...
+
+    def __init__(
+        self,
+        *,
+        zone: DateTimeZone,
+        instant: Instant | None = None,
+        local_date_time: LocalDateTime | None = None,
+        offset: Offset | None = None,
+        calendar: CalendarSystem | None = None,
+    ) -> None:
+        if offset is not None and calendar is not None:
+            raise ValueError("offset and calendar are mutually exclusive")
+
+        offset_date_time: OffsetDateTime
+        if local_date_time is not None and offset is not None:
+            candidate_instant = local_date_time._to_local_instant().minus(offset)
+            correct_offset: Offset = zone.get_utc_offset(candidate_instant)
+            if correct_offset != offset:
+                raise ValueError(
+                    f"Offset {offset} is invalid for local date and time {local_date_time} in time zone {zone.id}"
+                )
+            offset_date_time = OffsetDateTime(local_date_time=local_date_time, offset=offset)
+        elif calendar is not None and instant is not None:
+            offset_date_time = OffsetDateTime._ctor(
+                instant=instant, offset=zone.get_utc_offset(instant), calendar=calendar
+            )
+        elif instant is not None:
+            offset_date_time = OffsetDateTime._ctor(instant=instant, offset=zone.get_utc_offset(instant))
+        else:
+            raise ValueError
+
+        self.__offset_date_time: OffsetDateTime = offset_date_time
+        self.__zone: DateTimeZone = _Preconditions._check_not_null(zone, "zone")
+
+    @property
+    def local_date_time(self) -> LocalDateTime:
+        return self.__offset_date_time.local_date_time
 
 
 _BCL_EPOCH: _typing.Final[Instant] = Instant.from_utc(1, 1, 1, 0, 0)

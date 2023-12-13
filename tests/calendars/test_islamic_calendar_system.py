@@ -340,4 +340,5 @@ class TestIslamicCalendarSystem:
     def test_constructor_invalid_enums_for_coverage(self) -> None:
         with pytest.raises(ValueError):
             _IslamicYearMonthDayCalculator(IslamicLeapYearPattern.BASE15 + 100, IslamicEpoch.ASTRONOMICAL)  # type: ignore
+        with pytest.raises(ValueError):
             _IslamicYearMonthDayCalculator(IslamicLeapYearPattern.BASE15, IslamicEpoch.ASTRONOMICAL + 100)  # type: ignore

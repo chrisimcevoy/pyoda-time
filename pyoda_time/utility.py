@@ -1,3 +1,5 @@
+from __future__ import annotations as _annotations
+
 __all__: list[str] = []
 
 import datetime as _datetime
@@ -167,3 +169,13 @@ def _csharp_modulo(dividend: int, divisor: int) -> int:
     if dividend < 0 < result:
         result -= abs(divisor)
     return result
+
+
+def _hash_code_helper(*values: _typing.Hashable) -> int:
+    """Provides help with generating hash codes."""
+    # In Noda Time, this is a builder pattern struct.
+    multiplier = 37
+    ret = 17
+    for v in values:
+        ret += ret * multiplier + hash(v)
+    return ret

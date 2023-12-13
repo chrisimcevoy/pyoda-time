@@ -60,7 +60,8 @@ def _validate_input(value: T, equal_value: T, unequal_values: T | Iterable[T], u
 
 
 def test_equals(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values: T_IEquatable) -> None:
-    """A combination of ``TestHelpers.TestEqualsStruct`` and ``TestHelpers.TestObjectEquals`` from Noda Time.
+    """A combination of ``TestHelpers.TestEqualsClass``, ``TestHelpers.TestEqualsStruct`` and
+    ``TestHelpers.TestObjectEquals`` from Noda Time.
 
     In Pyoda Time we don't have structs, so we don't need separate helpers for "value types".
 

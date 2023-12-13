@@ -14,7 +14,6 @@ import functools as _functools
 import typing as _typing
 
 if _typing.TYPE_CHECKING:
-    from . import CalendarSystem as _CalendarSystem
     from . import (
         _YearMonthDay,
         _YearMonthDayCalendar,
@@ -970,10 +969,89 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
     def _get_gregorian_year_month_day_calendar_from_days_since_epoch(
         cls, days_since_epoch: int
     ) -> _YearMonthDayCalendar:
+        from . import CalendarSystem, _CalendarOrdinal, _YearMonthDayCalendar
+
         # TODO: unchecked
         if days_since_epoch < cls.__FIRST_OPTIMIZED_DAY or days_since_epoch > cls.__LAST_OPTIMIZED_DAY:
-            return _CalendarSystem.iso._get_year_month_day_calendar_from_days_since_epoch(days_since_epoch)
-        raise NotImplementedError("We need to figure out the static constructor stuff first :(")
+            return CalendarSystem.iso._get_year_month_day_calendar_from_days_since_epoch(days_since_epoch)
+        # Divide by more than we need to, in order to guarantee that we only need to move forward.
+        # We can still only be out by 1 year.
+        year_index = _towards_zero_division(days_since_epoch - cls.__FIRST_OPTIMIZED_DAY, 366)
+        index_value = cls.__YEAR_START_DAYS[year_index]
+        # Zero-based day of year
+        d: int = days_since_epoch - index_value
+        year: int = year_index + cls.__FIRST_OPTIMIZED_YEAR
+        is_leap: bool = cls.__is_gregorian_leap_year(year)
+        days_in_year: int = 366 if is_leap else 365
+        if d >= days_in_year:
+            year += 1
+            d -= days_in_year
+            is_leap = cls.__is_gregorian_leap_year(year)
+
+        # The remaining code is copied from GJYearMonthDayCalculator (and tweaked)
+
+        start_of_month: int = 0
+        # Perform a hard-coded binary search to get the month.
+        if is_leap:
+            start_of_month = (
+                -1
+                if d < 31
+                else 30
+                if d < 60
+                else 59
+                if d < 91
+                else 90
+                if d < 121
+                else 120
+                if d < 152
+                else 151
+                if d < 182
+                else 181
+                if d < 213
+                else 212
+                if d < 244
+                else 243
+                if d < 274
+                else 273
+                if d < 305
+                else 304
+                if d < 335
+                else 334
+            )
+        else:
+            start_of_month = (
+                -1
+                if d < 31
+                else 30
+                if d < 59
+                else 58
+                if d < 90
+                else 89
+                if d < 120
+                else 119
+                if d < 151
+                else 150
+                if d < 181
+                else 180
+                if d < 212
+                else 211
+                if d < 243
+                else 242
+                if d < 273
+                else 272
+                if d < 304
+                else 303
+                if d < 334
+                else 333
+            )
+        month: int = _towards_zero_division(start_of_month, 29) + 1
+        day_of_month: int = d - start_of_month
+        return _YearMonthDayCalendar._ctor(
+            year=year,
+            month=month,
+            day=day_of_month,
+            calendar_ordinal=_CalendarOrdinal.ISO,
+        )
 
     def __init__(self) -> None:
         super().__init__(
@@ -1760,7 +1838,7 @@ class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
                 return cls.__DAYS_AT_CIVIL_EPOCH
             case _:
                 # TODO: ArgumentOutOfRangeException?
-                raise ValueError(f"Epoch {epoch.name} not recognised")
+                raise ValueError(f"Epoch {getattr(epoch, "name", epoch)} not recognised")
 
 
 @_sealed
