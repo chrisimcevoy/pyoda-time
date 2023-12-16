@@ -2161,12 +2161,11 @@ class LocalDate:
         if era is not None and year_of_era is not None and month is not None and day is not None:
             year = calendar.get_absolute_year(year_of_era, era)
 
-        elif year is not None and month is not None and day is not None:
+        if year is not None and month is not None and day is not None:
             calendar._validate_year_month_day(year, month, day)
             self.__year_month_day_calendar = _YearMonthDayCalendar._ctor(
                 year=year, month=month, day=day, calendar_ordinal=calendar._ordinal
             )
-
         else:
             raise TypeError
 
