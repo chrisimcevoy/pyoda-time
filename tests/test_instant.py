@@ -315,3 +315,23 @@ class TestInstant:
         )
         actual = start._safe_plus(Offset.from_hours(offset_to_add))
         assert actual == expected
+
+
+class TestInstantFormat:
+    # TODO: def test_to_string_invalid_format(self) -> None:
+
+    def test_to_string_min_value(self) -> None:
+        self.__test_to_string_base(Instant.min_value(), "-9998-01-01T00:00:00Z")
+
+    def test_to_string_max_value(self) -> None:
+        self.__test_to_string_base(Instant.max_value(), "9999-12-31T23:59:59Z")
+
+    def test_to_string_unix_epoch(self) -> None:
+        self.__test_to_string_base(PyodaConstants.UNIX_EPOCH, "1970-01-01T00:00:00Z")
+
+    def test_to_string_padding(self) -> None:
+        self.__test_to_string_base(Instant.from_utc(1, 1, 1, 12, 34, 56), "0001-01-01T12:34:56Z")
+
+    @staticmethod
+    def __test_to_string_base(value: Instant, gvalue: str) -> None:
+        assert str(value) == gvalue

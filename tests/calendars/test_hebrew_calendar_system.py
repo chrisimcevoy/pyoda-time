@@ -58,7 +58,6 @@ class TestHebrewCalendarSystem:
         with pytest.raises(ValueError):
             _HebrewScripturalCalculator._get_days_from_start_of_year_to_start_of_month(5502, 0)
 
-    # TODO: requires LocalDate.plus_months()
     @pytest.mark.parametrize(
         "month_numbering",
         (
