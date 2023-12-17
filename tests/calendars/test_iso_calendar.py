@@ -12,7 +12,7 @@ from pyoda_time import (
     _LocalInstant,
     _towards_zero_division,
 )
-from pyoda_time.calendars import Era
+from pyoda_time.calendars import Era, WeekYearRules
 
 ISO: CalendarSystem = CalendarSystem.iso
 
@@ -33,8 +33,8 @@ class TestIsoCalendarSystem:
 
         assert epoch.year == 1970
         assert epoch.year_of_era == 1970
-        # TODO: Assert.AreEqual(1970, WeekYearRules.Iso.GetWeekYear(epoch.Date));
-        # TODO: Assert.AreEqual(1, WeekYearRules.Iso.GetWeekOfWeekYear(epoch.Date));
+        assert WeekYearRules.iso.get_week_year(epoch.date) == 1970
+        assert WeekYearRules.iso.get_week_of_week_year(epoch.date) == 1
         assert epoch.month == 1
         assert epoch.day == 1
         assert epoch.day_of_year == 1
@@ -69,8 +69,8 @@ class TestIsoCalendarSystem:
 
         assert now.year == 2009
         assert now.year_of_era == 2009
-        # TODO: Assert.AreEqual(2009, WeekYearRules.Iso.GetWeekYear(now.Date));
-        # TODO: Assert.AreEqual(48, WeekYearRules.Iso.GetWeekOfWeekYear(now.Date));
+        assert WeekYearRules.iso.get_week_year(now.date) == 2009
+        assert WeekYearRules.iso.get_week_of_week_year(now.date) == 48
         assert now.month == 11
         assert now.day == 27
         assert now.day_of_year == self.TIME_OF_GREAT_ACHIEVEMENT.timetuple().tm_yday
