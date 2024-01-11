@@ -960,8 +960,8 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
 
 @_typing.final
 class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
-    __MIN_GREGORIAN_YEAR: _typing.Final[int] = -9998
-    __MAX_GREGORIAN_YEAR: _typing.Final[int] = 9999
+    _MIN_GREGORIAN_YEAR: _typing.Final[int] = -9998
+    _MAX_GREGORIAN_YEAR: _typing.Final[int] = 9999
 
     __FIRST_OPTIMIZED_YEAR: _typing.Final[int] = 1900
     __LAST_OPTIMIZED_YEAR: _typing.Final[int] = 2100
@@ -1067,8 +1067,8 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
 
     def __init__(self) -> None:
         super().__init__(
-            self.__MIN_GREGORIAN_YEAR,
-            self.__MAX_GREGORIAN_YEAR,
+            self._MIN_GREGORIAN_YEAR,
+            self._MAX_GREGORIAN_YEAR,
             self.__AVERAGE_DAYS_PER_10_YEARS,
             -719162,
         )

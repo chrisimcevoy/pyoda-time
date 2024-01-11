@@ -7,4 +7,4 @@ class TestDuration:
     def test_default_initialiser(self) -> None:
         """Using the default constructor is equivalent to Duration.Zero."""
         actual = Duration()
-        assert Duration.zero() == actual
+        assert Duration.zero == actual
