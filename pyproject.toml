@@ -29,10 +29,15 @@ name = "pyoda-time"
 version = "0.5.0"
 description = "An alternative datetime library for Python."
 authors = ["Christopher McEvoy <12284065+chrisimcevoy@users.noreply.github.com>"]
+license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/chrisimcevoy/pyoda-time"
 classifiers = [
     "Development Status :: 1 - Planning"
+]
+include = [
+    "LICENSE.txt",
+    "NOTICE.txt",
 ]
 
 [tool.poetry.dependencies]

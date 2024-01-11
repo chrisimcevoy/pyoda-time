@@ -1,0 +1,14 @@
+=============================================================================
+= NOTICE file corresponding to section 4d of the Apache License Version 2.0 =
+=============================================================================
+Pyoda Time
+Copyright 2024 Pyoda Time Authors
+
+This product includes ports of software developed by The Noda Time Authors.
+
+Noda Time is licensed under the Apache License 2.0. For more details, see
+http://www.apache.org/licenses/LICENSE-2.0.
+
+(Portions of Noda Time were derived from Joda Time 1.6.0; Joda Time
+1.6.0 is copyright 2001-2009 Stephen Colebourne.)
+
