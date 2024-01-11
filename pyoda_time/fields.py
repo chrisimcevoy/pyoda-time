@@ -5,6 +5,7 @@ __all__: list[str] = []
 import abc as _abc
 import typing as _typing
 
+from pyoda_time import Duration as _Duration
 from pyoda_time import (
     LocalDate as _LocalDate,
 )
@@ -103,7 +104,9 @@ class _FixedLengthDatePeriodField(_IDatePeriodField):
         return _LocalDate._ctor(days_since_epoch=days, calendar=calendar)
 
     def units_between(self, start: _LocalDate, end: _LocalDate) -> int:
-        raise NotImplementedError("requires Period.InternalDaysBetween()")
+        from . import Period
+
+        return _towards_zero_division(Period._internal_days_between(start, end), self.__unit_days)
 
 
 @_sealed
@@ -170,8 +173,28 @@ class _DatePeriodFields:
 
 class _TimePeriodFieldMeta(type):
     @property
+    def _nanoseconds(cls) -> _TimePeriodField:
+        return _TimePeriodField(1)
+
+    @property
     def _ticks(self) -> _TimePeriodField:
         return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_TICK)
+
+    @property
+    def _milliseconds(self) -> _TimePeriodField:
+        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_MILLISECOND)
+
+    @property
+    def _seconds(self) -> _TimePeriodField:
+        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_SECOND)
+
+    @property
+    def _minutes(self) -> _TimePeriodField:
+        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_MINUTE)
+
+    @property
+    def _hours(self) -> _TimePeriodField:
+        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_HOUR)
 
 
 class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
@@ -224,3 +247,12 @@ class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
             # TODO: checked
             extra_days += days
             return _LocalTime._ctor(nanoseconds=new_nanos), extra_days
+
+    def _units_between(self, start: _LocalDateTime, end: _LocalDateTime) -> int:
+        start_local_instant = start._to_local_instant()
+        end_local_instant = end._to_local_instant()
+        duration = end_local_instant._time_since_local_epoch - start_local_instant._time_since_local_epoch
+        return self._get_units_in_duration(duration)
+
+    def _get_units_in_duration(self, duration: _Duration) -> int:
+        return _towards_zero_division(duration.to_nanoseconds(), self.__unit_nanoseconds)

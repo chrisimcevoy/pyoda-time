@@ -70,6 +70,19 @@ class _TickArithmetic:
         return days, tick_of_day
 
     @staticmethod
+    def days_and_tick_of_day_to_ticks(days: int, tick_of_day: int) -> int:
+        """Cautiously computes a number of ticks from day/tick-of-day value.
+
+        This may overflow, but will only do so if it has to.
+        """
+        from . import PyodaConstants
+
+        # TODO: Get a better handle on what this is doing with regard to long overflow
+        if days >= _towards_zero_division(_CsharpConstants.LONG_MIN_VALUE, PyodaConstants.TICKS_PER_DAY):
+            return days * PyodaConstants.TICKS_PER_DAY + tick_of_day
+        return (days + 1) * PyodaConstants.TICKS_PER_DAY + tick_of_day - PyodaConstants.TICKS_PER_DAY
+
+    @staticmethod
     def bounded_days_and_tick_of_day_to_ticks(days: int, tick_of_day: int) -> int:
         """Computes a number of ticks from a day/tick-of-day value which is trusted not to overflow, even when computed
         in the simplest way.
@@ -138,6 +151,11 @@ def _private(klass: _Ttype) -> _Ttype:
     setattr(klass, "__call__", __call__)
 
     return klass
+
+
+class _CsharpConstants:
+    LONG_MAX_VALUE: _typing.Final[int] = 9223372036854775807
+    LONG_MIN_VALUE: _typing.Final[int] = -9223372036854775808
 
 
 def _int32_overflow(value: int) -> int:

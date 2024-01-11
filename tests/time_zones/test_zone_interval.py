@@ -35,8 +35,8 @@ class TestZoneInterval:
     def test_contains_instant_normal(self) -> None:
         assert self.SAMPLE_START in self.SAMPLE_INTERVAL
         assert self.SAMPLE_END not in self.SAMPLE_INTERVAL
-        assert Instant.min_value() not in self.SAMPLE_INTERVAL
-        assert Instant.max_value() not in self.SAMPLE_INTERVAL
+        assert Instant.min_value not in self.SAMPLE_INTERVAL
+        assert Instant.max_value not in self.SAMPLE_INTERVAL
 
     def test_contains_instant_whole_of_time_via_nullity(self) -> None:
         interval = ZoneInterval(
@@ -47,8 +47,8 @@ class TestZoneInterval:
             savings=Offset.from_hours(1),
         )
         assert self.SAMPLE_START in interval
-        assert Instant.min_value() in interval
-        assert Instant.max_value() in interval
+        assert Instant.min_value in interval
+        assert Instant.max_value in interval
 
     def test_contains_instant_whole_of_time_via_special_instants(self) -> None:
         interval = ZoneInterval(
@@ -59,8 +59,8 @@ class TestZoneInterval:
             savings=Offset.from_hours(1),
         )
         assert self.SAMPLE_START in interval
-        assert Instant.min_value() in interval
-        assert Instant.max_value() in interval
+        assert Instant.min_value in interval
+        assert Instant.max_value in interval
 
     def test_contains_local_instant_whole_of_time(self) -> None:
         interval = ZoneInterval(
@@ -71,30 +71,30 @@ class TestZoneInterval:
             savings=Offset.from_hours(1),
         )
         assert interval._contains(self.SAMPLE_START._plus(Offset.zero))
-        assert interval._contains(Instant.min_value()._plus(Offset.zero))
-        assert interval._contains(Instant.max_value()._plus(Offset.zero))
+        assert interval._contains(Instant.min_value._plus(Offset.zero))
+        assert interval._contains(Instant.max_value._plus(Offset.zero))
 
     def test_contains_outside_local_instant_range(self) -> None:
         very_early = ZoneInterval(
             name="Very early",
             start=Instant._before_min_value(),
-            end=Instant.min_value() + Duration.from_hours(8),
+            end=Instant.min_value + Duration.from_hours(8),
             wall_offset=Offset.from_hours(-9),
             savings=Offset.zero,
         )
         very_late = ZoneInterval(
             name="Very late",
-            start=Instant.max_value() - Duration.from_hours(8),
+            start=Instant.max_value - Duration.from_hours(8),
             end=Instant._after_max_value(),
             wall_offset=Offset.from_hours(9),
             savings=Offset.zero,
         )
         # The instants are contained...
-        assert (Instant.min_value() + Duration.from_hours(4)) in very_early
-        assert (Instant.max_value() - Duration.from_hours(4)) in very_late
+        assert (Instant.min_value + Duration.from_hours(4)) in very_early
+        assert (Instant.max_value - Duration.from_hours(4)) in very_late
         # But there are no valid local instants
-        assert not very_early._contains(Instant.min_value()._plus(Offset.zero))
-        assert not very_early._contains(Instant.max_value()._plus(Offset.zero))
+        assert not very_early._contains(Instant.min_value._plus(Offset.zero))
+        assert not very_early._contains(Instant.max_value._plus(Offset.zero))
 
     def test_iso_local_start_and_end_infinite(self) -> None:
         interval = ZoneInterval(
@@ -112,7 +112,7 @@ class TestZoneInterval:
     def test_iso_local_start_and_end_out_of_range(self) -> None:
         interval = ZoneInterval(
             name="All time",
-            start=Instant.min_value(),
+            start=Instant.min_value,
             end=None,
             wall_offset=Offset.from_hours(-1),
             savings=Offset.zero,
@@ -122,7 +122,7 @@ class TestZoneInterval:
         interval = ZoneInterval(
             name="All time",
             start=None,
-            end=Instant.max_value(),
+            end=Instant.max_value,
             wall_offset=Offset.from_hours(11),
             savings=Offset.zero,
         )

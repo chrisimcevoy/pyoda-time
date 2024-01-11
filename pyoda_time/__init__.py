@@ -1,6 +1,8 @@
 from __future__ import annotations as _annotations
 
 __all__: list[str] = [
+    # Do not include other modules like calendars.py in this list.
+    # They should be imported explicitly rather than automatically.
     "CalendarSystem",
     "DateAdjusters",
     "DateInterval",
@@ -14,13 +16,18 @@ __all__: list[str] = [
     "Offset",
     "OffsetDateTime",
     "OffsetTime",
+    "Period",
+    "PeriodBuilder",
+    "PeriodUnits",
     "PyodaConstants",
+    "YearMonth",
     "ZonedDateTime",
 ]
 
 import abc as _abc
 import datetime as _datetime
 import enum as _enum
+import functools as _functools
 import typing as _typing
 
 from .calendars import (
@@ -81,6 +88,7 @@ class _PyodaConstantsMeta(type):
 
 class PyodaConstants(metaclass=_PyodaConstantsMeta):
     HOURS_PER_DAY: _typing.Final[int] = 24
+    DAYS_PER_WEEK: _typing.Final[int] = 7
     SECONDS_PER_MINUTE: _typing.Final[int] = 60
     MINUTES_PER_HOUR: _typing.Final[int] = 60
     MINUTES_PER_DAY: _typing.Final[int] = MINUTES_PER_HOUR * HOURS_PER_DAY
@@ -96,11 +104,13 @@ class PyodaConstants(metaclass=_PyodaConstantsMeta):
     NANOSECONDS_PER_MINUTE: _typing.Final[int] = NANOSECONDS_PER_SECOND * SECONDS_PER_MINUTE
     NANOSECONDS_PER_HOUR: _typing.Final[int] = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR
     NANOSECONDS_PER_DAY: _typing.Final[int] = NANOSECONDS_PER_HOUR * HOURS_PER_DAY
+    NANOSECONDS_PER_WEEK: _typing.Final[int] = NANOSECONDS_PER_DAY * DAYS_PER_WEEK
     TICKS_PER_MILLISECOND: _typing.Final[int] = 10_000
     TICKS_PER_SECOND: _typing.Final[int] = TICKS_PER_MILLISECOND * MILLISECONDS_PER_SECOND
     TICKS_PER_MINUTE: _typing.Final[int] = TICKS_PER_SECOND * SECONDS_PER_MINUTE
     TICKS_PER_HOUR: _typing.Final[int] = TICKS_PER_MINUTE * MINUTES_PER_HOUR
     TICKS_PER_DAY: _typing.Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
+    TICKS_PER_WEEK: _typing.Final[int] = TICKS_PER_DAY * DAYS_PER_WEEK
 
 
 class _CalendarOrdinal(_enum.IntEnum):
@@ -820,9 +830,28 @@ class DateInterval:
         self.__start: LocalDate = start
         self.__end: LocalDate = end
 
+    def __hash__(self) -> int:
+        return hash((self.start, self.__end))
+
+    def __eq__(self, other: object) -> bool:
+        if self is other:
+            return True
+        if isinstance(other, DateInterval):
+            return self.start == other.start and self.end == other.end
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, DateInterval):
+            return not self == other
+        return NotImplemented
+
+    def equals(self, other: DateInterval) -> bool:
+        return self == other
+
 
 class _DateTimeZoneMeta(_abc.ABCMeta):
     @property
+    @_functools.cache
     def utc(cls) -> DateTimeZone:
         return _FixedDateTimeZone(Offset.zero)
 
@@ -888,9 +917,22 @@ class DateTimeZone(_abc.ABC, metaclass=_DateTimeZoneMeta):
     # endregion
 
 
+class _DurationMeta(type):
+    # TODO: In Noda Time, these properties use the private ctor which bypasses validation
+
+    @property
+    def one_day(self) -> Duration:
+        return Duration._ctor(days=1, nano_of_day=0)
+
+    @property
+    def zero(cls) -> Duration:
+        """Gets a zero Duration of 0 nanoseconds."""
+        return Duration()
+
+
 @_typing.final
 @_sealed
-class Duration:
+class Duration(metaclass=_DurationMeta):
     """Represents a fixed (and calendar-independent) length of time."""
 
     _MAX_DAYS: _typing.Final[int] = (1 << 24) - 1
@@ -1006,11 +1048,6 @@ class Duration:
         """Returns a Duration that represents the given number of ticks."""
         days, tick_of_day = _TickArithmetic.ticks_to_days_and_tick_of_day(ticks)
         return Duration._ctor(days=days, nano_of_day=tick_of_day * PyodaConstants.NANOSECONDS_PER_TICK)
-
-    @staticmethod
-    def zero() -> Duration:
-        """Gets a zero Duration of 0 nanoseconds."""
-        return Duration()
 
     @property
     def _floor_days(self) -> int:
@@ -1129,6 +1166,24 @@ class Duration:
 
     def __hash__(self) -> int:
         return self.__days ^ hash(self.__nano_of_day)
+
+    def to_nanoseconds(self) -> int:
+        # TODO: This covers implementations for:
+        #  public long ToInt64Nanoseconds()
+        #  private long ToInt64NanosecondsUnchecked()
+        #  public BigInteger ToBigIntegerNanoseconds()
+        return self.__days * PyodaConstants.NANOSECONDS_PER_DAY + self.__nano_of_day
+
+    @property
+    def bcl_compatible_ticks(self) -> int:
+        """Gets the total number of ticks in the duration as a 64-bit integer, truncating towards zero where
+        necessary."""
+        ticks = _TickArithmetic.days_and_tick_of_day_to_ticks(
+            self.__days, _towards_zero_division(self.__nano_of_day, PyodaConstants.NANOSECONDS_PER_TICK)
+        )
+        if self.__days < 0 and self.__nano_of_day % PyodaConstants.NANOSECONDS_PER_TICK != 0:
+            ticks += 1
+        return ticks
 
 
 @_sealed
@@ -1696,9 +1751,29 @@ class OffsetTime:
         return self.__nanoseconds_and_offset & self.__NANOSECONDS_MASK
 
 
+class _InstantMeta(type):
+    @property
+    @_functools.cache
+    def min_value(cls) -> Instant:
+        """Represents the smallest possible Instant.
+
+        This value is equivalent to -9998-01-01T00:00:00Z
+        """
+        return Instant._ctor(days=Instant._MIN_DAYS, nano_of_day=0)
+
+    @property
+    @_functools.cache
+    def max_value(cls) -> Instant:
+        """Represents the largest possible Instant.
+
+        This value is equivalent to 9999-12-31T23:59:59.999999999Z
+        """
+        return Instant._ctor(days=Instant._MAX_DAYS, nano_of_day=PyodaConstants.NANOSECONDS_PER_DAY - 1)
+
+
 @_typing.final
 @_sealed
-class Instant:
+class Instant(metaclass=_InstantMeta):
     """Represents an instant on the global timeline, with nanosecond resolution.
 
     An Instant has no concept of a particular time zone or calendar: it simply represents a point in
@@ -1718,8 +1793,24 @@ class Instant:
     __MIN_SECONDS: _typing.Final[int] = _MIN_DAYS * PyodaConstants.SECONDS_PER_DAY
     __MAX_SECONDS: _typing.Final[int] = (_MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1
 
+    @classmethod
+    def _before_min_value(cls) -> _typing.Self:
+        """Instant which is invalid *except* for comparison purposes; it is earlier than any valid value.
+
+        This must never be exposed.
+        """
+        return cls.__ctor(days=Duration._MIN_DAYS, deliberately_invalid=True)
+
+    @classmethod
+    def _after_max_value(cls) -> _typing.Self:
+        """Instant which is invalid *except* for comparison purposes; it is later than any valid value.
+
+        This must never be exposed.
+        """
+        return cls.__ctor(days=Duration._MAX_DAYS, deliberately_invalid=True)
+
     def __init__(self) -> None:
-        self.__duration = Duration.zero()
+        self.__duration = Duration.zero
 
     @classmethod
     def _ctor(cls, *, days: int, nano_of_day: int) -> Instant:
@@ -1790,38 +1881,6 @@ class Instant:
         if isinstance(other, Duration):
             return self._from_trusted_duration(self.__duration - other)
         return NotImplemented
-
-    @classmethod
-    def min_value(cls) -> Instant:
-        """Represents the smallest possible Instant.
-
-        This value is equivalent to -9998-01-01T00:00:00Z
-        """
-        return Instant._ctor(days=cls._MIN_DAYS, nano_of_day=0)
-
-    @classmethod
-    def max_value(cls) -> Instant:
-        """Represents the largest possible Instant.
-
-        This value is equivalent to 9999-12-31T23:59:59.999999999Z
-        """
-        return Instant._ctor(days=cls._MAX_DAYS, nano_of_day=PyodaConstants.NANOSECONDS_PER_DAY - 1)
-
-    @classmethod
-    def _before_min_value(cls) -> _typing.Self:
-        """Instant which is invalid *except* for comparison purposes; it is earlier than any valid value.
-
-        This must never be exposed.
-        """
-        return cls.__ctor(days=Duration._MIN_DAYS, deliberately_invalid=True)
-
-    @classmethod
-    def _after_max_value(cls) -> _typing.Self:
-        """Instant which is invalid *except* for comparison purposes; it is later than any valid value.
-
-        This must never be exposed.
-        """
-        return cls.__ctor(days=Duration._MAX_DAYS, deliberately_invalid=True)
 
     @property
     def _days_since_epoch(self) -> int:
@@ -2121,9 +2180,35 @@ class _LocalInstant:
     # endregion
 
 
+class _LocalDateMeta(type):
+    @property
+    def max_iso_value(self) -> LocalDate:
+        """The maximum (latest) date representable in the ISO calendar system."""
+        return LocalDate._ctor(
+            year_month_day_calendar=_YearMonthDayCalendar._ctor(
+                year=_GregorianYearMonthDayCalculator._MAX_GREGORIAN_YEAR,
+                month=12,
+                day=31,
+                calendar_ordinal=_CalendarOrdinal.ISO,
+            )
+        )
+
+    @property
+    def min_iso_value(self) -> LocalDate:
+        """The minimum (earliest) date representable in the ISO calendar system."""
+        return LocalDate._ctor(
+            year_month_day_calendar=_YearMonthDayCalendar._ctor(
+                year=_GregorianYearMonthDayCalculator._MIN_GREGORIAN_YEAR,
+                month=1,
+                day=1,
+                calendar_ordinal=_CalendarOrdinal.ISO,
+            )
+        )
+
+
 @_typing.final
 @_sealed
-class LocalDate:
+class LocalDate(metaclass=_LocalDateMeta):
     """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
     zone or time of day."""
 
@@ -2265,6 +2350,9 @@ class LocalDate:
     def _year_month_day(self) -> _YearMonthDay:
         return self.__year_month_day_calendar._to_year_month_day()
 
+    def to_year_month(self) -> YearMonth:
+        return YearMonth(year=self.year, month=self.month, calendar=self.calendar)
+
     def __add__(self, other: LocalTime) -> LocalDateTime:
         # TODO: overload for LocalDate + Period
         if isinstance(other, LocalTime):
@@ -2318,6 +2406,14 @@ class LocalDate:
                 "Only values in the same calendar can be compared",
             )
             return self.__trusted_compare_to(other) >= 0
+
+    def compare_to(self, other: LocalDate) -> int:
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other)
 
     def __trusted_compare_to(self, other: LocalDate) -> int:
         """Performs a comparison with another date, trusting that the calendar of the other date is already correct.
@@ -2374,6 +2470,11 @@ class LocalDate:
 
         return _DatePeriodFields._days_field.add(self, days)
 
+    def plus_weeks(self, weeks: int) -> LocalDate:
+        from .fields import _DatePeriodFields
+
+        return _DatePeriodFields._weeks_field.add(self, weeks)
+
     def at(self, time: LocalTime) -> LocalDateTime:
         """Combines this <see ``LocalDate`` with the given ``LocalTime`` into a single ``LocalDateTime``.
 
@@ -2391,9 +2492,37 @@ class LocalDate:
     # endregion
 
 
+class _LocalTimeMeta(type):
+    @property
+    @_functools.cache
+    def midnight(self) -> LocalTime:
+        """Local time at midnight, i.e. 0 hours, 0 minutes, 0 seconds."""
+        return LocalTime(hour=0, minute=0, second=0)
+
+    @property
+    def min_value(cls) -> LocalTime:
+        """The minimum value of this type; equivalent to ``Midnight``."""
+        return cls.midnight
+
+    @property
+    @_functools.cache
+    def noon(self) -> LocalTime:
+        return LocalTime(hour=12, minute=0, second=0)
+
+    @property
+    @_functools.cache
+    def max_value(cls) -> LocalTime:
+        """The maximum value of this type, one nanosecond before midnight.
+
+        This is useful if you have to use an inclusive upper bound for some reason. In general, it's better to use an
+        exclusive upper bound, in which case use midnight of the following day.
+        """
+        return LocalTime._ctor(nanoseconds=PyodaConstants.NANOSECONDS_PER_DAY - 1)
+
+
 @_typing.final
 @_sealed
-class LocalTime:
+class LocalTime(metaclass=_LocalTimeMeta):
     """LocalTime is an immutable struct representing a time of day, with no reference to a particular calendar, time
     zone or date."""
 
@@ -2440,6 +2569,41 @@ class LocalTime:
         self = super().__new__(cls)
         self.__nanoseconds = nanoseconds
         return self
+
+    @classmethod
+    def from_hour_minute_second_millisecond_tick(
+        cls, hour: int, minute: int, second: int, millisecond: int, tick_within_millisecond: int
+    ) -> LocalTime:
+        # Avoid the method calls which give a decent exception unless we're actually going to fail.
+        if (
+            hour < 0
+            or hour > PyodaConstants.HOURS_PER_DAY - 1
+            or minute < 0
+            or minute > PyodaConstants.MINUTES_PER_HOUR - 1
+            or second < 0
+            or second > PyodaConstants.SECONDS_PER_MINUTE - 1
+            or millisecond < 0
+            or millisecond > PyodaConstants.MILLISECONDS_PER_SECOND - 1
+            or tick_within_millisecond < 0
+            or tick_within_millisecond > PyodaConstants.TICKS_PER_MILLISECOND - 1
+        ):
+            _Preconditions._check_argument_range("hour", hour, 0, PyodaConstants.HOURS_PER_DAY - 1)
+            _Preconditions._check_argument_range("minute", minute, 0, PyodaConstants.MINUTES_PER_HOUR - 1)
+            _Preconditions._check_argument_range("second", second, 0, PyodaConstants.SECONDS_PER_MINUTE - 1)
+            _Preconditions._check_argument_range(
+                "millisecond", millisecond, 0, PyodaConstants.MILLISECONDS_PER_SECOND - 1
+            )
+            _Preconditions._check_argument_range(
+                "tick_within_millisecond", tick_within_millisecond, 0, PyodaConstants.TICKS_PER_MILLISECOND - 1
+            )
+        nanoseconds = (
+            hour * PyodaConstants.NANOSECONDS_PER_HOUR
+            + minute * PyodaConstants.NANOSECONDS_PER_MINUTE
+            + second * PyodaConstants.NANOSECONDS_PER_SECOND
+            + millisecond * PyodaConstants.NANOSECONDS_PER_MILLISECOND
+            + tick_within_millisecond * PyodaConstants.NANOSECONDS_PER_TICK
+        )
+        return LocalTime._ctor(nanoseconds=nanoseconds)
 
     @classmethod
     def from_nanoseconds_since_midnight(cls, nanoseconds: int) -> LocalTime:
@@ -2580,6 +2744,24 @@ class LocalTime:
             return self.__nanoseconds == other.__nanoseconds
         return NotImplemented
 
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+    def __lt__(self, other: LocalTime) -> bool:
+        return self.__nanoseconds < other.__nanoseconds
+
+    def __le__(self, other: LocalTime) -> bool:
+        return self.__nanoseconds <= other.__nanoseconds
+
+    def __gt__(self, other: LocalTime) -> bool:
+        return self.__nanoseconds > other.__nanoseconds
+
+    def __ge__(self, other: LocalTime) -> bool:
+        return self.__nanoseconds >= other.__nanoseconds
+
+    def compare_to(self, other: LocalTime) -> int:
+        return self.__nanoseconds - other.__nanoseconds
+
     def on(self, date: LocalDate) -> LocalDateTime:
         """Combines this ``LocalTime`` with the given ``LocalDate`` into a single ``LocalDateTime``.
 
@@ -2640,6 +2822,11 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         else:
             raise TypeError
         return self
+
+    @property
+    def calendar(self) -> CalendarSystem:
+        """The calendar system associated with this local date and time."""
+        return self.__date.calendar
 
     @property
     def year(self) -> int:
@@ -2777,10 +2964,41 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         """
         return LocalDateTime._ctor(local_date=self.__date.plus_months(months), local_time=self.__time)
 
+    def plus_days(self, days: int) -> LocalDateTime:
+        return LocalDateTime._ctor(local_date=self.__date.plus_days(days), local_time=self.__time)
+
+    def plus_weeks(self, weeks: int) -> LocalDateTime:
+        return LocalDateTime._ctor(local_date=self.__date.plus_weeks(weeks), local_time=self.__time)
+
+    def plus_hours(self, hours: int) -> LocalDateTime:
+        from .fields import _TimePeriodField
+
+        return _TimePeriodField._hours._add_local_date_time(self, hours)
+
+    def plus_minutes(self, minutes: int) -> LocalDateTime:
+        from .fields import _TimePeriodField
+
+        return _TimePeriodField._minutes._add_local_date_time(self, minutes)
+
+    def plus_seconds(self, seconds: int) -> LocalDateTime:
+        from .fields import _TimePeriodField
+
+        return _TimePeriodField._seconds._add_local_date_time(self, seconds)
+
+    def plus_milliseconds(self, milliseconds: int) -> LocalDateTime:
+        from .fields import _TimePeriodField
+
+        return _TimePeriodField._milliseconds._add_local_date_time(self, milliseconds)
+
     def plus_ticks(self, ticks: int) -> LocalDateTime:
         from .fields import _TimePeriodField
 
         return _TimePeriodField._ticks._add_local_date_time(self, ticks)
+
+    def plus_nanoseconds(self, nanoseconds: int) -> LocalDateTime:
+        from .fields import _TimePeriodField
+
+        return _TimePeriodField._nanoseconds._add_local_date_time(self, nanoseconds)
 
     # @classmethod
     # TODO: def from_datetime(cls, datetime: _datetime.datetime) -> LocalDateTime:
@@ -2808,7 +3026,1233 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
             return self.equals(other)
         return NotImplemented
 
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, LocalDateTime):
+            return not (self == other)
+        return NotImplemented
+
+    def __lt__(self, other: LocalDateTime) -> bool:
+        if isinstance(other, LocalDateTime):
+            _Preconditions._check_argument(
+                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+            )
+            return self.compare_to(other) < 0
+        return NotImplemented
+
+    def __le__(self, other: LocalDateTime) -> bool:
+        if isinstance(other, LocalDateTime):
+            _Preconditions._check_argument(
+                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+            )
+            return self.compare_to(other) <= 0
+        return NotImplemented
+
+    def __gt__(self, other: LocalDateTime) -> bool:
+        if isinstance(other, LocalDateTime):
+            _Preconditions._check_argument(
+                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+            )
+            return self.compare_to(other) > 0
+        return NotImplemented
+
+    def __ge__(self, other: LocalDateTime) -> bool:
+        if isinstance(other, LocalDateTime):
+            _Preconditions._check_argument(
+                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+            )
+            return self.compare_to(other) >= 0
+        return NotImplemented
+
+    def compare_to(self, other: LocalDateTime) -> int:
+        # This will check calendars...
+        date_comparison = self.__date.compare_to(other.__date)
+        if date_comparison != 0:
+            return date_comparison
+        return self.__time.compare_to(other.__time)
+
+    def __add__(self, other: Period) -> LocalDateTime:
+        if isinstance(other, Period):
+            return self.plus(other)
+        return NotImplemented
+
+    def plus(self, period: Period) -> LocalDateTime:
+        _Preconditions._check_not_null(period, "period")
+        extra_days = 0
+        time = self.time_of_day
+        from .fields import _TimePeriodField
+
+        time, plus_extra_days = _TimePeriodField._hours._add_local_time_with_extra_days(time, period.hours)
+        extra_days += plus_extra_days
+        time, plus_extra_days = _TimePeriodField._minutes._add_local_time_with_extra_days(time, period.minutes)
+        extra_days += plus_extra_days
+        time, plus_extra_days = _TimePeriodField._seconds._add_local_time_with_extra_days(time, period.seconds)
+        extra_days += plus_extra_days
+        time, plus_extra_days = _TimePeriodField._milliseconds._add_local_time_with_extra_days(
+            time, period.milliseconds
+        )
+        extra_days += plus_extra_days
+        time, plus_extra_days = _TimePeriodField._ticks._add_local_time_with_extra_days(time, period.ticks)
+        extra_days += plus_extra_days
+        time, plus_extra_days = _TimePeriodField._nanoseconds._add_local_time_with_extra_days(time, period.nanoseconds)
+        extra_days += plus_extra_days
+        date = (
+            self.date.plus_years(period.years)
+            .plus_months(period.months)
+            .plus_weeks(period.weeks)
+            .plus_days(period.days + extra_days)
+        )
+        return LocalDateTime._ctor(local_date=date, local_time=time)
+
     # endregion
+
+
+class PeriodUnits(_enum.Flag):
+    """The units within a ``Period``.
+
+    When a period is created to find the difference between two local values,
+    the caller may specify which units are required - for example, you can ask
+    for the difference between two dates in "years and weeks".
+    Units are always applied largest-first in arithmetic.
+    """
+
+    # Note to Noda Time developers: that the values of the single (non-compound)
+    # values must match up with the internal indexes used for Period's values array.
+
+    NONE = 0
+    YEARS = 1
+    MONTHS = 2
+    WEEKS = 4
+    DAYS = 8
+    ALL_DATE_UNITS = YEARS | MONTHS | WEEKS | DAYS
+    YEAR_MONTH_DAY = YEARS | MONTHS | DAYS
+    HOURS = 16
+    MINUTES = 32
+    SECONDS = 64
+    MILLISECONDS = 128
+    TICKS = 256
+    NANOSECONDS = 512
+    HOUR_MINUTE_SECOND = HOURS | MINUTES | SECONDS
+    ALL_TIME_UNITS = HOURS | MINUTES | SECONDS | MILLISECONDS | TICKS | NANOSECONDS
+    DATE_AND_TIME = YEARS | MONTHS | DAYS | HOURS | MINUTES | SECONDS | MILLISECONDS | TICKS | NANOSECONDS
+    ALL_UNITS = YEARS | MONTHS | WEEKS | DAYS | HOURS | MINUTES | SECONDS | MILLISECONDS | TICKS | NANOSECONDS
+
+
+class _PeriodMeta(type):
+    @property
+    @_functools.cache
+    def zero(cls) -> Period:
+        """A period containing only zero-valued properties."""
+        return Period._ctor()
+
+
+@_sealed
+@_typing.final
+@_private
+class Period(metaclass=_PeriodMeta):
+    # TODO: public static IEqualityComparer<Period?> NormalizingEqualityComparer
+
+    @property
+    def nanoseconds(self) -> int:
+        """The number of nanoseconds within this period."""
+        return self.__nanoseconds
+
+    @property
+    def ticks(self) -> int:
+        """The number of ticks within this period."""
+        return self.__ticks
+
+    @property
+    def milliseconds(self) -> int:
+        """The number of milliseconds within this period."""
+        return self.__milliseconds
+
+    @property
+    def seconds(self) -> int:
+        """The number of seconds within this period."""
+        return self.__seconds
+
+    @property
+    def minutes(self) -> int:
+        """The number of minutes within this period."""
+        return self.__minutes
+
+    @property
+    def hours(self) -> int:
+        """The number of hours within this period."""
+        return self.__hours
+
+    @property
+    def days(self) -> int:
+        """The number of days within this period."""
+        return self.__days
+
+    @property
+    def weeks(self) -> int:
+        """The number of weeks within this period."""
+        return self.__weeks
+
+    @property
+    def months(self) -> int:
+        """The number of months within this period."""
+        return self.__months
+
+    @property
+    def years(self) -> int:
+        """The number of years within this period."""
+        return self.__years
+
+    __years: int
+    __months: int
+    __weeks: int
+    __days: int
+    __hours: int
+    __minutes: int
+    __seconds: int
+    __milliseconds: int
+    __ticks: int
+    __nanoseconds: int
+
+    @classmethod
+    def _ctor(
+        cls,
+        years: int = 0,
+        months: int = 0,
+        weeks: int = 0,
+        days: int = 0,
+        hours: int = 0,
+        minutes: int = 0,
+        seconds: int = 0,
+        milliseconds: int = 0,
+        ticks: int = 0,
+        nanoseconds: int = 0,
+    ) -> Period:
+        """Creates a new period from the given values.
+
+        In Pyoda Time, this constructor emulates both the internal and the two private constructors in Noda Time.
+        """
+        self = super().__new__(cls)
+        self.__years = years
+        self.__months = months
+        self.__weeks = weeks
+        self.__days = days
+        self.__hours = hours
+        self.__minutes = minutes
+        self.__seconds = seconds
+        self.__milliseconds = milliseconds
+        self.__ticks = ticks
+        self.__nanoseconds = nanoseconds
+        return self
+
+    @classmethod
+    def from_years(cls, years: int) -> Period:
+        """Creates a period representing the specified number of years.
+
+        :param years: The number of years in the new period
+        :return: A period consisting of the given number of years.
+        """
+        return Period._ctor(years=years)
+
+    @classmethod
+    def from_months(cls, months: int) -> Period:
+        """Creates a period representing the specified number of months.
+
+        :param months: The number of months in the new period
+        :return: A period consisting of the given number of months.
+        """
+        return Period._ctor(months=months)
+
+    @classmethod
+    def from_weeks(cls, weeks: int) -> Period:
+        """Creates a period representing the specified number of weeks.
+
+        :param weeks: The number of weeks in the new period
+        :return: A period consisting of the given number of weeks.
+        """
+        return Period._ctor(weeks=weeks)
+
+    @classmethod
+    def from_days(cls, days: int) -> Period:
+        """Creates a period representing the specified number of days.
+
+        :param days: The number of days in the new period
+        :return: A period consisting of the given number of days.
+        """
+        return Period._ctor(days=days)
+
+    @classmethod
+    def from_hours(cls, hours: int) -> Period:
+        """Creates a period representing the specified number of hours.
+
+        :param hours: The number of hours in the new period
+        :return: A period consisting of the given number of hours.
+        """
+        return Period._ctor(hours=hours)
+
+    @classmethod
+    def from_minutes(cls, minutes: int) -> Period:
+        """Creates a period representing the specified number of minutes.
+
+        :param minutes: The number of minutes in the new period
+        :return: A period consisting of the given number of minutes.
+        """
+        return Period._ctor(minutes=minutes)
+
+    @classmethod
+    def from_seconds(cls, seconds: int) -> Period:
+        """Creates a period representing the specified number of seconds.
+
+        :param seconds: The number of seconds in the new period
+        :return: A period consisting of the given number of seconds.
+        """
+        return Period._ctor(seconds=seconds)
+
+    @classmethod
+    def from_milliseconds(cls, milliseconds: int) -> Period:
+        """Creates a period representing the specified number of milliseconds.
+
+        :param milliseconds: The number of milliseconds in the new period
+        :return: A period consisting of the given number of milliseconds.
+        """
+        return Period._ctor(milliseconds=milliseconds)
+
+    @classmethod
+    def from_ticks(cls, ticks: int) -> Period:
+        """Creates a period representing the specified number of ticks.
+
+        :param ticks: The number of ticks in the new period
+        :return: A period consisting of the given number of ticks.
+        """
+        return Period._ctor(ticks=ticks)
+
+    @classmethod
+    def from_nanoseconds(cls, nanoseconds: int) -> Period:
+        """Creates a period representing the specified number of nanoseconds.
+
+        :param nanoseconds: The number of nanoseconds in the new period
+        :return: A period consisting of the given number of nanoseconds.
+        """
+        return Period._ctor(nanoseconds=nanoseconds)
+
+    def __add__(self, other: Period) -> Period:
+        if isinstance(other, Period):
+            return Period._ctor(
+                years=self.years + other.years,
+                months=self.months + other.months,
+                weeks=self.weeks + other.weeks,
+                days=self.days + other.days,
+                hours=self.hours + other.hours,
+                minutes=self.minutes + other.minutes,
+                seconds=self.seconds + other.seconds,
+                milliseconds=self.milliseconds + other.milliseconds,
+                ticks=self.ticks + other.ticks,
+                nanoseconds=self.nanoseconds + other.nanoseconds,
+            )
+        return NotImplemented
+
+    def add(self, other: Period) -> Period:
+        """Return the sum of the two periods.
+
+        The units of the result will be the union of those in both periods.
+        """
+        return self + other
+
+    # TODO def create_comparer
+
+    def __sub__(self, other: Period) -> Period:
+        if isinstance(other, Period):
+            return Period._ctor(
+                years=self.years - other.years,
+                months=self.months - other.months,
+                weeks=self.weeks - other.weeks,
+                days=self.days - other.days,
+                hours=self.hours - other.hours,
+                minutes=self.minutes - other.minutes,
+                seconds=self.seconds - other.seconds,
+                milliseconds=self.milliseconds - other.milliseconds,
+                ticks=self.ticks - other.ticks,
+                nanoseconds=self.nanoseconds - other.nanoseconds,
+            )
+        return NotImplemented
+
+    def subtract(self, other: Period) -> Period:
+        """Subtracts one period from another, by simply subtracting each property value.
+
+        The units of the result will be the union of both periods, even if the subtraction caused some properties to
+        become zero (so "2 weeks, 1 days" minus "2 weeks" is "zero weeks, 1 days", not "1 days").
+
+        :param other: The period to subtract this one.
+        :return: The result of subtracting all the values in the second operand from the values in the first.
+        """
+        return self - other
+
+    @classmethod
+    def days_between(cls, start: LocalDate, end: LocalDate) -> int:
+        """Returns the number of days between two ``LocalDate`` objects.
+
+        :param start: Start date/time
+        :param end: End date/time
+        :return: The number of days between the given dates.
+        """
+        _Preconditions._check_argument(
+            start.calendar == end.calendar, "end", "start and end must use the same calendar system"
+        )
+        return cls._internal_days_between(start, end)
+
+    @classmethod
+    @_typing.overload
+    def between(
+        cls, start: LocalDateTime, end: LocalDateTime, units: PeriodUnits = PeriodUnits.DATE_AND_TIME
+    ) -> Period:
+        ...
+
+    @classmethod
+    @_typing.overload
+    def between(cls, start: LocalDate, end: LocalDate, units: PeriodUnits = PeriodUnits.YEAR_MONTH_DAY) -> Period:
+        ...
+
+    @classmethod
+    @_typing.overload
+    def between(cls, start: LocalTime, end: LocalTime, units: PeriodUnits = PeriodUnits.ALL_TIME_UNITS) -> Period:
+        ...
+
+    @classmethod
+    @_typing.overload
+    def between(
+        cls, start: YearMonth, end: YearMonth, units: PeriodUnits = PeriodUnits.YEARS | PeriodUnits.MONTHS
+    ) -> Period:
+        ...
+
+    @classmethod
+    def between(
+        cls,
+        start: LocalDateTime | LocalDate | LocalTime | YearMonth,
+        end: LocalDateTime | LocalDate | LocalTime | YearMonth,
+        units: PeriodUnits | None = None,
+    ) -> Period:
+        """Returns the period between a start and an end date/time, using only the given units.
+
+        If ``end`` is before ``start``, each property in the returned period
+        will be negative. If the given set of units cannot exactly reach the end point (e.g. finding
+        the difference between 1am and 3:15am in hours) the result will be such that adding it to ``start``
+        will give a value between ``start`` and ``end``. In other words,
+        any rounding is "towards start"; this is true whether the resulting period is negative or positive.
+
+        :param start: Start date/time
+        :param end: End date/time
+        :param units: Units to use for calculations
+        :return: The period between the given date/times, using the given units.
+        """
+
+        # public static Period Between(LocalDateTime start, LocalDateTime end, PeriodUnits units)
+        if isinstance(start, LocalDateTime) and isinstance(end, LocalDateTime):
+            if units is None:
+                units = PeriodUnits.DATE_AND_TIME
+
+            from .fields import _DatePeriodFields, _TimePeriodField
+
+            _Preconditions._check_argument(units != PeriodUnits.NONE, "units", "Units must not be empty")
+            _Preconditions._check_argument(
+                (units & ~PeriodUnits.ALL_UNITS) == PeriodUnits.NONE,
+                "units",
+                f"Units contains an unknown value: {units}",
+            )
+            calendar: CalendarSystem = start.calendar
+            _Preconditions._check_argument(
+                calendar == end.calendar, "end", "start and end must use the same calendar system"
+            )
+
+            if start == end:
+                return cls.zero
+
+            # Adjust for situations like "days between 5th January 10am and 7th January 5am" which should be one
+            # day, because if we actually reach 7th January with date fields, we've overshot.
+            # The date adjustment will always be valid, because it's just moving it towards start.
+            # We need this for all date-based period fields. We could potentially optimize by not doing this
+            # in cases where we've only got time fields...
+            end_date = end.date
+            if start < end:
+                if start.time_of_day > end.time_of_day:
+                    end_date = end_date.plus_days(-1)
+            elif start > end and start.time_of_day < end.time_of_day:
+                end_date = end_date.plus_days(1)
+
+            # Optimization for single field
+            match units:
+                case PeriodUnits.YEARS:
+                    return cls.from_years(_DatePeriodFields._years_field.units_between(start.date, end_date))
+                case PeriodUnits.MONTHS:
+                    return cls.from_months(_DatePeriodFields._months_field.units_between(start.date, end_date))
+                case PeriodUnits.WEEKS:
+                    return cls.from_weeks(_DatePeriodFields._weeks_field.units_between(start.date, end_date))
+                case PeriodUnits.DAYS:
+                    return cls.from_days(cls._internal_days_between(start.date, end_date))
+                case PeriodUnits.HOURS:
+                    return cls.from_hours(_TimePeriodField._hours._units_between(start, end))
+                case PeriodUnits.MINUTES:
+                    return cls.from_minutes(_TimePeriodField._minutes._units_between(start, end))
+                case PeriodUnits.SECONDS:
+                    return cls.from_seconds(_TimePeriodField._seconds._units_between(start, end))
+                case PeriodUnits.MILLISECONDS:
+                    return cls.from_milliseconds(_TimePeriodField._milliseconds._units_between(start, end))
+                case PeriodUnits.TICKS:
+                    return cls.from_ticks(_TimePeriodField._ticks._units_between(start, end))
+                case PeriodUnits.NANOSECONDS:
+                    return cls.from_nanoseconds(_TimePeriodField._nanoseconds._units_between(start, end))
+
+            # Multiple fields
+            remaining = start
+            years = months = weeks = days = 0
+            if (units & PeriodUnits.ALL_DATE_UNITS) != PeriodUnits.NONE:
+                remaining_date, years, months, weeks, days = cls.__date_components_between(start.date, end_date, units)
+                remaining = LocalDateTime._ctor(local_date=remaining_date, local_time=start.time_of_day)
+            if (units & PeriodUnits.ALL_TIME_UNITS) == PeriodUnits.NONE:
+                return Period._ctor(years=years, months=months, weeks=weeks, days=days)
+
+            # The remainder of the computation is with fixed-length units, so we can do it all with
+            # Duration instead of Local* values. We don't know for sure that this is small though - we *could*
+            # be trying to find the difference between 9998 BC and 9999 CE in nanoseconds...
+            # Where we can optimize, do everything with long arithmetic (as we do for Between(LocalTime, LocalTime)).
+            # Otherwise (rare case), use duration arithmetic.
+            duration = (
+                end._to_local_instant()._time_since_local_epoch - remaining._to_local_instant()._time_since_local_epoch
+            )
+            # TODO in Noda Time there is some conditional optimization here to use long arithmetic
+            #  (as opposed to int) if the total nanoseconds of the duration is within the range of
+            #  that type. That optimization doesn't make sense in Python, so we don't do it.
+
+            hours, minutes, seconds, milliseconds, ticks, nanoseconds = cls.__time_components_between(
+                duration.to_nanoseconds(), units
+            )
+            return Period._ctor(
+                years=years,
+                months=months,
+                weeks=weeks,
+                days=days,
+                hours=hours,
+                minutes=minutes,
+                seconds=seconds,
+                milliseconds=milliseconds,
+                ticks=ticks,
+                nanoseconds=nanoseconds,
+            )
+
+        # public static Period Between(LocalDate start, LocalDate end)
+        elif isinstance(start, LocalDate) and isinstance(end, LocalDate):
+            if units is None:
+                units = PeriodUnits.YEAR_MONTH_DAY
+            _Preconditions._check_argument(
+                (units & PeriodUnits.ALL_TIME_UNITS) == PeriodUnits.NONE,
+                "units",
+                "Units contains time units",  # TODO: str representation of enum
+            )
+            _Preconditions._check_argument(
+                units != PeriodUnits.NONE,
+                "units",
+                "Units must not be empty",
+            )
+            _Preconditions._check_argument(
+                (units & ~PeriodUnits.ALL_UNITS) == PeriodUnits.NONE,
+                "units",
+                "Units contains an unknown value",  # TODO: str representation of enum
+            )
+            calendar = start.calendar
+            _Preconditions._check_argument(
+                calendar == end.calendar,
+                "end",
+                "start and end must use the same calendar system",
+            )
+
+            if start == end:
+                return cls.zero
+
+            # Optimization for single field
+            from .fields import _DatePeriodFields
+
+            match units:
+                case PeriodUnits.YEARS:
+                    return cls.from_years(_DatePeriodFields._years_field.units_between(start, end))
+                case PeriodUnits.MONTHS:
+                    return cls.from_months(_DatePeriodFields._months_field.units_between(start, end))
+                case PeriodUnits.WEEKS:
+                    return cls.from_weeks(_DatePeriodFields._weeks_field.units_between(start, end))
+                case PeriodUnits.DAYS:
+                    return cls.from_days(_DatePeriodFields._days_field.units_between(start, end))
+
+            # Multiple fields
+            _, years, months, weeks, days = cls.__date_components_between(start, end, units)
+            return Period._ctor(years, months, weeks, days)
+
+        # public static Period Between(LocalTime start, LocalTime end)
+        elif isinstance(start, LocalTime) and isinstance(end, LocalTime):
+            if units is None:
+                units = PeriodUnits.ALL_TIME_UNITS
+            _Preconditions._check_argument(
+                (units & PeriodUnits.ALL_DATE_UNITS) == PeriodUnits.NONE,
+                "units",
+                "Units contains date units",  # TODO: f-string error message
+            )
+            _Preconditions._check_argument(
+                units != PeriodUnits.NONE,
+                "units",
+                "Units must not be empty",
+            )
+            _Preconditions._check_argument(
+                (units & ~PeriodUnits.ALL_UNITS) == PeriodUnits.NONE,
+                "units",
+                "Units contains an unknown value",  # TODO: str representation of enum
+            )
+
+            # We know that the difference is in the range of +/- 1 day, which is a relatively small
+            # number of nanoseconds. All the operations can be done with simple long division/remainder ops,
+            # so we don't need to delegate to TimePeriodField.
+
+            # TODO: unchecked
+
+            remaining_ = end.nanosecond_of_day - start.nanosecond_of_day
+
+            # Optimization for a single unit
+            match units:
+                case PeriodUnits.HOURS:
+                    return cls.from_hours(_towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_HOUR))
+                case PeriodUnits.HOURS:
+                    return cls.from_minutes(_towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_MINUTE))
+                case PeriodUnits.SECONDS:
+                    return cls.from_seconds(_towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_SECOND))
+                case PeriodUnits.MILLISECONDS:
+                    return cls.from_milliseconds(
+                        _towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_MILLISECOND)
+                    )
+                case PeriodUnits.TICKS:
+                    return cls.from_ticks(_towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_TICK))
+                case PeriodUnits.NANOSECONDS:
+                    return cls.from_nanoseconds(remaining_)
+
+            hours, minutes, seconds, milliseconds, ticks, nanoseconds = cls.__time_components_between(remaining_, units)
+
+            return Period._ctor(
+                hours=hours,
+                minutes=minutes,
+                seconds=seconds,
+                milliseconds=milliseconds,
+                ticks=ticks,
+                nanoseconds=nanoseconds,
+            )
+
+        # public static Period Between(YearMonth start, YearMonth end)
+        elif isinstance(start, YearMonth) and isinstance(end, YearMonth):
+            if units is None:
+                units = PeriodUnits.YEARS | PeriodUnits.MONTHS
+            _Preconditions._check_argument(
+                (units & (PeriodUnits.ALL_UNITS ^ PeriodUnits.YEARS ^ PeriodUnits.MONTHS)) == PeriodUnits.NONE,
+                "units",
+                "Units can only contain year and month units",  # TODO: f-string error message
+            )
+            _Preconditions._check_argument(
+                units != PeriodUnits.NONE,
+                "units",
+                "Units must not be empty",
+            )
+            _Preconditions._check_argument(
+                (units & ~PeriodUnits.ALL_UNITS) == PeriodUnits.NONE,
+                "units",
+                "Units contains an unknown value",  # TODO: str representation of enum
+            )
+            calendar = start.calendar
+            _Preconditions._check_argument(
+                calendar == end.calendar,
+                "end",
+                "start and end must use the same calendar system",
+            )
+
+            if start == end:
+                return cls.zero
+
+            start_date: LocalDate = start._start_date
+            end_date_: LocalDate = end._start_date
+
+            # Optimization for single field
+            from .fields import _DatePeriodFields
+
+            match units:
+                case PeriodUnits.YEARS:
+                    return cls.from_years(_DatePeriodFields._years_field.units_between(start_date, end_date_))
+                case PeriodUnits.MONTHS:
+                    return cls.from_years(_DatePeriodFields._months_field.units_between(start_date, end_date_))
+
+            # Multiple fields
+            _, years, months, _, _ = cls.__date_components_between(start_date, end_date_, units)
+
+            return Period._ctor(years, months)
+
+        raise ValueError("Called with incorrect arguments")
+
+    @classmethod
+    def __date_components_between(
+        cls, start: LocalDate, end: LocalDate, units: PeriodUnits
+    ) -> tuple[LocalDate, int, int, int, int]:
+        from .fields import _DatePeriodFields, _IDatePeriodField
+
+        def units_between(
+            masked_units: PeriodUnits, start_date: LocalDate, end_date: LocalDate, date_field: _IDatePeriodField
+        ) -> tuple[int, LocalDate]:
+            if masked_units == PeriodUnits.NONE:
+                return 0, start_date
+            value: int = date_field.units_between(start_date, end_date)
+            start_date = date_field.add(start_date, value)
+            return value, start_date
+
+        result = start
+        years, result = units_between(units & PeriodUnits.YEARS, result, end, _DatePeriodFields._years_field)
+        months, result = units_between(units & PeriodUnits.MONTHS, result, end, _DatePeriodFields._months_field)
+        weeks, result = units_between(units & PeriodUnits.WEEKS, result, end, _DatePeriodFields._weeks_field)
+        days, result = units_between(units & PeriodUnits.DAYS, result, end, _DatePeriodFields._days_field)
+        return result, years, months, weeks, days
+
+    @classmethod
+    def __time_components_between(
+        cls, total_nanoseconds: int, units: PeriodUnits
+    ) -> tuple[int, int, int, int, int, int]:
+        def units_between(mask: PeriodUnits, nanoseconds_per_unit: int) -> tuple[int, int]:
+            if (mask & units) == PeriodUnits.NONE:
+                return 0, total_nanoseconds
+            # Pyoda Time implementation note:
+            # NodaTime does the following here:
+            # `return Math.DivRem(totalNanoseconds, nanosecondsPerUnit, out totalNanoseconds);`
+            # You might think to use divmod() here, but it doesn't round towards
+            # zero as Math.DivRem() does in C#.
+            # Python rounds towards the nearest whole number, whereas C# rounds
+            # towards zero.
+            ret = _towards_zero_division(total_nanoseconds, nanoseconds_per_unit)
+            new_total_nanoseconds = total_nanoseconds - (ret * nanoseconds_per_unit)
+            return ret, new_total_nanoseconds
+
+        hours, total_nanoseconds = units_between(PeriodUnits.HOURS, PyodaConstants.NANOSECONDS_PER_HOUR)
+        minutes, total_nanoseconds = units_between(PeriodUnits.MINUTES, PyodaConstants.NANOSECONDS_PER_MINUTE)
+        seconds, total_nanoseconds = units_between(PeriodUnits.SECONDS, PyodaConstants.NANOSECONDS_PER_SECOND)
+        milliseconds, total_nanoseconds = units_between(
+            PeriodUnits.MILLISECONDS, PyodaConstants.NANOSECONDS_PER_MILLISECOND
+        )
+        ticks, total_nanoseconds = units_between(PeriodUnits.TICKS, PyodaConstants.NANOSECONDS_PER_TICK)
+        nanoseconds, total_nanoseconds = units_between(PeriodUnits.NANOSECONDS, 1)
+
+        return hours, minutes, seconds, milliseconds, ticks, nanoseconds
+
+    @classmethod
+    def _internal_days_between(cls, start: LocalDate, end: LocalDate) -> int:
+        """Returns the number of days between two dates.
+
+        This allows optimizations in DateInterval,
+        and for date calculations which just use days - we don't need state or a virtual method invocation.
+        """
+
+        # We already assume the calendars are the same
+        if start._year_month_day == end._year_month_day:
+            return 0
+
+        # Note: I've experimented with checking for the dates being in the same year and optimizing that.
+        # It helps a little if they're in the same month, but just that test has a cost for other situations.
+        # Being able to find the day of year if they're in the same year but different months doesn't help,
+        # somewhat surprisingly.
+        start_days: int = start._days_since_epoch
+        end_days: int = end._days_since_epoch
+        return end_days - start_days
+
+    @property
+    def has_time_component(self) -> bool:
+        """True if the period contains any non-zero-valued time-based properties (hours or lower); false otherwise."""
+        return (
+            self.hours != 0
+            or self.minutes != 0
+            or self.seconds != 0
+            or self.milliseconds != 0
+            or self.ticks != 0
+            or self.nanoseconds != 0
+        )
+
+    @property
+    def has_date_component(self) -> bool:
+        """True if this period contains any non-zero date-based properties (days or higher); false otherwise."""
+        return self.years != 0 or self.months != 0 or self.weeks != 0 or self.days != 0
+
+    def to_duration(self) -> Duration:
+        """Return the duration of the period.
+
+        For periods that do not contain a non-zero number of years or months, returns a duration for this period
+        assuming a standard 7-day week, 24-hour day, 60-minute hour etc.
+        """
+        if self.months != 0 or self.years != 0:
+            raise RuntimeError("Cannot construct duration of period with non-zero months or years.")
+        return Duration.from_nanoseconds(self.__total_nanoseconds)
+
+    @property
+    def __total_nanoseconds(self) -> int:
+        """Return the total number of nanoseconds duration for the 'standard' properties (all bar years and months)."""
+        return (
+            self.nanoseconds
+            + self.ticks * PyodaConstants.NANOSECONDS_PER_TICK
+            + self.milliseconds * PyodaConstants.NANOSECONDS_PER_MILLISECOND
+            + self.seconds * PyodaConstants.NANOSECONDS_PER_SECOND
+            + self.minutes * PyodaConstants.NANOSECONDS_PER_MINUTE
+            + self.hours * PyodaConstants.NANOSECONDS_PER_HOUR
+            + self.days * PyodaConstants.NANOSECONDS_PER_DAY
+            + self.weeks * PyodaConstants.NANOSECONDS_PER_WEEK
+        )
+
+    def to_builder(self) -> PeriodBuilder:
+        """Creates a ``PeriodBuilder`` from this instance.
+
+        The new builder is populated with the values from this period,
+        but is then detached from it:
+        changes made to the builder are not reflected in this period.
+
+        :return: A builder with the same values and units as this period.
+        """
+        return PeriodBuilder.from_period(self)
+
+    def normalize(self) -> Period:
+        """Returns a normalized version of this period, such that equivalent (but potentially non-equal) periods are
+        changed to the same representation.
+
+        Months and years are unchanged (as they can vary in length), but weeks are multiplied by 7 and added to the Days
+        property, and all time properties are normalized to their natural range. Subsecond values are normalized to
+        millisecond and "nanosecond within millisecond" values. So for example, a period of 25 hours becomes a period of
+        1 day and 1 hour. A period of 1,500,750,000 nanoseconds becomes 1 second, 500 milliseconds and 750,000
+        nanoseconds. Aside from months and years, either all the properties end up positive, or they all end up
+        negative. "Week" and "tick" units in the returned period are always 0.
+
+        :return: The normalized period.
+        """
+        # Simplest way to normalize: grab all the fields up to "week" and sum them.
+        total_nanoseconds = self.__total_nanoseconds
+        days = _towards_zero_division(total_nanoseconds, PyodaConstants.NANOSECONDS_PER_DAY)
+        hours = _csharp_modulo(
+            _towards_zero_division(total_nanoseconds, PyodaConstants.NANOSECONDS_PER_HOUR), PyodaConstants.HOURS_PER_DAY
+        )
+        minutes = _csharp_modulo(
+            _towards_zero_division(total_nanoseconds, PyodaConstants.NANOSECONDS_PER_MINUTE),
+            PyodaConstants.MINUTES_PER_HOUR,
+        )
+        seconds = _csharp_modulo(
+            _towards_zero_division(total_nanoseconds, PyodaConstants.NANOSECONDS_PER_SECOND),
+            PyodaConstants.SECONDS_PER_MINUTE,
+        )
+        milliseconds = _csharp_modulo(
+            _towards_zero_division(total_nanoseconds, PyodaConstants.NANOSECONDS_PER_MILLISECOND),
+            PyodaConstants.MILLISECONDS_PER_SECOND,
+        )
+        nanoseconds = _csharp_modulo(total_nanoseconds, PyodaConstants.NANOSECONDS_PER_MILLISECOND)
+
+        return Period._ctor(self.years, self.months, 0, days, hours, minutes, seconds, milliseconds, 0, nanoseconds)
+
+    # region Object overrides
+
+    def __repr__(self) -> str:
+        # TODO: PeriodPattern.RoundTrip.Format(this)
+        #  This implementation is a very rough approximation of that...
+        if self == Period.zero:
+            return "P0D"
+        s = "P"
+        date_components = {
+            "Y": self.years,
+            "M": self.months,
+            "W": self.weeks,
+            "D": self.days,
+        }
+        for suffix, value in date_components.items():
+            if value != 0:
+                s += f"{value}{suffix}"
+        if self.has_time_component:
+            s += "T"
+            time_components = {
+                "H": self.hours,
+                "M": self.minutes,
+                "S": self.seconds,
+                "s": self.milliseconds,
+                "t": self.ticks,
+                "n": self.nanoseconds,
+            }
+            for suffix, value in time_components.items():
+                if value != 0:
+                    s += f"{value}{suffix}"
+        return s
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.years,
+                self.months,
+                self.weeks,
+                self.days,
+                self.hours,
+                self.minutes,
+                self.seconds,
+                self.milliseconds,
+                self.ticks,
+                self.nanoseconds,
+            )
+        )
+
+    def equals(self, other: Period) -> bool:
+        if isinstance(other, Period):
+            return (
+                self.years == other.years
+                and self.months == other.months
+                and self.weeks == other.weeks
+                and self.days == other.days
+                and self.hours == other.hours
+                and self.minutes == other.minutes
+                and self.seconds == other.seconds
+                and self.milliseconds == other.milliseconds
+                and self.ticks == other.ticks
+                and self.nanoseconds == other.nanoseconds
+            )
+        return NotImplemented
+
+    def __eq__(self, other: object) -> bool:
+        if self is other:
+            return True
+        if isinstance(other, Period):
+            return self.equals(other)
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+    # endregion
+
+
+@_typing.final
+@_sealed
+class PeriodBuilder:
+    """A mutable builder class for ``Period`` values.
+
+    Each property can be set independently, and then a ``Period`` can be
+    created from the result using the ``build`` method.
+    """
+
+    def __init__(
+        self,
+        years: int = 0,
+        months: int = 0,
+        weeks: int = 0,
+        days: int = 0,
+        hours: int = 0,
+        minutes: int = 0,
+        seconds: int = 0,
+        milliseconds: int = 0,
+        ticks: int = 0,
+        nanoseconds: int = 0,
+    ) -> None:
+        self.years: int = years
+        self.months: int = months
+        self.weeks: int = weeks
+        self.days: int = days
+        self.hours: int = hours
+        self.minutes: int = minutes
+        self.seconds: int = seconds
+        self.milliseconds: int = milliseconds
+        self.ticks: int = ticks
+        self.nanoseconds: int = nanoseconds
+
+    @classmethod
+    def from_period(cls, period: Period) -> PeriodBuilder:
+        # TODO: In Noda Time this is a public ctor, but I don't want yet another @typing.overload situation
+        _Preconditions._check_not_null(period, "period")
+        return cls(
+            years=period.years,
+            months=period.months,
+            weeks=period.weeks,
+            days=period.days,
+            hours=period.hours,
+            minutes=period.minutes,
+            seconds=period.seconds,
+            milliseconds=period.milliseconds,
+            ticks=period.ticks,
+            nanoseconds=period.nanoseconds,
+        )
+
+    def __getitem__(self, key: PeriodUnits) -> int:
+        if not isinstance(key, PeriodUnits):
+            raise TypeError(f"key must be {PeriodUnits.__name__}, not {type(key).__name__}")
+        match key:
+            case PeriodUnits.YEARS:
+                return self.years
+            case PeriodUnits.MONTHS:
+                return self.months
+            case PeriodUnits.WEEKS:
+                return self.weeks
+            case PeriodUnits.DAYS:
+                return self.days
+            case PeriodUnits.HOURS:
+                return self.hours
+            case PeriodUnits.MINUTES:
+                return self.minutes
+            case PeriodUnits.SECONDS:
+                return self.seconds
+            case PeriodUnits.MILLISECONDS:
+                return self.milliseconds
+            case PeriodUnits.TICKS:
+                return self.ticks
+            case PeriodUnits.NANOSECONDS:
+                return self.nanoseconds
+            case _:
+                raise ValueError("Indexer for PeriodBuilder only takes a single unit")
+
+    def __setitem__(self, key: PeriodUnits, value: int) -> None:
+        if not isinstance(key, PeriodUnits):
+            raise TypeError(f"Key must be {PeriodUnits.__name__}, not {type(key).__name__}")
+        match key:
+            case PeriodUnits.YEARS:
+                self.years = value
+            case PeriodUnits.MONTHS:
+                self.months = value
+            case PeriodUnits.WEEKS:
+                self.weeks = value
+            case PeriodUnits.DAYS:
+                self.days = value
+            case PeriodUnits.HOURS:
+                self.hours = value
+            case PeriodUnits.MINUTES:
+                self.minutes = value
+            case PeriodUnits.SECONDS:
+                self.seconds = value
+            case PeriodUnits.MILLISECONDS:
+                self.milliseconds = value
+            case PeriodUnits.TICKS:
+                self.ticks = value
+            case PeriodUnits.NANOSECONDS:
+                self.nanoseconds = value
+            case _:
+                raise ValueError("Indexer for PeriodBuilder only takes a single unit")
+
+    def build(self) -> Period:
+        return Period._ctor(
+            years=self.years,
+            months=self.months,
+            weeks=self.weeks,
+            days=self.days,
+            hours=self.hours,
+            minutes=self.minutes,
+            seconds=self.seconds,
+            milliseconds=self.milliseconds,
+            ticks=self.ticks,
+            nanoseconds=self.nanoseconds,
+        )
+
+
+@_sealed
+@_typing.final
+class YearMonth:
+    """A year and month in a particular calendar.
+
+    This is effectively ``LocalDate`` without the day-of-month component.
+    """
+
+    # The start of the month. This is used as our base representation as we already have
+    # plenty of other code that integrates it, and it implements a compact representation
+    # without us having to duplicate any of the logic.
+    __start_of_month: _typing.Final[_YearMonthDayCalendar]
+
+    @property
+    def calendar(self) -> CalendarSystem:
+        """The calendar system associated with this year/month."""
+        return CalendarSystem._for_ordinal(self.__calendar_ordinal)
+
+    @property
+    def __calendar_ordinal(self) -> _CalendarOrdinal:
+        return self.__start_of_month._calendar_ordinal
+
+    @property
+    def year(self) -> int:
+        """The year of this year/month.
+
+        This returns the "absolute year", so, for the ISO calendar, a value of 0 means 1 BC, for example.
+        """
+        return self.__start_of_month._year
+
+    @property
+    def month(self) -> int:
+        """The month of this year/month within the year."""
+        return self.__start_of_month._month
+
+    @property
+    def year_of_era(self) -> int:
+        """The year of this value within the era."""
+        return self.calendar._get_year_of_era(self.__start_of_month._year)
+
+    @property
+    def era(self) -> _Era:
+        """The era of this year/month."""
+        return self.calendar._get_era(self.__start_of_month._year)
+
+    @property
+    def _start_date(self) -> LocalDate:
+        """The date of the start of this year/month."""
+        return LocalDate._ctor(year_month_day_calendar=self.__start_of_month)
+
+    @property
+    def _end_date(self) -> LocalDate:
+        """The date of the end of this year/month."""
+        return LocalDate(
+            year=self.year,
+            month=self.month,
+            day=self.calendar.get_days_in_month(self.year, self.month),
+            calendar=self.calendar,
+        )
+
+    @property
+    def __year_month_day(self) -> _YearMonthDay:
+        return self.__start_of_month._to_year_month_day()
+
+    @_typing.overload
+    def __init__(self, *, year: int, month: int, calendar: CalendarSystem = CalendarSystem.iso) -> None:
+        ...
+
+    @_typing.overload
+    def __init__(
+        self, *, era: _Era, year_of_era: int, month: int, calendar: CalendarSystem = CalendarSystem.iso
+    ) -> None:
+        ...
+
+    def __init__(
+        self,
+        *,
+        year: int | None = None,
+        month: int | None = None,
+        era: _Era | None = None,
+        year_of_era: int | None = None,
+        calendar: CalendarSystem = CalendarSystem.iso,
+    ) -> None:
+        _Preconditions._check_not_null(calendar, "calendar")
+        if era is not None and year_of_era is not None:
+            year = calendar.get_absolute_year(year_of_era, era)
+        if year is not None and month is not None:
+            calendar._validate_year_month_day(year, month, 1)
+            self.__start_of_month = _YearMonthDayCalendar._ctor(
+                year=year,
+                month=month,
+                day=1,
+                calendar_ordinal=calendar._ordinal,
+            )
+        else:
+            raise ValueError  # TODO: Better error for incorrect arguments
+
+    def to_date_interval(self) -> DateInterval:
+        """Return a ``DateInterval`` covering the month represented by this value."""
+        return DateInterval(self._start_date, self._end_date)
+
+    def plus_months(self, months: int) -> YearMonth:
+        """Returns a ``YearMonth`` object which is the result of adding the specified number of months to this object.
+
+        :param months: The number of months to add to this object.
+        :return: The resulting ``YearMonth`` after adding the specified number of months.
+        """
+        return self.on_day_of_month(1).plus_months(months).to_year_month()
+
+    def on_day_of_month(self, day: int) -> LocalDate:
+        """Returns a ``LocalDate`` with the year/month of this value, and the given day of month.
+
+        :param day: The day within the month.
+        :return: The result of combining this year and month with ``day``.
+        """
+        _Preconditions._check_argument_range("day", day, 1, self.calendar.get_days_in_month(self.year, self.month))
+        return LocalDate(
+            year=self.year,
+            month=self.month,
+            day=day,
+            calendar=self.calendar,
+        )
+
+    def compare_to(self, other: YearMonth) -> int:
+        """Indicates whether this year/month is earlier, later or the same as another one. See the type documentation
+        for a description of ordering semantics.
+
+        :param other: The other year/month to compare this one with.
+        :return: A value less than zero if this year/month is earlier than ``other``;
+            zero if this year/month is the same as ``other``;
+            a value greater than zero if this date is later than ``other``.
+        """
+        _Preconditions._check_argument(isinstance(other, YearMonth), "other", "Object must be of type YearMonth.")
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values with the same calendar system can be compared",
+        )
+        return self.__trusted_compare_to(other)
+
+    def __trusted_compare_to(self, other: YearMonth) -> int:
+        """Performs a comparison with another YearMonth, trusting that the calendar of the other date is already
+        correct.
+
+        This avoids duplicate calendar checks.
+        """
+        return self.calendar._compare(self.__year_month_day, other.__year_month_day)
+
+    def __lt__(self, other: YearMonth | None) -> bool:
+        if other is None:
+            return False
+        if isinstance(other, YearMonth):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
+            return self.__trusted_compare_to(other) < 0
+        return NotImplemented
+
+    def __le__(self, other: YearMonth | None) -> bool:
+        if other is None:
+            return False
+        if isinstance(other, YearMonth):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
+            return self.__trusted_compare_to(other) <= 0
+        return NotImplemented
+
+    def __gt__(self, other: YearMonth | None) -> bool:
+        if other is None:
+            return True
+        if isinstance(other, YearMonth):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
+            return self.__trusted_compare_to(other) > 0
+        return NotImplemented
+
+    def __ge__(self, other: YearMonth | None) -> bool:
+        if other is None:
+            return True
+        if isinstance(other, YearMonth):
+            _Preconditions._check_argument(
+                self.__calendar_ordinal == other.__calendar_ordinal,
+                "other",
+                "Only values in the same calendar can be compared",
+            )
+            return self.__trusted_compare_to(other) >= 0
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(self.__start_of_month)
+
+    def equals(self, other: YearMonth) -> bool:
+        """Compares two ``YearMonth`` values for equality."""
+        return self == other
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, YearMonth):
+            return self.__start_of_month == other.__start_of_month
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        """Compares two ``YearMonth`` values for equality."""
+        return not self == other
+
+    # TODO: ToString()
 
 
 @_typing.final
@@ -2914,6 +4358,9 @@ class _YearMonthDayCalendar:
         if isinstance(other, _YearMonthDayCalendar):
             return self.__value == other.__value
         return NotImplemented
+
+    def __hash__(self) -> int:
+        return self.__value
 
 
 @_typing.final

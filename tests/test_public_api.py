@@ -30,7 +30,12 @@ def test_public_api_does_not_leak_imports(namespace: types.ModuleType) -> None:
     ]
     # Special case for top-level namespace as it is used to import submodules
     if namespace is pyoda_time:
-        public_symbols_not_included_in_all_list.remove("calendars")
-        public_symbols_not_included_in_all_list.remove("time_zones")
-        public_symbols_not_included_in_all_list.remove("utility")
+        known_submodules = [
+            "calendars",
+            "fields",
+            "time_zones",
+            "utility",
+        ]
+        for mod in known_submodules:
+            public_symbols_not_included_in_all_list.remove(mod)
     assert not public_symbols_not_included_in_all_list
