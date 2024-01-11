@@ -12,7 +12,7 @@ default_language_version:
 repos:
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.12.0
+    rev: v3.13.0
     hooks:
       - id: commitizen
         stages:
@@ -27,7 +27,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.5
+    rev: v0.1.11
     hooks:
       - id: ruff-format
       - id: ruff
@@ -41,7 +41,7 @@ repos:
         args: ["--in-place", "--config", "./pyproject.toml"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.7.0'
+    rev: 'v1.8.0'
     hooks:
     -   id: mypy
         additional_dependencies: [types-pytz==2023.3.1.1]
