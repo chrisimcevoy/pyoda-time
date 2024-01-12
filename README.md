@@ -1,6 +1,7 @@
 ![PyPI - Status](https://img.shields.io/pypi/status/pyoda-time)
 ![PyPI - Version](https://img.shields.io/pypi/v/pyoda-time)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyoda-time)
+![GitHub License](https://img.shields.io/github/license/chrisimcevoy/pyoda-time)
 
 # pyoda-time
 
