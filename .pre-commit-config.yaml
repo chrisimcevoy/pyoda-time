@@ -22,7 +22,7 @@ repos:
           - push
         args:
           - --rev-range
-          - origin/master..HEAD
+          - origin/main..HEAD
         always_run: true
         pass_filenames: false
 
