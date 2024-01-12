@@ -38,6 +38,7 @@ classifiers = [
 include = [
     "LICENSE.txt",
     "NOTICE.txt",
+    "version.py",
 ]
 
 [tool.poetry.dependencies]
