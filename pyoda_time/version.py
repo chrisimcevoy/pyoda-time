@@ -2,4 +2,4 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
