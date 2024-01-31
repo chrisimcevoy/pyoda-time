@@ -7,6 +7,7 @@ from __future__ import annotations as _annotations
 __all__: list[str] = []
 
 import datetime as _datetime
+import decimal as _decimal
 import typing as _typing
 
 _T = _typing.TypeVar("_T")
@@ -27,7 +28,9 @@ class _Preconditions:
         return argument
 
     @classmethod
-    def _check_argument_range(cls, param_name: str, value: int, min_inclusive: int, max_inclusive: int) -> None:
+    def _check_argument_range(
+        cls, param_name: str, value: int | float, min_inclusive: int | float, max_inclusive: int | float
+    ) -> None:
         if (value < min_inclusive) or (value > max_inclusive):
             cls._throw_argument_out_of_range_exception(param_name, value, min_inclusive, max_inclusive)
 
@@ -99,7 +102,7 @@ class _TickArithmetic:
         return days * PyodaConstants.TICKS_PER_DAY + tick_of_day
 
 
-def _towards_zero_division(x: int | float, y: int | float) -> int:
+def _towards_zero_division(x: int | float | _decimal.Decimal, y: int | float | _decimal.Decimal) -> int:
     """Divide two numbers using "towards zero" rounding.
 
     This ensures that integer division produces the same result as it would do in C#.

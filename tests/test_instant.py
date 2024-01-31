@@ -104,7 +104,7 @@ class TestInstant:
         assert instant.to_unix_time_milliseconds() == expected_milliseconds
 
     def test_unix_conversions_extreme_values(self) -> None:
-        max_ = Instant.max_value - Duration.from_seconds(1) + Duration.epsilon()
+        max_ = Instant.max_value - Duration.from_seconds(1) + Duration.epsilon
         assert Instant.from_unix_time_seconds(max_.to_unix_time_seconds()) == max_
         assert Instant.from_unix_time_milliseconds(max_.to_unix_time_milliseconds()) == max_
         assert Instant.from_unix_time_ticks(max_.to_unix_time_ticks()) == max_
@@ -203,9 +203,9 @@ class TestInstant:
 
     def test_plus_duration_overflow(self) -> None:
         with pytest.raises(OverflowError):
-            Instant.min_value.plus(-Duration.epsilon())
+            Instant.min_value.plus(-Duration.epsilon)
         with pytest.raises(OverflowError):
-            Instant.max_value.plus(Duration.epsilon())
+            Instant.max_value.plus(Duration.epsilon)
 
     def test_extreme_arithmetic(self) -> None:
         huge_and_positive = Instant.max_value - Instant.min_value
