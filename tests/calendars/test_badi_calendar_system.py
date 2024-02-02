@@ -2,6 +2,8 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
+from __future__ import annotations
+
 from typing import Final
 
 import pytest

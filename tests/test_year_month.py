@@ -6,7 +6,8 @@ from typing import cast
 
 import pytest
 
-from pyoda_time import CalendarSystem, DateInterval, Instant, LocalDate, YearMonth, _CalendarOrdinal
+from pyoda_time import CalendarSystem, DateInterval, Instant, LocalDate, YearMonth
+from pyoda_time._calendar_ordinal import _CalendarOrdinal
 from pyoda_time.calendars import Era, IslamicEpoch, IslamicLeapYearPattern
 from tests import helpers
 
