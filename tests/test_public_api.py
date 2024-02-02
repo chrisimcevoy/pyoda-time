@@ -14,6 +14,8 @@ import pyoda_time
     (
         pyoda_time,
         pyoda_time.calendars,
+        pyoda_time.fields,
+        pyoda_time.time_zones,
         pyoda_time.utility,
     ),
 )

@@ -10,7 +10,7 @@ if _typing.TYPE_CHECKING:
     from .. import Instant, Offset
     from . import ZoneInterval
 
-from .. import DateTimeZone
+from .._date_time_zone import DateTimeZone
 from ..utility import _sealed
 
 

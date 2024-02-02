@@ -4,7 +4,7 @@
 
 __all__: list[str] = [
     # Do not include sub-packages like calendars in this list.
-    # They should be imported explicitly rather than automatically.
+    # They should not be imported automatically via `import *`.
     "CalendarSystem",
     "DateAdjusters",
     "DateInterval",
@@ -27,6 +27,12 @@ __all__: list[str] = [
 ]
 
 
+from . import (
+    calendars,  # noqa: F401
+    fields,  # noqa: F401
+    time_zones,  # noqa: F401
+    utility,  # noqa: F401
+)
 from ._calendar_system import CalendarSystem
 from ._date_adjusters import DateAdjusters
 from ._date_interval import DateInterval
