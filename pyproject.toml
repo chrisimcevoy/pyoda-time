@@ -60,6 +60,7 @@ commitizen = "^3.12.0"
 [tool.ruff]
 line-length = 120
 
+[tool.ruff.lint]
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
 unfixable = []
