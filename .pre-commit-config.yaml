@@ -12,7 +12,7 @@ default_language_version:
 repos:
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.13.0
+    rev: v3.14.0
     hooks:
       - id: commitizen
         stages:
@@ -27,7 +27,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.11
+    rev: v0.2.0
     hooks:
       - id: ruff
         args: [--fix]
