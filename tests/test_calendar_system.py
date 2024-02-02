@@ -7,7 +7,8 @@ from typing import Final
 
 import pytest
 
-from pyoda_time import CalendarSystem, LocalDate, _CalendarOrdinal
+from pyoda_time import CalendarSystem, LocalDate
+from pyoda_time._calendar_ordinal import _CalendarOrdinal
 from pyoda_time.calendars import Era
 from tests import helpers
 

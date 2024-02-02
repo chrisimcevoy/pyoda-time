@@ -7,23 +7,25 @@ from __future__ import annotations as _annotations
 import typing as _typing
 
 if _typing.TYPE_CHECKING:
-    from . import (
+    from .. import (
         Duration as _Duration,
     )
-    from . import (
+    from .. import (
         Instant as _Instant,
     )
-    from . import (
+    from .. import (
         LocalDateTime as _LocalDateTime,
     )
-    from . import (
+    from .. import (
         Offset as _Offset,
     )
-    from . import (
+    from .._local_instant import (
         _LocalInstant,
     )
 
 from pyoda_time.utility import _hash_code_helper, _Preconditions, _sealed
+
+__all__ = ["ZoneInterval"]
 
 
 @_sealed
@@ -91,7 +93,7 @@ class ZoneInterval:
         """Gets the local start time of the interval, as a ``LocalDateTime`` in the ISO calendar."""
         # Use the Start property to trigger the appropriate end-of-time exception.
         # Call Plus to trigger an appropriate out-of-range exception.
-        from . import LocalDateTime
+        from .. import LocalDateTime
 
         return LocalDateTime._ctor(local_instant=self.start._plus(self.wall_offset))
 
@@ -100,7 +102,7 @@ class ZoneInterval:
         """Gets the local end time of the interval, as a ``LocalDateTime`` in the ISO calendar."""
         # Use the End property to trigger the appropriate end-of-time exception.
         # Call Plus to trigger an appropriate out-of-range exception.
-        from . import LocalDateTime
+        from .. import LocalDateTime
 
         return LocalDateTime._ctor(local_instant=self.end._plus(self.wall_offset))
 
@@ -139,7 +141,7 @@ class ZoneInterval:
         wall_offset: _Offset,
         savings: _Offset,
     ) -> None:
-        from . import Instant
+        from .. import Instant
 
         # Do not expose these defaults in the __init__ signature.
         if start is None:

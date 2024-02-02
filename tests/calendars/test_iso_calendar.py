@@ -13,10 +13,10 @@ from pyoda_time import (
     LocalDate,
     LocalDateTime,
     PyodaConstants,
-    _LocalInstant,
-    _towards_zero_division,
 )
+from pyoda_time._local_instant import _LocalInstant
 from pyoda_time.calendars import Era, WeekYearRules
+from pyoda_time.utility import _towards_zero_division
 
 ISO: CalendarSystem = CalendarSystem.iso
 

@@ -4,7 +4,8 @@
 
 import pytest
 
-from pyoda_time import CalendarSystem, LocalDate, _YearMonthDay
+from pyoda_time import CalendarSystem, LocalDate
+from pyoda_time._year_month_day import _YearMonthDay
 from pyoda_time.calendars import HebrewMonthNumbering, _HebrewScripturalCalculator, _HebrewYearMonthDayCalculator
 
 

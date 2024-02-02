@@ -4,7 +4,8 @@
 
 import pytest
 
-from pyoda_time import _CalendarOrdinal, _YearMonthDayCalendar
+from pyoda_time._calendar_ordinal import _CalendarOrdinal
+from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
 
 
 class TestYearMonthDayCalendar:
