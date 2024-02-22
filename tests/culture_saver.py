@@ -9,6 +9,8 @@ from pyoda_time._compatibility._culture_info import CultureInfo
 
 
 class _BothSaver(ContextManager):
+    """A context manager for temporarily changing cultures and which resets the culture on exit."""
+
     @property
     def __current_culture(self) -> CultureInfo:
         return CultureInfo.current_culture
@@ -49,6 +51,19 @@ class _BothSaver(ContextManager):
 
 
 class CultureSaver:
+    """Provides a simple context manager for temporarily setting the culture of a thread.
+
+    Usage::
+
+        with CultureSaver.set_cultures(CultureInfo("en-US")):
+            # code to run under the United States English culture
+    """
+
     @classmethod
     def set_cultures(cls, new_culture_info: CultureInfo) -> ContextManager:
+        """Sets both the UI and basic cultures of the current thread.
+
+        :param new_culture_info: The new culture info.
+        :return: A context manager which temporarily sets the current culture, then resets the culture upon exit.
+        """
         return _BothSaver(new_culture_info, new_culture_info)

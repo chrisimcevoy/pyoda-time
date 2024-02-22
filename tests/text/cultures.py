@@ -37,4 +37,4 @@ class _CulturesMeta(type):
 
 
 class Cultures(metaclass=_CulturesMeta):
-    pass
+    """Cultures to use from various tests."""
