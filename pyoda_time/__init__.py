@@ -30,6 +30,8 @@ __all__: list[str] = [
 from . import (
     calendars,  # noqa: F401
     fields,  # noqa: F401
+    globalization,  # noqa: F401
+    text,  # noqa: F401
     time_zones,  # noqa: F401
     utility,  # noqa: F401
 )
