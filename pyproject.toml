@@ -49,6 +49,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.12"
+pyicu = "^2.12"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.4.3,<9.0.0"

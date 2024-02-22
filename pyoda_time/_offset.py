@@ -7,6 +7,7 @@ from __future__ import annotations
 import datetime as _datetime
 import typing as _typing
 
+from ._compatibility._culture_info import CultureInfo
 from ._pyoda_constants import PyodaConstants
 from .utility import _Preconditions, _sealed, _towards_zero_division
 
@@ -428,6 +429,6 @@ class Offset(metaclass=_OffsetMeta):
     # endregion
 
     def __str__(self) -> str:
-        hours = int(self.seconds / PyodaConstants.SECONDS_PER_HOUR)
-        symbol = "+" if hours >= 0 else "-"
-        return "Z" if self == Offset.zero else f"{symbol}{hours:0>2}"
+        from .text._offset_pattern import OffsetPattern
+
+        return OffsetPattern._bcl_support.format(self, None, CultureInfo.current_culture)

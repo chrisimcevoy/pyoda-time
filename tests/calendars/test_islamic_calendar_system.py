@@ -278,7 +278,7 @@ class TestIslamicCalendarSystem:
         ids: set[str] = set()
         for leap_year_pattern in IslamicLeapYearPattern:
             for epoch in IslamicEpoch:
-                calendar = CalendarSystem.get_islamic_calendar(leap_year_pattern, epoch)
+                calendar: CalendarSystem = CalendarSystem.get_islamic_calendar(leap_year_pattern, epoch)
                 queue.append(calendar)
                 assert calendar not in set_  # Check we haven't already seen it...
                 set_.add(calendar)
@@ -287,8 +287,8 @@ class TestIslamicCalendarSystem:
         # Now check we get the same references again...
         for leap_year_pattern in IslamicLeapYearPattern:
             for epoch in IslamicEpoch:
-                old_calendar = queue.popleft()
-                new_calendar = CalendarSystem.get_islamic_calendar(leap_year_pattern, epoch)
+                old_calendar: CalendarSystem = queue.popleft()
+                new_calendar: CalendarSystem = CalendarSystem.get_islamic_calendar(leap_year_pattern, epoch)
                 assert new_calendar.id == old_calendar.id
                 assert new_calendar is old_calendar
 

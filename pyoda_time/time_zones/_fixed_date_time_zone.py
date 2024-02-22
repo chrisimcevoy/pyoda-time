@@ -47,8 +47,15 @@ class _FixedDateTimeZone(DateTimeZone):
             return None
         if id_ == cls._UTC_ID:
             return cls.utc
-        # TODO: requires OffsetPattern
-        raise NotImplementedError("OffsetPattern is required")
+        from pyoda_time.text import ParseResult
+        from pyoda_time.text._offset_pattern import OffsetPattern
+
+        parse_result: ParseResult[Offset] = OffsetPattern.general_invariant.parse(id_[len(cls._UTC_ID) :])
+        return cls.for_offset(parse_result.value) if parse_result.success else None
+
+    @classmethod
+    def for_offset(cls, offset: Offset) -> DateTimeZone:
+        raise NotImplementedError
 
     def get_zone_interval(self, instant: Instant) -> ZoneInterval:
         return self.__interval

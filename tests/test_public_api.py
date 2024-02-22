@@ -39,6 +39,8 @@ def test_public_api_does_not_leak_imports(namespace: types.ModuleType) -> None:
         known_submodules = [
             "calendars",
             "fields",
+            "globalization",
+            "text",
             "time_zones",
             "utility",
         ]
