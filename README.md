@@ -3,24 +3,40 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyoda-time)
 ![GitHub License](https://img.shields.io/github/license/chrisimcevoy/pyoda-time)
 
-# pyoda-time
+# Pyoda Time
 
-An alternative datetime library for Python.
+Pyoda Time is an alternative date and time API for Python. 
 
-Based on [Noda Time](https://github.com/nodatime/nodatime), an alternative DateTime library for .NET. (Which itself draws inspiration from [Joda Time](https://github.com/JodaOrg/joda-time).)
+It helps you to think about your data more clearly, and express operations on that data more precisely.
 
-# Guiding Principles
+This project is a Python port of [Noda Time](https://github.com/nodatime/nodatime), an alternative DateTime library for .NET (which in turn was inspired by [Joda Time](https://github.com/JodaOrg/joda-time)).
 
-> Some developers assume that a pattern which works in Java will work in Python, or the equivalent for any other pair of platforms. Don’t make this assumption. Always read the documentation – and if you’re porting code from one platform to another, you’ll need to “decode” the pattern with one set of documentation, then “encode” it with the other.
->
-> -- <cite>[Jon Skeet's coding blog](https://codeblog.jonskeet.uk/2015/05/05/common-mistakes-in-datetime-formatting-and-parsing/)</cite>
+## Installation
 
-# Tests
+```commandline
+pip install pyoda-time
+```
 
-By convention:
+## Quick Start
 
-- Tests which are not nested inside a test class are unique to Pyoda Time.
-- Tests which are nested within a test class (along with the class itself) are derived from the Noda Time equivalent.
+Coming soon...
 
-This way, it is easy to keep track of which tests are based on Noda Time tests and which aren't.
+## Documentation
 
+Coming soon...
+
+## Project Status
+
+Pyoda Time is currently in the pre-alpha stage, with fundamental logic and features being actively developed. 
+
+The project goal is to provide a powerful alternative for time management in Python, drawing inspiration from the strengths of Noda Time and adapting them to the Pythonic way of coding.
+
+## Contributions
+
+Contributions of all kinds are welcome.
+
+If you are interested in contributing to this project, please refer to the [guidelines](CONTRIBUTING.md).
+
+## Acknowledgements
+
+We express our gratitude to the authors and contributors of Noda Time and Joda Time for their pioneering work in the field of date and time management. Pyoda Time aspires to continue this tradition within the Python ecosystem.
