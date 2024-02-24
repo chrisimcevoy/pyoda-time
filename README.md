@@ -29,7 +29,7 @@ Coming soon...
 
 Pyoda Time is currently in the pre-alpha stage, with fundamental logic and features being actively developed. 
 
-The project goal is to provide a powerful alternative for time management in Python, drawing inspiration from the strengths of Noda Time and adapting them to the Pythonic way of coding.
+The project goal is to provide a powerful alternative for time management in Python, drawing inspiration from the strengths of Noda Time and adapting them to a Pythonic API.
 
 ## Contributions
 
