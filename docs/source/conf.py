@@ -27,6 +27,13 @@ exclude_patterns: list[str] = []
 
 # Options for HTML output
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
+html_baseurl = "https://pyodatime.org/"
+
+html_context = {
+    "canonical_url": "https://pyodatime.org/",
+}
+
 html_static_path = ["_static"]
 
 html_favicon = "_static/favicon.ico"
