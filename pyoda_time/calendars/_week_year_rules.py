@@ -14,6 +14,21 @@ if typing.TYPE_CHECKING:
 class _WeekYearRulesMeta(type):
     @property
     def iso(cls) -> IWeekYearRule:
+        """Returns an ``IWeekYearRule`` consistent with ISO-8601.
+
+        In the standard ISO-8601 week algorithm, the first week of the year
+        is that in which at least 4 days are in the year. As a result of this
+        definition, day 1 of the first week may be in the previous year. In ISO-8601,
+        weeks always begin on a Monday, so this rule is equivalent to the first Thursday
+        being in the first Monday-to-Sunday week of the year.
+
+        For example, January 1st 2011 was a Saturday, so only two days of that week
+        (Saturday and Sunday) were in 2011. Therefore January 1st is part of
+        week 52 of week-year 2010. Conversely, December 31st 2012 is a Monday,
+        so is part of week 1 of week-year 2013.
+
+        :return: A ``IWeekYearRule`` consistent with ISO-8601.
+        """
         from .. import IsoDayOfWeek
         from ._simple_week_year_rule import _SimpleWeekYearRule
 

@@ -331,7 +331,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         return _DatePeriodFields._weeks_field.add(self, weeks)
 
     def at(self, time: LocalTime) -> LocalDateTime:
-        """Combines this <see ``LocalDate`` with the given ``LocalTime`` into a single ``LocalDateTime``.
+        """Combines this ``LocalDate`` with the given ``LocalTime`` into a single ``LocalDateTime``.
 
         Fluent alternative to ``+``.
 

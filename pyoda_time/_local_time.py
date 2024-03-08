@@ -32,6 +32,7 @@ class _LocalTimeMeta(type):
     @property
     @_functools.cache
     def noon(self) -> LocalTime:
+        """Local time at noon, i.e. 12 hours, 0 minutes, 0 seconds."""
         return LocalTime(hour=12, minute=0, second=0)
 
     @property

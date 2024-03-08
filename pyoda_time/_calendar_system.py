@@ -49,50 +49,157 @@ from .calendars import (
 class _CalendarSystemMeta(type):
     @property
     def badi(cls) -> CalendarSystem:
+        """Returns the Badíʿ (meaning "wondrous" or "unique") calendar, as described at https://en.wikipedia.org/wiki/Badi_calendar.
+
+        This is a purely solar calendar with years starting at the vernal equinox.
+
+        The Badíʿ calendar was developed and defined by the founders of the Bahá'í Faith in the mid to late
+        1800's A.D. The first year in the calendar coincides with 1844 A.D. Years are labeled "B.E." for Bahá'í Era.
+
+        A year consists of 19 months, each with 19 days. Each day starts at sunset. Years are grouped into sets
+        of 19 "Unities" (Váḥid) and 19 Unities make up 1 "All Things" (Kull-i-Shay').
+
+        A period of days (usually 4 or 5, called Ayyám-i-Há) occurs between the 18th and 19th months. The length of this
+        period of intercalary days is solely determined by the date of the following vernal equinox. The vernal equinox
+        is a momentary point in time, so the "date" of the equinox is determined by the date (beginning
+        at sunset) in effect in Tehran, Iran at the moment of the equinox.
+
+        In this Pyoda Time implementation, days start at midnight and lookup tables are used to determine vernal equinox
+        dates. Ayyám-i-Há is internally modelled as extra days added to the 18th month. As a result, a few functions
+        will not work as expected for Ayyám-i-Há, such as EndOfMonth.
+
+        :returns: The Badíʿ calendar system.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.BADI)
 
     @property
     def coptic(cls) -> CalendarSystem:
+        """Returns a Coptic calendar system, which defines every fourth year as leap, much like the Julian calendar.
+
+        The year is broken down into 12 months, each 30 days in length. An extra period at the end of the year is either
+        5 or 6 days in length. In this implementation, it is considered a 13th month.
+
+        Year 1 in the Coptic calendar began on August 29, 284 CE (Julian), thus Coptic years do not begin at the same
+        time as Julian years. This calendar is not proleptic, as it does not allow dates before the first Coptic year.
+
+        This implementation defines a day as midnight to midnight exactly as per the ISO calendar. Some references
+        indicate that a Coptic day starts at sunset on the previous ISO day, but this has not been confirmed and is not
+        implemented.
+
+        :return: The Coptic calendar system.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.COPTIC)
 
     @property
     def gregorian(cls) -> CalendarSystem:
+        """The Gregorian calendar system defines every fourth year as leap, unless the year is divisible by 100 and not
+        by 400. This improves upon the Julian calendar leap year rule.
+
+        Although the Gregorian calendar did not exist before 1582 CE, this calendar system assumes it did, thus it is
+        proleptic. This implementation also fixes the start of the year at January 1.
+
+        :return: The Gregorian calendar system.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.GREGORIAN)
 
     @property
     def islamic_bcl(cls) -> CalendarSystem:
+        """Returns an Islamic calendar system equivalent to the one used by the BCL HijriCalendar.
+
+        This uses the ``IslamicLeapYearPattern.Base16`` leap year pattern and the
+        ``IslamicEpoch.Astronomical`` epoch. This is equivalent to HijriCalendar
+        when the ``HijriCalendar.HijriAdjustment`` is 0.
+
+        :return: An Islamic calendar system equivalent to the one used by the BCL.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16)
 
     @property
     def hebrew_civil(cls) -> CalendarSystem:
+        """Returns a Hebrew calendar system using the civil month numbering, equivalent to the one used by the BCL
+        HebrewCalendar.
+
+        :return: A Hebrew calendar system using the civil month numbering, equivalent to the one used by the BCL.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.HEBREW_CIVIL)
 
     @property
     def hebrew_scriptural(cls) -> CalendarSystem:
+        """Returns a Hebrew calendar system using the scriptural month numbering.
+
+        :return: A Hebrew calendar system using the scriptural month numbering.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.HEBREW_SCRIPTURAL)
 
     @property
     def iso(cls) -> CalendarSystem:
+        """Returns a calendar system that follows the rules of the ISO-8601 standard, which is compatible with Gregorian
+        for all modern dates.
+
+        This calendar system is effectively equivalent to ``CalendarSystem.gregorian``.
+
+        :return: The ISO calendar system.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.ISO)
 
     @property
     def julian(cls) -> CalendarSystem:
+        """Returns a pure proleptic Julian calendar system, which defines every fourth year as a leap year. This
+        implementation follows the leap year rule strictly, even for dates before 8 CE, where leap years were actually
+        irregular.
+
+        Although the Julian calendar did not exist before 45 BCE, this calendar assumes it did, thus it is proleptic.
+        This implementation also fixes the start of the year at January 1.
+
+        :return: The Julian calendar system.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.JULIAN)
 
     @property
     def persian_arithmetic(cls) -> CalendarSystem:
+        """Returns a Persian (also known as Solar Hijri) calendar system implementing the behaviour proposed by Ahmad
+        Birashk with nested cycles of years determining which years are leap years.
+
+        This calendar is also known as the algorithmic Solar Hijri calendar.
+
+        :return: A Persian calendar system using cycles-within-cycles of years to determine leap years.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.PERSIAN_ARITHMETIC)
 
     @property
     def persian_astronomical(cls) -> CalendarSystem:
+        """Returns a Persian (also known as Solar Hijri) calendar system implementing the behaviour of the BCL
+        ``PersianCalendar`` from .NET 4.6 onwards (and Windows 10), and the astronomical system described in Wikipedia
+        and Calendrical Calculations.
+
+        This implementation uses data derived from the .NET 4.6 implementation (with the data built into Pyoda Time, so
+        there's no BCL dependency) for simplicity; the actual implementation involves computing the time of noon in
+        Iran, and is complex.
+
+        :return: A Persian calendar system using astronomical calculations to determine leap years.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.PERSIAN_ASTRONOMICAL)
 
     @property
     def persian_simple(cls) -> CalendarSystem:
+        """Returns a Persian (also known as Solar Hijri) calendar system implementing the behaviour of the BCL
+        ``PersianCalendar`` before .NET 4.6, and the sole Persian calendar in Noda Time 1.3.
+
+        This implementation uses a simple 33-year leap cycle, where years  1, 5, 9, 13, 17, 22, 26, and 30 in each cycle
+        are leap years.
+
+        :return: A Persian calendar system using a simple 33-year leap cycle.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.PERSIAN_SIMPLE)
 
     @property
     def um_al_qura(cls) -> CalendarSystem:
+        """Returns an Um Al Qura calendar system - an Islamic calendar system primarily used by Saudi Arabia.
+
+        This is a tabular calendar, relying on pregenerated data.
+
+        :return: A calendar system for the Um Al Qura calendar.
+        """
         return CalendarSystem._for_ordinal(_CalendarOrdinal.UM_AL_QURA)
 
     @property

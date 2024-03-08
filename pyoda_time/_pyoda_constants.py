@@ -22,12 +22,14 @@ class _PyodaConstantsMeta(type):
 
     @property
     def BCL_EPOCH(cls) -> Instant:
+        """The instant at the BCL epoch of midnight 1st January 0001 UTC."""
         from . import Instant
 
         return Instant.from_utc(1, 1, 1, 0, 0)
 
     @property
     def UNIX_EPOCH(cls) -> Instant:
+        """The instant at the Unix epoch of midnight 1st January 1970 UTC."""
         from . import Instant
 
         return Instant.from_unix_time_ticks(0)
