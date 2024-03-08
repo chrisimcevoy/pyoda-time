@@ -28,18 +28,15 @@ class OffsetDateTime:
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, local_date: LocalDate, offset_time: OffsetTime) -> OffsetDateTime:
-        ...
+    def _ctor(cls, *, local_date: LocalDate, offset_time: OffsetTime) -> OffsetDateTime: ...
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, instant: Instant, offset: Offset) -> OffsetDateTime:
-        ...
+    def _ctor(cls, *, instant: Instant, offset: Offset) -> OffsetDateTime: ...
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, instant: Instant, offset: Offset, calendar: CalendarSystem) -> OffsetDateTime:
-        ...
+    def _ctor(cls, *, instant: Instant, offset: Offset, calendar: CalendarSystem) -> OffsetDateTime: ...
 
     @classmethod
     def _ctor(

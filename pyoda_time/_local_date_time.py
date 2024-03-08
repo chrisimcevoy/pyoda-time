@@ -46,13 +46,11 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, local_instant: _LocalInstant) -> LocalDateTime:
-        ...
+    def _ctor(cls, *, local_instant: _LocalInstant) -> LocalDateTime: ...
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, local_date: LocalDate, local_time: LocalTime) -> LocalDateTime:
-        ...
+    def _ctor(cls, *, local_date: LocalDate, local_time: LocalTime) -> LocalDateTime: ...
 
     @classmethod
     def _ctor(

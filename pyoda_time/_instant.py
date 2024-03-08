@@ -161,12 +161,10 @@ class Instant(metaclass=_InstantMeta):
         return NotImplemented
 
     @_typing.overload
-    def __sub__(self, other: Instant) -> Duration:
-        ...
+    def __sub__(self, other: Instant) -> Duration: ...
 
     @_typing.overload
-    def __sub__(self, other: Duration) -> Instant:
-        ...
+    def __sub__(self, other: Duration) -> Instant: ...
 
     def __sub__(self, other: Instant | Duration) -> Instant | Duration:
         from . import Duration

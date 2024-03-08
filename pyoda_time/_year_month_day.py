@@ -27,13 +27,11 @@ class _YearMonthDay:
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, raw_value: int) -> _YearMonthDay:
-        ...
+    def _ctor(cls, *, raw_value: int) -> _YearMonthDay: ...
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, year: int, month: int, day: int) -> _YearMonthDay:
-        ...
+    def _ctor(cls, *, year: int, month: int, day: int) -> _YearMonthDay: ...
 
     @classmethod
     def _ctor(

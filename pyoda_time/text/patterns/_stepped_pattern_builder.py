@@ -334,8 +334,7 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         We only know what we need to do *after* we've parsed the whole pattern.
         """
 
-        def build_format_action(self, final_fields: _PatternFields) -> Callable[[TResult, StringBuilder], None]:
-            ...
+        def build_format_action(self, final_fields: _PatternFields) -> Callable[[TResult, StringBuilder], None]: ...
 
     class __SteppedPattern(_IPartialPattern[TResult]):
         def __init__(
@@ -348,9 +347,9 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         ) -> None:
             self.__format_actions: Final[Callable[[TResult, StringBuilder], None]] = format_actions
             # This will be null if the pattern is only capable of formatting.
-            self.__parse_actions: Final[
-                list[Callable[[_ValueCursor, TBucket], ParseResult[TResult] | None]] | None
-            ] = parse_actions
+            self.__parse_actions: Final[list[Callable[[_ValueCursor, TBucket], ParseResult[TResult] | None]] | None] = (
+                parse_actions
+            )
             self.__bucket_provider: Final[Callable[[], TBucket]] = bucket_provider
             self.__used_fields: Final[_PatternFields] = used_fields
 

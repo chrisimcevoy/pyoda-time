@@ -10,7 +10,6 @@ due to their 'Test' prefixes, the helpers are implemented here as
 module-level functions.
 """
 
-
 from typing import Any, Callable, Iterable, Protocol, Self, TypeVar
 
 import pytest
@@ -20,27 +19,21 @@ from pyoda_time.utility import _Preconditions
 
 
 class IEquatable(Protocol):
-    def equals(self, other: Any) -> bool:
-        ...
+    def equals(self, other: Any) -> bool: ...
 
 
 class IComparable(Protocol):
-    def compare_to(self, other: Self) -> int:
-        ...
+    def compare_to(self, other: Self) -> int: ...
 
 
 class SupportsComparison(Protocol):
-    def __gt__(self, other: Any) -> bool:
-        ...
+    def __gt__(self, other: Any) -> bool: ...
 
-    def __ge__(self, other: Any) -> bool:
-        ...
+    def __ge__(self, other: Any) -> bool: ...
 
-    def __lt__(self, other: Any) -> bool:
-        ...
+    def __lt__(self, other: Any) -> bool: ...
 
-    def __le__(self, other: Any) -> bool:
-        ...
+    def __le__(self, other: Any) -> bool: ...
 
 
 T = TypeVar("T")

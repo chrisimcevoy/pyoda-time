@@ -208,13 +208,11 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
 
     @classmethod
     @overload
-    def _for_invalid_value(cls, exception_provider: Callable[[], Exception], /) -> ParseResult[T]:
-        ...
+    def _for_invalid_value(cls, exception_provider: Callable[[], Exception], /) -> ParseResult[T]: ...
 
     @classmethod
     @overload
-    def _for_invalid_value(cls, cursor: _ValueCursor, format_string: str, /, *parameters: Any) -> ParseResult[T]:
-        ...
+    def _for_invalid_value(cls, cursor: _ValueCursor, format_string: str, /, *parameters: Any) -> ParseResult[T]: ...
 
     @classmethod
     def _for_invalid_value(

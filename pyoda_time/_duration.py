@@ -456,12 +456,10 @@ class Duration(metaclass=_DurationMeta):
         return self - other
 
     @_typing.overload
-    def __truediv__(self, other: int | float) -> Duration:
-        ...
+    def __truediv__(self, other: int | float) -> Duration: ...
 
     @_typing.overload
-    def __truediv__(self, other: Duration) -> float:
-        ...
+    def __truediv__(self, other: Duration) -> float: ...
 
     def __truediv__(self, other: int | float | Duration) -> Duration | float:
         # TODO: This is a dramatically simpler implementation for int/float than Noda Time.
@@ -473,13 +471,11 @@ class Duration(metaclass=_DurationMeta):
 
     @staticmethod
     @_typing.overload
-    def divide(left: Duration, right: int | float) -> Duration:
-        ...
+    def divide(left: Duration, right: int | float) -> Duration: ...
 
     @staticmethod
     @_typing.overload
-    def divide(left: Duration, right: Duration) -> float:
-        ...
+    def divide(left: Duration, right: Duration) -> float: ...
 
     @staticmethod
     def divide(left: Duration, right: int | float | Duration) -> Duration | float:
@@ -499,13 +495,11 @@ class Duration(metaclass=_DurationMeta):
 
     @staticmethod
     @_typing.overload
-    def multiply(left: Duration, right: int | float) -> Duration:
-        ...
+    def multiply(left: Duration, right: int | float) -> Duration: ...
 
     @staticmethod
     @_typing.overload
-    def multiply(left: int | float, right: Duration) -> Duration:
-        ...
+    def multiply(left: int | float, right: Duration) -> Duration: ...
 
     @staticmethod
     def multiply(left: Duration | int | float, right: Duration | int | float) -> Duration:

@@ -90,14 +90,12 @@ class YearMonth:
         return self.__start_of_month._to_year_month_day()
 
     @_typing.overload
-    def __init__(self, *, year: int, month: int, calendar: CalendarSystem = CalendarSystem.iso) -> None:
-        ...
+    def __init__(self, *, year: int, month: int, calendar: CalendarSystem = CalendarSystem.iso) -> None: ...
 
     @_typing.overload
     def __init__(
         self, *, era: _Era, year_of_era: int, month: int, calendar: CalendarSystem = CalendarSystem.iso
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self,

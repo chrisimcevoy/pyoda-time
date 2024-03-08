@@ -2,6 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 """https://github.com/nodatime/nodatime/blob/main/src/NodaTime.Test/DurationTest.cs"""
+
 import sys
 from datetime import timedelta
 from typing import Callable, Final, TypeVar

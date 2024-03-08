@@ -38,13 +38,11 @@ class _YearMonthDayCalendar:
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, year_month_day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar:
-        ...
+    def _ctor(cls, *, year_month_day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar: ...
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, year: int, month: int, day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar:
-        ...
+    def _ctor(cls, *, year: int, month: int, day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar: ...
 
     @classmethod
     def _ctor(
