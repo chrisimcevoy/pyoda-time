@@ -2,6 +2,7 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/pyoda-time)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyoda-time)
 ![GitHub License](https://img.shields.io/github/license/chrisimcevoy/pyoda-time)
+[![Documentation Status](https://readthedocs.org/projects/pyoda-time/badge/?version=latest)](https://pyoda-time.readthedocs.io/en/latest/?badge=latest)
 
 # Pyoda Time
 
