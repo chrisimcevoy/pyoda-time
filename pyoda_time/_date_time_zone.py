@@ -22,6 +22,14 @@ class _DateTimeZoneMeta(_abc.ABCMeta):
     @property
     @_functools.cache
     def utc(cls) -> DateTimeZone:
+        """Gets the UTC (Coordinated Universal Time) time zone.
+
+        This is a single instance which is not provider-specific; it is guaranteed to have the ID "UTC", and to
+        compare equal to an instance returned by calling ``for_offset`` with an offset of zero, but it may
+        or may not compare equal to an instance returned by e.g. ``DateTimeZoneProviders.Tzdb["UTC"]``.
+
+        :return: The UTC ``DateTimeZone``.
+        """
         from . import Offset
         from .time_zones import _FixedDateTimeZone
 

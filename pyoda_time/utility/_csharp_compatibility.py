@@ -55,19 +55,34 @@ def _private(klass: _Ttype) -> _Ttype:
 
     msg = f"{klass.__name__} is not intended to be initialised directly."
 
-    def __init__(*_args: _typing.Any, **_kwargs: _typing.Any) -> None:
+    def __init__(self: _typing.Any) -> None:
+        """
+
+        :raises TypeError: This class is not intended to be instantiated directly.
+        """
         raise TypeError(msg)
 
-    def __new__(*_args: _typing.Any, **_kwargs: _typing.Any) -> _Ttype:
+    def __new__(cls: _Ttype) -> _Ttype:
+        """
+
+        :raises TypeError: This class is not intended to be instantiated directly.
+        """
         raise TypeError(msg)
 
     def __call__(*_args: _typing.Any, **_kwargs: _typing.Any) -> _Ttype:
+        """
+
+        :raises TypeError: This class is not intended to be instantiated directly.
+        """
         raise TypeError(msg)
 
     # Use setattr to stop mypy shouting
     setattr(klass, "__init__", __init__)
     setattr(klass, "__new__", __new__)
     setattr(klass, "__call__", __call__)
+
+    # This is used in sphinx docs to ignore the special methods assigned above.
+    setattr(klass, "__no_public_constructor__", True)
 
     return klass
 
