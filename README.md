@@ -20,11 +20,9 @@ pip install pyoda-time
 
 ## Quick Start
 
-Coming soon...
+Coming soon!
 
-## Documentation
-
-Coming soon...
+In the meantime, [view the docs](https://pyodatime.org/).
 
 ## Project Status
 
