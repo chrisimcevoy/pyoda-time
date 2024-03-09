@@ -31,6 +31,7 @@ description = "An alternative datetime library for Python."
 authors = ["Christopher McEvoy <12284065+chrisimcevoy@users.noreply.github.com>"]
 license = "Apache-2.0"
 readme = "README.md"
+homepage = "https://pyodatime.org/"
 repository = "https://github.com/chrisimcevoy/pyoda-time"
 classifiers = [
     "Development Status :: 1 - Planning",
