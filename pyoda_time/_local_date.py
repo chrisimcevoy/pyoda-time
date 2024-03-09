@@ -13,7 +13,7 @@ from .calendars import Era
 from .utility import _Preconditions, _sealed
 
 if typing.TYPE_CHECKING:
-    from . import LocalDateTime, LocalTime, YearMonth
+    from . import LocalDateTime, LocalTime, Period, YearMonth
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
 
@@ -198,10 +198,34 @@ class LocalDate(metaclass=_LocalDateMeta):
 
         return YearMonth(year=self.year, month=self.month, calendar=self.calendar)
 
-    def __add__(self, other: LocalTime) -> LocalDateTime:
-        # TODO: overload for LocalDate + Period
-        from . import LocalDateTime, LocalTime
+    @typing.overload
+    def __add__(self, other: Period) -> LocalDate:
+        """Adds the specified period to the date.
 
+        Fields are added in descending order of significance (years first, then months, and so on).
+
+        :param other: The period to add. Must not contain any (non-zero) time units.
+        :return: The sum of the given date and period
+        """
+
+    @typing.overload
+    def __add__(self, other: LocalTime) -> LocalDateTime:
+        """Combines the given ``LocalDate`` and ``LocalTime`` components into a single ``LocalDateTime``.
+
+        :param other: The time to add to the date
+        :return: The sum of the given date and time
+        """
+        ...
+
+    def __add__(self, other: LocalTime | Period) -> LocalDateTime | LocalDate:
+        from . import LocalDateTime, LocalTime, Period
+
+        if isinstance(other, Period):
+            _Preconditions._check_not_null(other, "period")
+            _Preconditions._check_argument(
+                not other.has_time_component, "period", "Cannot add a period with a time component to a date"
+            )
+            return self.plus_years(other.years).plus_months(other.months).plus_weeks(other.weeks).plus_days(other.days)
         if isinstance(other, LocalTime):
             return LocalDateTime._ctor(local_date=self, local_time=other)
         return NotImplemented
