@@ -4,12 +4,12 @@
 
 from __future__ import annotations
 
-import abc as _abc
+import abc
 
 from ._era import Era
 
 
-class _EraCalculator(_abc.ABC):
+class _EraCalculator(abc.ABC):
     """Takes responsibility for all era-based calculations for a calendar.
 
     YearMonthDay arguments can be assumed to be valid for the relevant calendar, but other arguments should be
@@ -19,22 +19,22 @@ class _EraCalculator(_abc.ABC):
     def __init__(self, *eras: Era):
         self._eras = eras
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_min_year_of_era(self, era: Era) -> int:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_max_year_of_era(self, era: Era) -> int:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_era(self, absolute_year: int) -> Era:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_year_of_era(self, absolute_year: int) -> int:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_absolute_year(self, year_of_era: int, era: Era) -> int:
         raise NotImplementedError

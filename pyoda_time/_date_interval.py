@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import LocalDate
 
 from .utility import _Preconditions, _sealed

@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-import enum as _enum
+import enum
 
 
-class HebrewMonthNumbering(_enum.IntEnum):
+class HebrewMonthNumbering(enum.IntEnum):
     """The month numbering to use for the Hebrew calendar.
 
     When requesting a Hebrew calendar with ``CalendarSystem.get_hebrew_calendar()``, a month numbering

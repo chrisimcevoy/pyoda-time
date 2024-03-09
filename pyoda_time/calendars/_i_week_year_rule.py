@@ -4,26 +4,26 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-from .._iso_day_of_week import IsoDayOfWeek as _IsoDayOfWeek
+from .._iso_day_of_week import IsoDayOfWeek
 
-if _typing.TYPE_CHECKING:
-    from .. import LocalDate as _LocalDate
-    from .._calendar_system import CalendarSystem as _CalendarSystem
+if typing.TYPE_CHECKING:
+    from .. import LocalDate
+    from .._calendar_system import CalendarSystem
 
 
-class IWeekYearRule(_typing.Protocol):
+class IWeekYearRule(typing.Protocol):
     def get_local_date(
         self,
         week_year: int,
         week_of_week_year: int,
-        day_of_week: _IsoDayOfWeek,
-        calendar: _CalendarSystem | None = None,
-    ) -> _LocalDate: ...
+        day_of_week: IsoDayOfWeek,
+        calendar: CalendarSystem | None = None,
+    ) -> LocalDate: ...
 
-    def get_week_year(self, date: _LocalDate) -> int: ...
+    def get_week_year(self, date: LocalDate) -> int: ...
 
-    def get_week_of_week_year(self, date: _LocalDate) -> int: ...
+    def get_week_of_week_year(self, date: LocalDate) -> int: ...
 
-    def get_weeks_in_week_year(self, week_year: int, calendar: _CalendarSystem | None = None) -> int: ...
+    def get_weeks_in_week_year(self, week_year: int, calendar: CalendarSystem | None = None) -> int: ...

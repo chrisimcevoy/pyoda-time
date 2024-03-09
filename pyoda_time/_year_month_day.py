@@ -4,33 +4,33 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._year_month_day_calendar import _YearMonthDayCalendar
 from .utility import _sealed
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import CalendarSystem
 
 
-@_typing.final
+@typing.final
 @_sealed
 class _YearMonthDay:
     """A compact representation of a year, month and day in a single 32-bit integer."""
 
-    __DAY_MASK: _typing.Final[int] = (1 << _YearMonthDayCalendar._DAY_BITS) - 1
-    __MONTH_MASK: _typing.Final[int] = ((1 << _YearMonthDayCalendar._MONTH_BITS) - 1) << _YearMonthDayCalendar._DAY_BITS
+    __DAY_MASK: typing.Final[int] = (1 << _YearMonthDayCalendar._DAY_BITS) - 1
+    __MONTH_MASK: typing.Final[int] = ((1 << _YearMonthDayCalendar._MONTH_BITS) - 1) << _YearMonthDayCalendar._DAY_BITS
 
     def __init__(self) -> None:
         self.__value: int = 0
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, raw_value: int) -> _YearMonthDay: ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, year: int, month: int, day: int) -> _YearMonthDay: ...
 
     @classmethod

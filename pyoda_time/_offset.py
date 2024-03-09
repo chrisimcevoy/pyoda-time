@@ -4,8 +4,8 @@
 
 from __future__ import annotations
 
-import datetime as _datetime
-import typing as _typing
+import datetime
+import typing
 
 from ._compatibility._culture_info import CultureInfo
 from ._pyoda_constants import PyodaConstants
@@ -29,21 +29,21 @@ class _OffsetMeta(type):
         return Offset.from_hours(18)
 
 
-@_typing.final
+@typing.final
 @_sealed
 class Offset(metaclass=_OffsetMeta):
     """An offset from UTC in seconds."""
 
-    __MIN_HOURS: _typing.Final[int] = -18
-    __MAX_HOURS: _typing.Final[int] = 18
-    __MIN_SECONDS: _typing.Final[int] = -18 * PyodaConstants.SECONDS_PER_HOUR
-    __MAX_SECONDS: _typing.Final[int] = 18 * PyodaConstants.SECONDS_PER_HOUR
-    __MIN_MILLISECONDS: _typing.Final[int] = -18 * PyodaConstants.MILLISECONDS_PER_HOUR
-    __MAX_MILLISECONDS: _typing.Final[int] = 18 * PyodaConstants.MILLISECONDS_PER_HOUR
-    __MIN_TICKS: _typing.Final[int] = -18 * PyodaConstants.TICKS_PER_HOUR
-    __MAX_TICKS: _typing.Final[int] = 18 * PyodaConstants.TICKS_PER_HOUR
-    __MIN_NANOSECONDS: _typing.Final[int] = -18 * PyodaConstants.NANOSECONDS_PER_HOUR
-    __MAX_NANOSECONDS: _typing.Final[int] = 18 * PyodaConstants.NANOSECONDS_PER_HOUR
+    __MIN_HOURS: typing.Final[int] = -18
+    __MAX_HOURS: typing.Final[int] = 18
+    __MIN_SECONDS: typing.Final[int] = -18 * PyodaConstants.SECONDS_PER_HOUR
+    __MAX_SECONDS: typing.Final[int] = 18 * PyodaConstants.SECONDS_PER_HOUR
+    __MIN_MILLISECONDS: typing.Final[int] = -18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MAX_MILLISECONDS: typing.Final[int] = 18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MIN_TICKS: typing.Final[int] = -18 * PyodaConstants.TICKS_PER_HOUR
+    __MAX_TICKS: typing.Final[int] = 18 * PyodaConstants.TICKS_PER_HOUR
+    __MIN_NANOSECONDS: typing.Final[int] = -18 * PyodaConstants.NANOSECONDS_PER_HOUR
+    __MAX_NANOSECONDS: typing.Final[int] = 18 * PyodaConstants.NANOSECONDS_PER_HOUR
 
     def __init__(self) -> None:
         self.__seconds = 0
@@ -397,15 +397,15 @@ class Offset(metaclass=_OffsetMeta):
 
     # region Conversion
 
-    def to_timedelta(self) -> _datetime.timedelta:
+    def to_timedelta(self) -> datetime.timedelta:
         """Converts this offset to a stdlib ``datetime.timedelta`` value.
 
         :return: An equivalent ``datetime.timedelta`` to this value.
         """
-        return _datetime.timedelta(seconds=self.seconds)
+        return datetime.timedelta(seconds=self.seconds)
 
     @classmethod
-    def from_timedelta(cls, timedelta: _datetime.timedelta) -> Offset:
+    def from_timedelta(cls, timedelta: datetime.timedelta) -> Offset:
         """Converts the given ``timedelta`` to an offset, with fractional seconds truncated.
 
         :param timedelta: The timedelta to convert

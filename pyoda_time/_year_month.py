@@ -2,27 +2,27 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
+from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ._calendar_system import CalendarSystem
 from .utility import _Preconditions, _sealed
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from ._calendar_ordinal import _CalendarOrdinal
     from ._date_interval import DateInterval
     from ._local_date import LocalDate
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
-    from .calendars import Era as _Era
+    from .calendars import Era
 
 
 __all__ = ["YearMonth"]
 
 
 @_sealed
-@_typing.final
+@typing.final
 class YearMonth:
     """A year and month in a particular calendar.
 
@@ -32,7 +32,7 @@ class YearMonth:
     # The start of the month. This is used as our base representation as we already have
     # plenty of other code that integrates it, and it implements a compact representation
     # without us having to duplicate any of the logic.
-    __start_of_month: _typing.Final[_YearMonthDayCalendar]
+    __start_of_month: typing.Final[_YearMonthDayCalendar]
 
     @property
     def calendar(self) -> CalendarSystem:
@@ -62,7 +62,7 @@ class YearMonth:
         return self.calendar._get_year_of_era(self.__start_of_month._year)
 
     @property
-    def era(self) -> _Era:
+    def era(self) -> Era:
         """The era of this year/month."""
         return self.calendar._get_era(self.__start_of_month._year)
 
@@ -89,12 +89,12 @@ class YearMonth:
     def __year_month_day(self) -> _YearMonthDay:
         return self.__start_of_month._to_year_month_day()
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, year: int, month: int, calendar: CalendarSystem = CalendarSystem.iso) -> None: ...
 
-    @_typing.overload
+    @typing.overload
     def __init__(
-        self, *, era: _Era, year_of_era: int, month: int, calendar: CalendarSystem = CalendarSystem.iso
+        self, *, era: Era, year_of_era: int, month: int, calendar: CalendarSystem = CalendarSystem.iso
     ) -> None: ...
 
     def __init__(
@@ -102,7 +102,7 @@ class YearMonth:
         *,
         year: int | None = None,
         month: int | None = None,
-        era: _Era | None = None,
+        era: Era | None = None,
         year_of_era: int | None = None,
         calendar: CalendarSystem = CalendarSystem.iso,
     ) -> None:

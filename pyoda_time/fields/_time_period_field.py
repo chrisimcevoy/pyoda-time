@@ -4,15 +4,15 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     pass
 
-from .._duration import Duration as _Duration
-from .._local_date_time import LocalDateTime as _LocalDateTime
-from .._local_time import LocalTime as _LocalTime
-from .._pyoda_constants import PyodaConstants as _PyodaConstants
+from .._duration import Duration
+from .._local_date_time import LocalDateTime
+from .._local_time import LocalTime
+from .._pyoda_constants import PyodaConstants
 from ..utility import _csharp_modulo, _towards_zero_division
 
 
@@ -23,38 +23,38 @@ class _TimePeriodFieldMeta(type):
 
     @property
     def _ticks(self) -> _TimePeriodField:
-        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_TICK)
+        return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_TICK)
 
     @property
     def _milliseconds(self) -> _TimePeriodField:
-        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_MILLISECOND)
+        return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_MILLISECOND)
 
     @property
     def _seconds(self) -> _TimePeriodField:
-        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_SECOND)
+        return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_SECOND)
 
     @property
     def _minutes(self) -> _TimePeriodField:
-        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_MINUTE)
+        return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_MINUTE)
 
     @property
     def _hours(self) -> _TimePeriodField:
-        return _TimePeriodField(_PyodaConstants.NANOSECONDS_PER_HOUR)
+        return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_HOUR)
 
 
 class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
     def __init__(self, unit_nanoseconds: int) -> None:
         self.__unit_nanoseconds = unit_nanoseconds
-        self.__units_per_day = int(_PyodaConstants.NANOSECONDS_PER_DAY / unit_nanoseconds)
+        self.__units_per_day = int(PyodaConstants.NANOSECONDS_PER_DAY / unit_nanoseconds)
 
-    def _add_local_date_time(self, start: _LocalDateTime, units: int) -> _LocalDateTime:
+    def _add_local_date_time(self, start: LocalDateTime, units: int) -> LocalDateTime:
         time, extra_days = self._add_local_time_with_extra_days(start.time_of_day, units)
         date = start.date if extra_days == 0 else start.date.plus_days(extra_days)
-        return _LocalDateTime._ctor(local_date=date, local_time=time)
+        return LocalDateTime._ctor(local_date=date, local_time=time)
 
     # TODO: def _add_local_time(self, local_time: _LocalTime, value: int) -> _LocalTime:
 
-    def _add_local_time_with_extra_days(self, local_time: _LocalTime, value: int) -> tuple[_LocalTime, int]:
+    def _add_local_time_with_extra_days(self, local_time: LocalTime, value: int) -> tuple[LocalTime, int]:
         extra_days = 0
         # TODO: unchecked
         if value == 0:
@@ -69,13 +69,13 @@ class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
                 value = _csharp_modulo(value, self.__units_per_day)
             nanos_to_add = value * self.__unit_nanoseconds
             new_nanos = local_time.nanosecond_of_day + nanos_to_add
-            if new_nanos >= _PyodaConstants.NANOSECONDS_PER_DAY:
-                new_nanos -= _PyodaConstants.NANOSECONDS_PER_DAY
+            if new_nanos >= PyodaConstants.NANOSECONDS_PER_DAY:
+                new_nanos -= PyodaConstants.NANOSECONDS_PER_DAY
                 # TODO: checked
                 days += 1
             # TODO: checked
             extra_days += days
-            return _LocalTime._ctor(nanoseconds=new_nanos), extra_days
+            return LocalTime._ctor(nanoseconds=new_nanos), extra_days
         else:
             if value <= self.__units_per_day:
                 long_days = _towards_zero_division(value, self.__units_per_day)  # noqa
@@ -86,18 +86,18 @@ class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
             nanos_to_add = value * self.__unit_nanoseconds
             new_nanos = local_time.nanosecond_of_day + nanos_to_add
             if new_nanos < 0:
-                new_nanos += _PyodaConstants.NANOSECONDS_PER_DAY
+                new_nanos += PyodaConstants.NANOSECONDS_PER_DAY
                 # TODO: checked
                 days -= 1
             # TODO: checked
             extra_days += days
-            return _LocalTime._ctor(nanoseconds=new_nanos), extra_days
+            return LocalTime._ctor(nanoseconds=new_nanos), extra_days
 
-    def _units_between(self, start: _LocalDateTime, end: _LocalDateTime) -> int:
+    def _units_between(self, start: LocalDateTime, end: LocalDateTime) -> int:
         start_local_instant = start._to_local_instant()
         end_local_instant = end._to_local_instant()
         duration = end_local_instant._time_since_local_epoch - start_local_instant._time_since_local_epoch
         return self._get_units_in_duration(duration)
 
-    def _get_units_in_duration(self, duration: _Duration) -> int:
+    def _get_units_in_duration(self, duration: Duration) -> int:
         return _towards_zero_division(duration.to_nanoseconds(), self.__unit_nanoseconds)

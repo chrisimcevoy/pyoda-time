@@ -4,18 +4,18 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ._calendar_system import CalendarSystem
 from .utility import _Preconditions, _sealed
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import Period
     from ._iso_day_of_week import IsoDayOfWeek
     from ._local_date import LocalDate
     from ._local_instant import _LocalInstant
     from ._local_time import LocalTime
-    from .calendars import Era as _Era
+    from .calendars import Era
 
 __all__ = ["LocalDateTime"]
 
@@ -24,7 +24,7 @@ class _LocalDateTimeMeta(type):
     pass
 
 
-@_typing.final
+@typing.final
 @_sealed
 class LocalDateTime(metaclass=_LocalDateTimeMeta):
     def __init__(
@@ -45,11 +45,11 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         self.__time = LocalTime(hour=hour, minute=minute, second=second, millisecond=millisecond)
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, local_instant: _LocalInstant) -> LocalDateTime: ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, local_date: LocalDate, local_time: LocalTime) -> LocalDateTime: ...
 
     @classmethod
@@ -93,7 +93,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         return self.__date.year_of_era
 
     @property
-    def era(self) -> _Era:
+    def era(self) -> Era:
         """The era of this local date and time."""
         return self.__date.era
 

@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-import base64 as _base64
-import typing as _typing
+import base64
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from ..utility import _Preconditions, _sealed, _towards_zero_division
 from ._year_month_day_calculator import _YearMonthDayCalculator
@@ -16,30 +16,30 @@ from ._year_month_day_calculator import _YearMonthDayCalculator
 @_sealed
 class _BadiYearMonthDayCalculator(_YearMonthDayCalculator):
     # named constants to avoid use of raw numbers in the code
-    __AVERAGE_DAYS_PER_10_years: _typing.Final[int] = 3652
-    __DAYS_IN_AYYAMI_HA_IN_LEAP_YEAR: _typing.Final[int] = 5
-    __DAYS_IN_AYYAMI_HA_IN_NORMAL_YEAR: _typing.Final[int] = 4
+    __AVERAGE_DAYS_PER_10_years: typing.Final[int] = 3652
+    __DAYS_IN_AYYAMI_HA_IN_LEAP_YEAR: typing.Final[int] = 5
+    __DAYS_IN_AYYAMI_HA_IN_NORMAL_YEAR: typing.Final[int] = 4
 
-    _DAYS_IN_MONTH: _typing.Final[int] = 19
-    __FIRST_YEAR_OF_STANDARDIZED_CALENDAR: _typing.Final[int] = 172
-    __GREGORIAN_YEAR_OF_FIRST_BADI_YEAR: _typing.Final[int] = 1844
+    _DAYS_IN_MONTH: typing.Final[int] = 19
+    __FIRST_YEAR_OF_STANDARDIZED_CALENDAR: typing.Final[int] = 172
+    __GREGORIAN_YEAR_OF_FIRST_BADI_YEAR: typing.Final[int] = 1844
 
     # There are 19 months in a year. Between the 18th and 19th month are the "days of Ha" (Ayyam-i-Ha).
     # In order to make everything else in Noda Time work appropriately, Ayyam-i-Ha are counted as
     # extra days at the end of month 18.
-    _MONTH_18: _typing.Final[int] = 18
-    __MONTH_19: _typing.Final[int] = 19
-    __MONTHS_IN_YEAR: _typing.Final[int] = 19
+    _MONTH_18: typing.Final[int] = 18
+    __MONTH_19: typing.Final[int] = 19
+    __MONTHS_IN_YEAR: typing.Final[int] = 19
 
-    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: _typing.Final[int] = -45941
-    __BADI_MAX_YEAR: _typing.Final[int] = 1000  # current lookup tables are pre-calculated for a thousand years
-    __BADI_MIN_YEAR: _typing.Final[int] = 1
+    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: typing.Final[int] = -45941
+    __BADI_MAX_YEAR: typing.Final[int] = 1000  # current lookup tables are pre-calculated for a thousand years
+    __BADI_MIN_YEAR: typing.Final[int] = 1
 
     # This is the base64 representation of information for years 172 to 1000.
     # NazRuzDate falls on March 19, 20, 21, or 22.
     # DaysInAyymiHa can be 4,5.
     # For each year, the value in the array is (NawRuzDate - 19) + 10 * (DaysInAyyamiHa - 4)
-    year_info_raw = _base64.b64decode(
+    year_info_raw = base64.b64decode(
         "AgELAgIBCwICAQsCAgEBCwIBAQsCAQELAgEBCwIBAQsCAQELAgEBCwIBAQELAQEBCwEBAQsBAQELAQEB"
         "CwEBAQsBAQELAQEBCwEBAQEKAQEBCgEBAQsCAgILAgICCwICAgsCAgILAgICCwICAgELAgIBCwICAQsC"
         "AgELAgIBCwICAQsCAgELAgIBCwICAQELAgEBCwIBAQsCAQELAgEBCwIBAQsCAQELAgEBCwIBAQELAQEB"

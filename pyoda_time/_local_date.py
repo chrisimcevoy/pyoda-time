@@ -4,15 +4,15 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._calendar_system import CalendarSystem
 from ._iso_day_of_week import IsoDayOfWeek
-from .calendars import Era as _Era
+from .calendars import Era
 from .utility import _Preconditions, _sealed
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import LocalDateTime, LocalTime, YearMonth
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
@@ -53,26 +53,26 @@ class _LocalDateMeta(type):
         )
 
 
-@_typing.final
+@typing.final
 @_sealed
 class LocalDate(metaclass=_LocalDateMeta):
     """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
     zone or time of day."""
 
-    @_typing.overload
+    @typing.overload
     def __init__(self) -> None: ...
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, year: int, month: int, day: int): ...
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, year: int, month: int, day: int, calendar: CalendarSystem): ...
 
-    @_typing.overload
-    def __init__(self, *, era: _Era, year_of_era: int, month: int, day: int): ...
+    @typing.overload
+    def __init__(self, *, era: Era, year_of_era: int, month: int, day: int): ...
 
-    @_typing.overload
-    def __init__(self, *, era: _Era, year_of_era: int, month: int, day: int, calendar: CalendarSystem): ...
+    @typing.overload
+    def __init__(self, *, era: Era, year_of_era: int, month: int, day: int, calendar: CalendarSystem): ...
 
     def __init__(
         self,
@@ -80,7 +80,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         month: int = 1,
         day: int = 1,
         calendar: CalendarSystem | None = None,
-        era: _Era | None = None,
+        era: Era | None = None,
         year_of_era: int | None = None,
     ):
         from ._year_month_day_calendar import _YearMonthDayCalendar
@@ -99,15 +99,15 @@ class LocalDate(metaclass=_LocalDateMeta):
             raise TypeError
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, year_month_day_calendar: _YearMonthDayCalendar) -> LocalDate: ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, days_since_epoch: int) -> LocalDate: ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, days_since_epoch: int, calendar: CalendarSystem) -> LocalDate: ...
 
     @classmethod
@@ -180,7 +180,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         return self.calendar._get_year_of_era(self.__year_month_day_calendar._year)
 
     @property
-    def era(self) -> _Era:
+    def era(self) -> Era:
         """The era of this local date."""
         return self.calendar._get_era(self.__year_month_day_calendar._year)
 

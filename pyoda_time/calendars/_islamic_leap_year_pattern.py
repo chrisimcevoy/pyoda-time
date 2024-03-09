@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-import enum as _enum
+import enum
 
 
-class IslamicLeapYearPattern(_enum.IntEnum):
+class IslamicLeapYearPattern(enum.IntEnum):
     """The pattern of leap years to use when constructing an Islamic calendar.
 
     The Islamic, or Hijri, calendar is a lunar calendar of 12 months, each of 29 or 30 days. The calendar can be defined

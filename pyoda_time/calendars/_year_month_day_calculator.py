@@ -4,16 +4,16 @@
 
 from __future__ import annotations
 
-import abc as _abc
-import typing as _typing
+import abc
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from ..utility import _Preconditions, _towards_zero_division
 from ._year_start_cache_entry import _YearStartCacheEntry
 
 
-class _YearMonthDayCalculator(_abc.ABC):
+class _YearMonthDayCalculator(abc.ABC):
     """The core of date calculations in Pyoda Time.
 
     This class *only* cares about absolute years, and only
@@ -53,16 +53,16 @@ class _YearMonthDayCalculator(_abc.ABC):
         self.__days_at_start_of_year_1 = days_at_start_of_year_1
         # Cache to speed up working out when a particular year starts.
         # See the ``YearStartCacheEntry`` documentation and ``GetStartOfYearInDays`` for more details.
-        self.__year_cache: _typing.Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
+        self.__year_cache: typing.Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
 
     # region Abstract methods
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
         """Returns the number of days from the start of the given year to the start of the given month."""
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _calculate_start_of_year_days(self, year: int) -> int:
         """Compute the start of the given year in days since 1970-01-01 ISO.
 
@@ -73,23 +73,23 @@ class _YearMonthDayCalculator(_abc.ABC):
         """
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_months_in_year(self, year: int) -> int:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_days_in_month(self, year: int, month: int) -> int:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _is_leap_year(self, year: int) -> bool:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _add_months(self, year_month_day: _YearMonthDay, months: int) -> _YearMonthDay:
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_year_month_day_from_year_and_day_of_year(self, year: int, day_of_year: int) -> _YearMonthDay:
         """This is supposed to be an abstract overload of YearMonthDayCalendar.GetYearMonthDay.
 
@@ -98,13 +98,13 @@ class _YearMonthDayCalculator(_abc.ABC):
         """
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _get_days_in_year(self, year: int) -> int:
         """Returns the number of days in the given year, which will always be within 1 year of the valid range for the
         calculator."""
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _months_between(self, start: _YearMonthDay, end: _YearMonthDay) -> int:
         """Find the months between ``start`` and ``end``.
 
@@ -112,7 +112,7 @@ class _YearMonthDayCalculator(_abc.ABC):
         """
         raise NotImplementedError
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def _set_year(self, year_month_day: _YearMonthDay, year: int) -> _YearMonthDay:
         """Adjusts the given YearMonthDay to the specified year, potentially adjusting other fields as required."""
         raise NotImplementedError
@@ -178,10 +178,10 @@ class _YearMonthDayCalculator(_abc.ABC):
             + year_month_day._day
         )
 
-    @_typing.overload
+    @typing.overload
     def _get_year_month_day(self, *, year: int, day_of_year: int) -> _YearMonthDay: ...
 
-    @_typing.overload
+    @typing.overload
     def _get_year_month_day(self, *, days_since_epoch: int) -> _YearMonthDay: ...
 
     def _get_year_month_day(

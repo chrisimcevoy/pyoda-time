@@ -2,22 +2,16 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
+from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .. import (
-        Duration as _Duration,
-    )
-    from .. import (
-        Instant as _Instant,
-    )
-    from .. import (
-        LocalDateTime as _LocalDateTime,
-    )
-    from .. import (
-        Offset as _Offset,
+        Duration,
+        Instant,
+        LocalDateTime,
+        Offset,
     )
     from .._local_instant import (
         _LocalInstant,
@@ -29,7 +23,7 @@ __all__ = ["ZoneInterval"]
 
 
 @_sealed
-@_typing.final
+@typing.final
 class ZoneInterval:
     """Represents a range of time for which a particular Offset applies.
 
@@ -38,7 +32,7 @@ class ZoneInterval:
     """
 
     @property
-    def _raw_start(self) -> _Instant:
+    def _raw_start(self) -> Instant:
         """Returns the underlying start instant of this zone interval.
 
         If the zone interval extends to the beginning of time, the return
@@ -48,7 +42,7 @@ class ZoneInterval:
         return self.__raw_start
 
     @property
-    def _raw_end(self) -> _Instant:
+    def _raw_end(self) -> Instant:
         """Returns the underlying end instant of this zone interval.
 
         If the zone interval extends to the end of time, the return
@@ -58,7 +52,7 @@ class ZoneInterval:
         return self.__raw_end
 
     @property
-    def standard_offset(self) -> _Offset:
+    def standard_offset(self) -> Offset:
         """Gets the standard offset for this period.
 
         This is the offset without any daylight savings contributions.
@@ -66,7 +60,7 @@ class ZoneInterval:
         return self.wall_offset - self.savings
 
     @property
-    def duration(self) -> _Duration:
+    def duration(self) -> Duration:
         """The Duration of this zone interval."""
         return self.end - self.start
 
@@ -77,7 +71,7 @@ class ZoneInterval:
         return self._raw_start._is_valid
 
     @property
-    def end(self) -> _Instant:
+    def end(self) -> Instant:
         """The last Instant (exclusive) that the Offset applies."""
         _Preconditions._check_state(self._raw_end._is_valid, "Zone interval extends to the end of time")
         return self._raw_end
@@ -89,7 +83,7 @@ class ZoneInterval:
         return self._raw_end._is_valid
 
     @property
-    def iso_local_start(self) -> _LocalDateTime:
+    def iso_local_start(self) -> LocalDateTime:
         """Gets the local start time of the interval, as a ``LocalDateTime`` in the ISO calendar."""
         # Use the Start property to trigger the appropriate end-of-time exception.
         # Call Plus to trigger an appropriate out-of-range exception.
@@ -98,7 +92,7 @@ class ZoneInterval:
         return LocalDateTime._ctor(local_instant=self.start._plus(self.wall_offset))
 
     @property
-    def iso_local_end(self) -> _LocalDateTime:
+    def iso_local_end(self) -> LocalDateTime:
         """Gets the local end time of the interval, as a ``LocalDateTime`` in the ISO calendar."""
         # Use the End property to trigger the appropriate end-of-time exception.
         # Call Plus to trigger an appropriate out-of-range exception.
@@ -112,7 +106,7 @@ class ZoneInterval:
         return self.__name
 
     @property
-    def wall_offset(self) -> _Offset:
+    def wall_offset(self) -> Offset:
         """The offset from UTC for this period.
 
         This includes any daylight savings value.
@@ -120,12 +114,12 @@ class ZoneInterval:
         return self.__wall_offset
 
     @property
-    def savings(self) -> _Offset:
+    def savings(self) -> Offset:
         """The daylight savings value for this period."""
         return self.__savings
 
     @property
-    def start(self) -> _Instant:
+    def start(self) -> Instant:
         """The first Instant that the Offset applies."""
         _Preconditions._check_state(self._raw_start._is_valid, "Zone interval extends to the beginning of time")
         return self._raw_start
@@ -136,10 +130,10 @@ class ZoneInterval:
         self,
         *,
         name: str,
-        start: _Instant | None = None,
-        end: _Instant | None = None,
-        wall_offset: _Offset,
-        savings: _Offset,
+        start: Instant | None = None,
+        end: Instant | None = None,
+        wall_offset: Offset,
+        savings: Offset,
     ) -> None:
         from .. import Instant
 
@@ -153,16 +147,16 @@ class ZoneInterval:
         _Preconditions._check_argument(
             start < end, "start", f"The start Instant must be less than the end Instant. start: {start}; end: {end}"
         )
-        self.__name: _typing.Final[str] = name
-        self.__raw_start: _typing.Final[_Instant] = start
-        self.__raw_end: _typing.Final[_Instant] = end
-        self.__wall_offset: _typing.Final[_Offset] = wall_offset
-        self.__savings: _typing.Final[_Offset] = savings
+        self.__name: typing.Final[str] = name
+        self.__raw_start: typing.Final[Instant] = start
+        self.__raw_end: typing.Final[Instant] = end
+        self.__wall_offset: typing.Final[Offset] = wall_offset
+        self.__savings: typing.Final[Offset] = savings
         # Work out the corresponding local instants, taking care to "go infinite" appropriately.
-        self.__local_start: _typing.Final[_LocalInstant] = start._safe_plus(wall_offset)
-        self.__local_end: _typing.Final[_LocalInstant] = end._safe_plus(wall_offset)
+        self.__local_start: typing.Final[_LocalInstant] = start._safe_plus(wall_offset)
+        self.__local_end: typing.Final[_LocalInstant] = end._safe_plus(wall_offset)
 
-    def _with_start(self, new_start: _Instant) -> ZoneInterval:
+    def _with_start(self, new_start: Instant) -> ZoneInterval:
         """Returns a copy of this zone interval, but with the given start instant."""
         return ZoneInterval(
             name=self.name,
@@ -172,7 +166,7 @@ class ZoneInterval:
             savings=self.savings,
         )
 
-    def _with_end(self, new_end: _Instant) -> ZoneInterval:
+    def _with_end(self, new_end: Instant) -> ZoneInterval:
         """Returns a copy of this zone interval, but with the given end instant."""
         return ZoneInterval(
             name=self.name,
@@ -184,7 +178,7 @@ class ZoneInterval:
 
     # region Contains
 
-    def __contains__(self, instant: _Instant) -> bool:
+    def __contains__(self, instant: Instant) -> bool:
         """Determines whether this period contains the given Instant in its range."""
         # Implementation of ``public bool Contains(Instant instant)``
         return self._raw_start <= instant < self._raw_end

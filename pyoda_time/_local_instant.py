@@ -4,18 +4,18 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from .utility import _sealed
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import Duration, Instant, Offset
 
 
 __all__ = ["_LocalInstant"]
 
 
-@_typing.final
+@typing.final
 @_sealed
 class _LocalInstant:
     """Represents a local date and time without reference to a calendar system. Essentially.
@@ -45,11 +45,11 @@ class _LocalInstant:
         self.__duration = Duration()
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, nanoseconds: Duration) -> _LocalInstant: ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, days: int, nano_of_day: int) -> _LocalInstant: ...
 
     @classmethod

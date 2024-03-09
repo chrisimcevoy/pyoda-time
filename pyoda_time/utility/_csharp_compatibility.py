@@ -2,19 +2,19 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
+from __future__ import annotations
 
-import datetime as _datetime
-import decimal as _decimal
-import typing as _typing
+import datetime
+import decimal
+import typing
 
 __all__: list[str] = []
 
-_T = _typing.TypeVar("_T")
-_Ttype = _typing.TypeVar("_Ttype", bound=type)
+_T = typing.TypeVar("_T")
+_Ttype = typing.TypeVar("_Ttype", bound=type)
 
 
-def _towards_zero_division(x: int | float | _decimal.Decimal, y: int | float | _decimal.Decimal) -> int:
+def _towards_zero_division(x: int | float | decimal.Decimal, y: int | float | decimal.Decimal) -> int:
     """Divide two numbers using "towards zero" rounding.
 
     This ensures that integer division produces the same result as it would do in C#.
@@ -24,10 +24,10 @@ def _towards_zero_division(x: int | float | _decimal.Decimal, y: int | float | _
     return int((Decimal(x) / Decimal(y)).quantize(0, ROUND_DOWN))
 
 
-def _to_ticks(dt: _datetime.datetime) -> int:
+def _to_ticks(dt: datetime.datetime) -> int:
     """Get a value akin to C#'s DateTime.Ticks property from a python datetime."""
     # Gratefully stolen from https://stackoverflow.com/a/29368771
-    return int((dt - _datetime.datetime(1, 1, 1, tzinfo=_datetime.timezone.utc)).total_seconds() * 10000000)
+    return int((dt - datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds() * 10000000)
 
 
 def _sealed(cls: _Ttype) -> _Ttype:
@@ -55,7 +55,7 @@ def _private(klass: _Ttype) -> _Ttype:
 
     msg = f"{klass.__name__} is not intended to be initialised directly."
 
-    def __init__(self: _typing.Any) -> None:
+    def __init__(self: typing.Any) -> None:
         """
 
         :raises TypeError: This class is not intended to be instantiated directly.
@@ -69,7 +69,7 @@ def _private(klass: _Ttype) -> _Ttype:
         """
         raise TypeError(msg)
 
-    def __call__(*_args: _typing.Any, **_kwargs: _typing.Any) -> _Ttype:
+    def __call__(*_args: typing.Any, **_kwargs: typing.Any) -> _Ttype:
         """
 
         :raises TypeError: This class is not intended to be instantiated directly.
@@ -88,8 +88,8 @@ def _private(klass: _Ttype) -> _Ttype:
 
 
 class _CsharpConstants:
-    LONG_MAX_VALUE: _typing.Final[int] = 9223372036854775807
-    LONG_MIN_VALUE: _typing.Final[int] = -9223372036854775808
+    LONG_MAX_VALUE: typing.Final[int] = 9223372036854775807
+    LONG_MIN_VALUE: typing.Final[int] = -9223372036854775808
 
 
 def _int32_overflow(value: int) -> int:

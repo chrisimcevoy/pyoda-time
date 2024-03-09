@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ..utility import _Preconditions, _private, _sealed
 from ._era import Era
@@ -12,15 +12,15 @@ from ._era_calculator import _EraCalculator
 from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
-@_typing.final
+@typing.final
 @_sealed
 @_private
 class _SingleEraCalculator(_EraCalculator):
     """Implementation of EraCalculator for calendars which only have a single era."""
 
-    __min_year: _typing.Annotated[int, "Set by internal constructor"]
-    __max_year: _typing.Annotated[int, "Set by internal constructor"]
-    __era: _typing.Annotated[Era, "Set by internal constructor"]
+    __min_year: typing.Annotated[int, "Set by internal constructor"]
+    __max_year: typing.Annotated[int, "Set by internal constructor"]
+    __era: typing.Annotated[Era, "Set by internal constructor"]
 
     @classmethod
     def _ctor(cls, *, era: Era, ymd_calculator: _YearMonthDayCalculator) -> _SingleEraCalculator:

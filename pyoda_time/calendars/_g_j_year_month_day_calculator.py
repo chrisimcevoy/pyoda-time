@@ -4,18 +4,18 @@
 
 from __future__ import annotations
 
-import abc as _abc
-import typing as _typing
+import abc
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from ..utility import _towards_zero_division
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
 
-class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
-    _NON_LEAP_DAYS_PER_MONTH: _typing.Final[tuple] = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    _LEAP_DAYS_PER_MONTH: _typing.Final[tuple] = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, abc.ABC):
+    _NON_LEAP_DAYS_PER_MONTH: typing.Final[tuple] = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    _LEAP_DAYS_PER_MONTH: typing.Final[tuple] = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
     @staticmethod
     def __generate_total_days_by_month(*month_lengths: int) -> list[int]:
@@ -24,8 +24,8 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
             ret.append(ret[i] + month_lengths[i])
         return ret
 
-    __NON_LEAP_TOTAL_DAYS_BY_MONTH: _typing.Final[list[int]] = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
-    __LEAP_TOTAL_DAYS_BY_MONTH: _typing.Final[list[int]] = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
+    __NON_LEAP_TOTAL_DAYS_BY_MONTH: typing.Final[list[int]] = __generate_total_days_by_month(*_NON_LEAP_DAYS_PER_MONTH)
+    __LEAP_TOTAL_DAYS_BY_MONTH: typing.Final[list[int]] = __generate_total_days_by_month(*_LEAP_DAYS_PER_MONTH)
 
     def __init__(
         self,
@@ -72,7 +72,7 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
     def _get_days_in_year(self, year: int) -> int:
         return 366 if self._is_leap_year(year) else 365
 
-    @_typing.final
+    @typing.final
     def _get_days_in_month(self, year: int, month: int) -> int:
         # February is awkward
         if month == 2:

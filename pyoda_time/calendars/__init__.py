@@ -2,8 +2,6 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
-
 __all__: list[str] = [
     "CalendarWeekRule",
     "Era",
@@ -14,9 +12,8 @@ __all__: list[str] = [
     "WeekYearRules",
 ]
 
-import enum as _enum
-
 from ._badi_year_month_day_calculator import _BadiYearMonthDayCalculator  # noqa: F401
+from ._calendar_week_rule import CalendarWeekRule
 from ._coptic_year_month_day_calculator import _CopticYearMonthDayCalculator  # noqa: F401
 from ._era import (
     Era,
@@ -44,9 +41,3 @@ from ._um_al_qura_year_month_day_calculator import _UmAlQuraYearMonthDayCalculat
 from ._week_year_rules import WeekYearRules
 from ._year_month_day_calculator import _YearMonthDayCalculator  # noqa: F401
 from ._year_start_cache_entry import _YearStartCacheEntry  # noqa: F401
-
-
-class CalendarWeekRule(_enum.IntEnum):
-    FIRST_DAY = 0
-    FIRST_FULL_WEEK = 1
-    FIRST_FOUR_DAY_WEEK = 2

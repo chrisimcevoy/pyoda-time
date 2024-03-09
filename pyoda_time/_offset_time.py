@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import LocalTime
     from ._offset import Offset
 
@@ -14,8 +14,8 @@ __all__ = ["OffsetTime"]
 
 
 class OffsetTime:
-    __NANOSECONDS_BITS: _typing.Final[int] = 47
-    __NANOSECONDS_MASK: _typing.Final[int] = (1 << __NANOSECONDS_BITS) - 1
+    __NANOSECONDS_BITS: typing.Final[int] = 47
+    __NANOSECONDS_MASK: typing.Final[int] = (1 << __NANOSECONDS_BITS) - 1
 
     def __init__(self, time: LocalTime, offset: Offset) -> None:
         nanosecond_of_day = time.nanosecond_of_day
@@ -23,11 +23,11 @@ class OffsetTime:
         self.__nanoseconds_and_offset = nanosecond_of_day | (offset_seconds << self.__NANOSECONDS_BITS)
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, nanosecond_of_day_zero_offset: int) -> OffsetTime: ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def _ctor(cls, *, nanosecond_of_day: int, offset_seconds: int) -> OffsetTime: ...
 
     @classmethod

@@ -2,20 +2,20 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
+from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ._period_units import PeriodUnits
 from .utility import _Preconditions, _sealed
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from ._period import Period
 
 __all__ = ["PeriodBuilder"]
 
 
-@_typing.final
+@typing.final
 @_sealed
 class PeriodBuilder:
     """A mutable builder class for ``Period`` values.

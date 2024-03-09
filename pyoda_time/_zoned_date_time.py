@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import (
         CalendarSystem,
         DateTimeZone,
@@ -29,13 +29,13 @@ class ZonedDateTime:
         self.__zone = zone
         return self
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, instant: Instant, zone: DateTimeZone) -> None: ...
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, local_date_time: LocalDateTime, zone: DateTimeZone, offset: Offset) -> None: ...
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, instant: Instant, zone: DateTimeZone, calendar: CalendarSystem) -> None: ...
 
     def __init__(

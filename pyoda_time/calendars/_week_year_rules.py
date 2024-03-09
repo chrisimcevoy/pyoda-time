@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 
 if typing.TYPE_CHECKING:
-    from .. import IsoDayOfWeek as _IsoDayOfWeek
+    from .. import IsoDayOfWeek
     from . import CalendarWeekRule, IWeekYearRule
 
 
@@ -40,7 +40,7 @@ class WeekYearRules(metaclass=_WeekYearRulesMeta):
 
     @staticmethod
     def for_min_days_in_first_week(
-        min_days_in_first_week: int, first_day_of_week: _IsoDayOfWeek | None = None
+        min_days_in_first_week: int, first_day_of_week: IsoDayOfWeek | None = None
     ) -> IWeekYearRule:
         from ._simple_week_year_rule import _SimpleWeekYearRule
 
@@ -55,7 +55,7 @@ class WeekYearRules(metaclass=_WeekYearRulesMeta):
         # TODO: We are using IsoDayOfWeek here, whereas Noda Time uses System.DayOfWeek from the bcl.
         #   I *think* it should be ok given that the argument in Noda Time is converted to IsoDayOfWeek.
         calendar_week_rule: CalendarWeekRule,
-        first_day_of_week: _IsoDayOfWeek,
+        first_day_of_week: IsoDayOfWeek,
     ) -> IWeekYearRule:
         from . import CalendarWeekRule
         from ._simple_week_year_rule import _SimpleWeekYearRule

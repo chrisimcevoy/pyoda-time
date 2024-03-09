@@ -4,34 +4,34 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
-    from .._calendar_system import CalendarSystem as _CalendarSystem
-    from .._local_date import LocalDate as _LocalDate
-from .._iso_day_of_week import IsoDayOfWeek as _IsoDayOfWeek
+if typing.TYPE_CHECKING:
+    from .._calendar_system import CalendarSystem
+    from .._local_date import LocalDate
+from .._iso_day_of_week import IsoDayOfWeek
 from ..utility import _Preconditions, _sealed, _towards_zero_division
 from ._hebrew_year_month_day_calculator import _YearMonthDayCalculator
 from ._i_week_year_rule import IWeekYearRule
 
 
 @_sealed
-@_typing.final
+@typing.final
 class _SimpleWeekYearRule(IWeekYearRule):
-    def __init__(self, min_days_in_first_week: int, first_day_of_week: _IsoDayOfWeek, irregular_weeks: bool) -> None:
+    def __init__(self, min_days_in_first_week: int, first_day_of_week: IsoDayOfWeek, irregular_weeks: bool) -> None:
         # TODO: Preconditions.DebugCheckArgumentRange
         _Preconditions._check_argument_range("first_day_of_week", int(first_day_of_week), 1, 7)
-        self.__min_days_in_first_week: _typing.Final[int] = min_days_in_first_week
-        self.__first_day_of_week: _typing.Final[_IsoDayOfWeek] = first_day_of_week
-        self.__irregular_weeks: _typing.Final[bool] = irregular_weeks
+        self.__min_days_in_first_week: typing.Final[int] = min_days_in_first_week
+        self.__first_day_of_week: typing.Final[IsoDayOfWeek] = first_day_of_week
+        self.__irregular_weeks: typing.Final[bool] = irregular_weeks
 
     def get_local_date(
         self,
         week_year: int,
         week_of_week_year: int,
-        day_of_week: _IsoDayOfWeek,
-        calendar: _CalendarSystem | None = None,
-    ) -> _LocalDate:
+        day_of_week: IsoDayOfWeek,
+        calendar: CalendarSystem | None = None,
+    ) -> LocalDate:
         if calendar is None:
             from .. import CalendarSystem
 
@@ -79,7 +79,7 @@ class _SimpleWeekYearRule(IWeekYearRule):
                 raise ValueError("The combination of week_year, week_of_week_year and day_of_week is invalid")
         return ret
 
-    def get_week_of_week_year(self, date: _LocalDate) -> int:
+    def get_week_of_week_year(self, date: LocalDate) -> int:
         year_month_day = date._year_month_day
         year_month_day_calculator = date.calendar._year_month_day_calculator
         # This is a bit inefficient, as we'll be converting forms several times. However, it's
@@ -94,7 +94,7 @@ class _SimpleWeekYearRule(IWeekYearRule):
         zero_based_week = _towards_zero_division(zero_based_day_of_week_year, 7)
         return zero_based_week + 1
 
-    def get_weeks_in_week_year(self, week_year: int, calendar: _CalendarSystem | None = None) -> int:
+    def get_weeks_in_week_year(self, week_year: int, calendar: CalendarSystem | None = None) -> int:
         if calendar is None:
             from .. import CalendarSystem
 
@@ -122,7 +122,7 @@ class _SimpleWeekYearRule(IWeekYearRule):
         # We can have up to "minDaysInFirstWeek - 1" days of the next year, too.
         return _towards_zero_division((days_in_this_year + extra_days_at_start + extra_days_at_end), 7)
 
-    def get_week_year(self, date: _LocalDate) -> int:
+    def get_week_year(self, date: LocalDate) -> int:
         year_month_day = date._year_month_day
         year_month_day_calculator = date.calendar._year_month_day_calculator
         # TODO: unchecked
@@ -153,7 +153,7 @@ class _SimpleWeekYearRule(IWeekYearRule):
         start_of_next_week_year = start_of_week_year + weeks_in_week_year * 7
         return calendar_year if days_since_epoch < start_of_next_week_year else calendar_year + 1
 
-    def __validate_week_year(self, week_year: int, calendar: _CalendarSystem) -> None:
+    def __validate_week_year(self, week_year: int, calendar: CalendarSystem) -> None:
         """Validate that at least one day in the calendar falls in the given week year."""
         if calendar.min_year < week_year < calendar.max_year:
             return

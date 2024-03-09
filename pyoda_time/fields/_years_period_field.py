@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
-    from .._local_date import LocalDate as _LocalDate
+if typing.TYPE_CHECKING:
+    from .._local_date import LocalDate
 
 from ..utility import _Preconditions, _sealed
 from ._i_date_period_field import _IDatePeriodField
@@ -15,7 +15,7 @@ from ._i_date_period_field import _IDatePeriodField
 
 @_sealed
 class _YearsPeriodField(_IDatePeriodField):
-    def add(self, local_date: _LocalDate, value: int) -> _LocalDate:
+    def add(self, local_date: LocalDate, value: int) -> LocalDate:
         from pyoda_time import LocalDate
 
         if value == 0:
@@ -34,7 +34,7 @@ class _YearsPeriodField(_IDatePeriodField):
             )
         )
 
-    def units_between(self, start: _LocalDate, end: _LocalDate) -> int:
+    def units_between(self, start: LocalDate, end: LocalDate) -> int:
         diff: int = end.year - start.year
 
         # If we just add the difference in years to subtrahendInstant, what do we get?
