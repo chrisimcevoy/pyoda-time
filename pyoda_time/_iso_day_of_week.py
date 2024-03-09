@@ -2,12 +2,12 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-import enum as _enum
+from enum import IntEnum
 
 __all__ = ["IsoDayOfWeek"]
 
 
-class IsoDayOfWeek(_enum.IntEnum):
+class IsoDayOfWeek(IntEnum):
     """Equates the days of the week with their numerical value according to ISO-8601."""
 
     NONE = 0

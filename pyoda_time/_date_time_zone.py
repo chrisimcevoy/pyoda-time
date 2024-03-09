@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import abc as _abc
-import functools as _functools
-import typing as _typing
+import abc
+import functools
+import typing
 
 from .utility import _Preconditions
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import Instant, Offset
     from .time_zones import ZoneInterval
 
@@ -18,9 +18,9 @@ if _typing.TYPE_CHECKING:
 __all__ = ["DateTimeZone"]
 
 
-class _DateTimeZoneMeta(_abc.ABCMeta):
+class _DateTimeZoneMeta(abc.ABCMeta):
     @property
-    @_functools.cache
+    @functools.cache
     def utc(cls) -> DateTimeZone:
         """Gets the UTC (Coordinated Universal Time) time zone.
 
@@ -36,12 +36,12 @@ class _DateTimeZoneMeta(_abc.ABCMeta):
         return _FixedDateTimeZone(Offset.zero)
 
 
-class DateTimeZone(_abc.ABC, metaclass=_DateTimeZoneMeta):
+class DateTimeZone(abc.ABC, metaclass=_DateTimeZoneMeta):
     """Represents a time zone - a mapping between UTC and local time.
     A time zone maps UTC instants to local times - or, equivalently, to the offset from UTC at any particular instant.
     """
 
-    _UTC_ID: _typing.Final[str] = "UTC"
+    _UTC_ID: typing.Final[str] = "UTC"
 
     def __init__(self, id_: str, is_fixed: bool, min_offset: Offset, max_offset: Offset) -> None:
         """Initializes a new instance of the DateTimeZone class.
@@ -90,7 +90,7 @@ class DateTimeZone(_abc.ABC, metaclass=_DateTimeZoneMeta):
     def get_utc_offset(self, instant: Instant) -> Offset:
         return self.get_zone_interval(instant).wall_offset
 
-    @_abc.abstractmethod
+    @abc.abstractmethod
     def get_zone_interval(self, instant: Instant) -> ZoneInterval:
         raise NotImplementedError
 

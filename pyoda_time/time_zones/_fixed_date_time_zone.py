@@ -2,11 +2,11 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
+from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .. import Instant, Offset
     from . import ZoneInterval
 
@@ -15,7 +15,7 @@ from ..utility import _sealed
 
 
 @_sealed
-@_typing.final
+@typing.final
 class _FixedDateTimeZone(DateTimeZone):
     def __init__(self, offset: Offset, id_: str | None = None, name: str | None = None) -> None:
         from .. import Instant, Offset

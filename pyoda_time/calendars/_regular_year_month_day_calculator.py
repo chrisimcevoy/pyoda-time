@@ -4,16 +4,16 @@
 
 from __future__ import annotations
 
-import abc as _abc
-import typing as _typing
+import abc
+import typing
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from ..utility import _towards_zero_division
 from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
-class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, _abc.ABC):
+class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, abc.ABC):
     """Subclass of YearMonthDayCalculator for calendars with the following attributes:
     - A fixed number of months
     - Occasional leap years which are always 1 day longer than non-leap years

@@ -2,14 +2,14 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
+from __future__ import annotations
 
 __all__: list[str] = []
 
-import typing as _typing
+import typing
 
 
-def _hash_code_helper(*values: _typing.Hashable) -> int:
+def _hash_code_helper(*values: typing.Hashable) -> int:
     """Provides help with generating hash codes."""
     # In Noda Time, this is a builder pattern struct.
     multiplier = 37

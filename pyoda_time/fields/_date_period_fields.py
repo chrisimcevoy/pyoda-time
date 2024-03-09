@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ._fixed_length_date_period_field import _FixedLengthDatePeriodField
 from ._months_period_field import _MonthsPeriodField
 from ._years_period_field import _YearsPeriodField
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     pass
 
 from ._i_date_period_field import _IDatePeriodField
@@ -19,7 +19,7 @@ from ._i_date_period_field import _IDatePeriodField
 class _DatePeriodFields:
     """All the period fields."""
 
-    _days_field: _typing.Final[_IDatePeriodField] = _FixedLengthDatePeriodField(1)
-    _weeks_field: _typing.Final[_IDatePeriodField] = _FixedLengthDatePeriodField(7)
-    _months_field: _typing.Final[_IDatePeriodField] = _MonthsPeriodField()
-    _years_field: _typing.Final[_IDatePeriodField] = _YearsPeriodField()
+    _days_field: typing.Final[_IDatePeriodField] = _FixedLengthDatePeriodField(1)
+    _weeks_field: typing.Final[_IDatePeriodField] = _FixedLengthDatePeriodField(7)
+    _months_field: typing.Final[_IDatePeriodField] = _MonthsPeriodField()
+    _years_field: typing.Final[_IDatePeriodField] = _YearsPeriodField()

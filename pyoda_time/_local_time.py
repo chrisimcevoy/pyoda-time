@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import functools as _functools
-import typing as _typing
+import functools
+import typing
 
 from ._pyoda_constants import PyodaConstants
 from .utility import _csharp_modulo, _int32_overflow, _Preconditions, _sealed, _towards_zero_division
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from . import LocalDateTime
     from ._local_date import LocalDate
 
@@ -19,7 +19,7 @@ __all__ = ["LocalTime"]
 
 class _LocalTimeMeta(type):
     @property
-    @_functools.cache
+    @functools.cache
     def midnight(self) -> LocalTime:
         """Local time at midnight, i.e. 0 hours, 0 minutes, 0 seconds."""
         return LocalTime(hour=0, minute=0, second=0)
@@ -30,13 +30,13 @@ class _LocalTimeMeta(type):
         return cls.midnight
 
     @property
-    @_functools.cache
+    @functools.cache
     def noon(self) -> LocalTime:
         """Local time at noon, i.e. 12 hours, 0 minutes, 0 seconds."""
         return LocalTime(hour=12, minute=0, second=0)
 
     @property
-    @_functools.cache
+    @functools.cache
     def max_value(cls) -> LocalTime:
         """The maximum value of this type, one nanosecond before midnight.
 
@@ -46,19 +46,19 @@ class _LocalTimeMeta(type):
         return LocalTime._ctor(nanoseconds=PyodaConstants.NANOSECONDS_PER_DAY - 1)
 
 
-@_typing.final
+@typing.final
 @_sealed
 class LocalTime(metaclass=_LocalTimeMeta):
     """LocalTime is an immutable struct representing a time of day, with no reference to a particular calendar, time
     zone or date."""
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, hour: int, minute: int) -> None: ...
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, hour: int, minute: int, second: int) -> None: ...
 
-    @_typing.overload
+    @typing.overload
     def __init__(self, *, hour: int, minute: int, second: int, millisecond: int) -> None: ...
 
     def __init__(self, *, hour: int, minute: int, second: int = 0, millisecond: int = 0):

@@ -2,10 +2,10 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-import enum as _enum
+from enum import IntEnum
 
 
-class _CalendarOrdinal(_enum.IntEnum):
+class _CalendarOrdinal(IntEnum):
     """Enumeration of calendar ordinal values.
 
     Used for converting between a compact integer representation and a calendar system. We use 6 bits to store the

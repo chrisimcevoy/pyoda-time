@@ -2,13 +2,13 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from __future__ import annotations as _annotations
+from __future__ import annotations
 
 __all__: list[str] = []
 
-import typing as _typing
+import typing
 
-_T = _typing.TypeVar("_T")
+_T = typing.TypeVar("_T")
 
 
 class _Preconditions:
@@ -42,7 +42,7 @@ class _Preconditions:
         )
 
     @classmethod
-    def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: _typing.Any) -> None:
+    def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: typing.Any) -> None:
         if not expession:
             if message_args:
                 message = message.format(*message_args)

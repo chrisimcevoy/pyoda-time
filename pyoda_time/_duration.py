@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import datetime as _datetime
-import decimal as _decimal
-import typing as _typing
+import datetime
+import decimal
+import typing
 
 from ._pyoda_constants import PyodaConstants
 from .utility import _csharp_modulo, _Preconditions, _sealed, _TickArithmetic, _towards_zero_division
@@ -57,7 +57,7 @@ class _DurationMeta(type):
         return Duration._ctor(days=1, nano_of_day=0)
 
 
-@_typing.final
+@typing.final
 @_sealed
 class Duration(metaclass=_DurationMeta):
     """Represents a fixed (and calendar-independent) length of time."""
@@ -66,14 +66,14 @@ class Duration(metaclass=_DurationMeta):
     #  `~MaxDays`. However, that range is not sufficiently large for timedelta conversion.
     #  The thinking here is to retain the flavour of the Noda Time implementation, while
     #  accommodating the range of the standard way of representing durations in Python.
-    _MAX_DAYS: _typing.Final[int] = (1 << 30) - 1
-    _MIN_DAYS: _typing.Final[int] = ~_MAX_DAYS
+    _MAX_DAYS: typing.Final[int] = (1 << 30) - 1
+    _MIN_DAYS: typing.Final[int] = ~_MAX_DAYS
 
-    _MIN_NANOSECONDS: _typing.Final[int] = _MIN_DAYS * PyodaConstants.NANOSECONDS_PER_DAY
-    _MAX_NANOSECONDS: _typing.Final[int] = ((_MAX_DAYS + 1) * PyodaConstants.NANOSECONDS_PER_DAY) - 1
+    _MIN_NANOSECONDS: typing.Final[int] = _MIN_DAYS * PyodaConstants.NANOSECONDS_PER_DAY
+    _MAX_NANOSECONDS: typing.Final[int] = ((_MAX_DAYS + 1) * PyodaConstants.NANOSECONDS_PER_DAY) - 1
 
-    _MIN_DECIMAL_NANOSECONDS: _typing.Final[_decimal.Decimal] = _decimal.Decimal(_MIN_NANOSECONDS)
-    _MAX_DECIMAL_NANOSECONDS: _typing.Final[_decimal.Decimal] = _decimal.Decimal(_MAX_NANOSECONDS)
+    _MIN_DECIMAL_NANOSECONDS: typing.Final[decimal.Decimal] = decimal.Decimal(_MIN_NANOSECONDS)
+    _MAX_DECIMAL_NANOSECONDS: typing.Final[decimal.Decimal] = decimal.Decimal(_MAX_NANOSECONDS)
 
     def __init__(self) -> None:
         self.__days = 0
@@ -90,7 +90,7 @@ class Duration(metaclass=_DurationMeta):
         return self
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def __ctor(
         cls,
         *,
@@ -110,7 +110,7 @@ class Duration(metaclass=_DurationMeta):
         ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def __ctor(cls, *, days: int, nano_of_day: int, no_validation: bool) -> Duration:
         """Trusted constructor with no validation.
 
@@ -455,10 +455,10 @@ class Duration(metaclass=_DurationMeta):
         """
         return self - other
 
-    @_typing.overload
+    @typing.overload
     def __truediv__(self, other: int | float) -> Duration: ...
 
-    @_typing.overload
+    @typing.overload
     def __truediv__(self, other: Duration) -> float: ...
 
     def __truediv__(self, other: int | float | Duration) -> Duration | float:
@@ -470,11 +470,11 @@ class Duration(metaclass=_DurationMeta):
         return NotImplemented
 
     @staticmethod
-    @_typing.overload
+    @typing.overload
     def divide(left: Duration, right: int | float) -> Duration: ...
 
     @staticmethod
-    @_typing.overload
+    @typing.overload
     def divide(left: Duration, right: Duration) -> float: ...
 
     @staticmethod
@@ -494,11 +494,11 @@ class Duration(metaclass=_DurationMeta):
         return NotImplemented
 
     @staticmethod
-    @_typing.overload
+    @typing.overload
     def multiply(left: Duration, right: int | float) -> Duration: ...
 
     @staticmethod
-    @_typing.overload
+    @typing.overload
     def multiply(left: int | float, right: Duration) -> Duration: ...
 
     @staticmethod
@@ -795,12 +795,12 @@ class Duration(metaclass=_DurationMeta):
         return Duration._ctor(days=days, nano_of_day=nano_of_day)
 
     @classmethod
-    def _from_nanoseconds(cls, nanoseconds: _decimal.Decimal) -> Duration:
+    def _from_nanoseconds(cls, nanoseconds: decimal.Decimal) -> Duration:
         # TODO: For comparison between min/max decimal nanoseconds (and values near
         #  those limits) to work, we need to make sure that the precision is sufficient
         #  to avoid truncation. This is a bit of a "finger in the air" precision which
         #  may need revisited.
-        with _decimal.localcontext(prec=100):
+        with decimal.localcontext(prec=100):
             if nanoseconds < cls._MIN_DECIMAL_NANOSECONDS or nanoseconds > cls._MAX_DECIMAL_NANOSECONDS:
                 # Note: use the BigInteger value rather than decimal to avoid decimal points in the message.
                 # They're the same values.
@@ -812,12 +812,12 @@ class Duration(metaclass=_DurationMeta):
                 else _towards_zero_division(nanoseconds + 1, PyodaConstants.NANOSECONDS_PER_DAY) - 1
             )
             nano_of_day = _towards_zero_division(
-                nanoseconds - (_decimal.Decimal(days) * PyodaConstants.NANOSECONDS_PER_DAY), 1
+                nanoseconds - (decimal.Decimal(days) * PyodaConstants.NANOSECONDS_PER_DAY), 1
             )
             return cls._ctor(days=days, nano_of_day=nano_of_day)
 
     @classmethod
-    def from_timedelta(cls, time_delta: _datetime.timedelta) -> Duration:
+    def from_timedelta(cls, time_delta: datetime.timedelta) -> Duration:
         """Returns a ``Duration`` that represents the same number of microseconds as the given ``datetime.timedelta``.
 
         :param time_delta: The ``datetime.timedelta`` to convert.
@@ -832,7 +832,7 @@ class Duration(metaclass=_DurationMeta):
             + Duration.from_microseconds(time_delta.microseconds)
         )
 
-    def to_timedelta(self) -> _datetime.timedelta:
+    def to_timedelta(self) -> datetime.timedelta:
         """Returns a ``datetime.timedelta`` that represents the same number of microseconds as this ``Duration``.
 
         If the number of nanoseconds in a duration is not a whole number of microseconds, it will be
@@ -845,7 +845,7 @@ class Duration(metaclass=_DurationMeta):
         :return: A new TimeSpan with the same number of ticks as this Duration.
         """
 
-        return _datetime.timedelta(
+        return datetime.timedelta(
             days=self.__days, microseconds=self.__nano_of_day / PyodaConstants.NANOSECONDS_PER_MICROSECOND
         )
 

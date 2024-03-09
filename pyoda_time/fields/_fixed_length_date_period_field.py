@@ -4,26 +4,26 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from .._year_month_day_calendar import _YearMonthDayCalendar
 
-if _typing.TYPE_CHECKING:
-    from .._local_date import LocalDate as _LocalDate
+if typing.TYPE_CHECKING:
+    from .._local_date import LocalDate
 
 from ..utility import _sealed, _towards_zero_division
 from ._i_date_period_field import _IDatePeriodField
 
 
 @_sealed
-@_typing.final
+@typing.final
 class _FixedLengthDatePeriodField(_IDatePeriodField):
     """Date period field for fixed-length periods (weeks and days)."""
 
     def __init__(self, unit_days: int) -> None:
         self.__unit_days = unit_days
 
-    def add(self, local_date: _LocalDate, value: int) -> _LocalDate:
+    def add(self, local_date: LocalDate, value: int) -> LocalDate:
         from .. import LocalDate
 
         if value == 0:
@@ -68,7 +68,7 @@ class _FixedLengthDatePeriodField(_IDatePeriodField):
         days = local_date._days_since_epoch + days_to_add
         return LocalDate._ctor(days_since_epoch=days, calendar=calendar)
 
-    def units_between(self, start: _LocalDate, end: _LocalDate) -> int:
+    def units_between(self, start: LocalDate, end: LocalDate) -> int:
         from .. import Period
 
         return _towards_zero_division(Period._internal_days_between(start, end), self.__unit_days)

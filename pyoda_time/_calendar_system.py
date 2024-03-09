@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from .calendars import (
     _CopticYearMonthDayCalculator,
@@ -13,7 +13,7 @@ from .calendars import (
     _UmAlQuraYearMonthDayCalculator,
 )
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
 
@@ -23,18 +23,10 @@ from .utility import _csharp_modulo, _Preconditions, _private, _sealed
 
 __all__ = ["CalendarSystem"]
 from .calendars import (
-    Era as _Era,
-)
-from .calendars import (
-    HebrewMonthNumbering as _HebrewMonthNumbering,
-)
-from .calendars import (
-    IslamicEpoch as _IslamicEpoch,
-)
-from .calendars import (
-    IslamicLeapYearPattern as _IslamicLeapYearPattern,
-)
-from .calendars import (
+    Era,
+    HebrewMonthNumbering,
+    IslamicEpoch,
+    IslamicLeapYearPattern,
     _BadiYearMonthDayCalculator,
     _EraCalculator,
     _GJEraCalculator,
@@ -203,7 +195,7 @@ class _CalendarSystemMeta(type):
         return CalendarSystem._for_ordinal(_CalendarOrdinal.UM_AL_QURA)
 
     @property
-    def ids(cls) -> _typing.Iterable[str]:
+    def ids(cls) -> typing.Iterable[str]:
         """Returns the IDs of all calendar systems available within Pyoda Time.
 
         The order of the keys is not guaranteed.
@@ -211,7 +203,7 @@ class _CalendarSystemMeta(type):
         return CalendarSystem._ids()
 
 
-@_typing.final
+@typing.final
 @_private
 @_sealed
 class CalendarSystem(metaclass=_CalendarSystemMeta):
@@ -233,77 +225,77 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
     # IDs and names are separated out (usually with the ID either being the same as the name,
     # or the base ID being the same as a name and then other IDs being formed from it.) The
     # differentiation is only present for clarity.
-    __GREGORIAN_NAME: _typing.Final[str] = "Gregorian"
-    __GREGORIAN_ID: _typing.Final[str] = __GREGORIAN_NAME
+    __GREGORIAN_NAME: typing.Final[str] = "Gregorian"
+    __GREGORIAN_ID: typing.Final[str] = __GREGORIAN_NAME
 
-    __ISO_NAME: _typing.Final[str] = "ISO"
-    __ISO_ID: _typing.Final[str] = __ISO_NAME
+    __ISO_NAME: typing.Final[str] = "ISO"
+    __ISO_ID: typing.Final[str] = __ISO_NAME
 
-    __COPTIC_NAME: _typing.Final[str] = "Coptic"
-    __COPTIC_ID: _typing.Final[str] = __COPTIC_NAME
+    __COPTIC_NAME: typing.Final[str] = "Coptic"
+    __COPTIC_ID: typing.Final[str] = __COPTIC_NAME
 
-    __BADI_NAME: _typing.Final[str] = "Badi"
-    __BADI_ID: _typing.Final[str] = __BADI_NAME
+    __BADI_NAME: typing.Final[str] = "Badi"
+    __BADI_ID: typing.Final[str] = __BADI_NAME
 
-    __JULIAN_NAME: _typing.Final[str] = "Julian"
-    __JULIAN_ID: _typing.Final[str] = __JULIAN_NAME
+    __JULIAN_NAME: typing.Final[str] = "Julian"
+    __JULIAN_ID: typing.Final[str] = __JULIAN_NAME
 
-    __ISLAMIC_NAME: _typing.Final[str] = "Hijri"
-    __ISLAMIC_ID_BASE: _typing.Final[str] = __ISLAMIC_NAME
+    __ISLAMIC_NAME: typing.Final[str] = "Hijri"
+    __ISLAMIC_ID_BASE: typing.Final[str] = __ISLAMIC_NAME
 
     @staticmethod
-    def _get_islamic_id(base: str, leap_year_pattern: _IslamicLeapYearPattern, epoch: _IslamicEpoch) -> str:
+    def _get_islamic_id(base: str, leap_year_pattern: IslamicLeapYearPattern, epoch: IslamicEpoch) -> str:
         def to_camel_case(s: str) -> str:
             return "".join(x.capitalize() for x in s.split("_"))
 
         return f"{base} {to_camel_case(epoch.name)}-{to_camel_case(leap_year_pattern.name)}"
 
-    __PERSIAN_NAME: _typing.Final[str] = "Persian"
-    __PERSIAN_ID_BASE: _typing.Final[str] = __PERSIAN_NAME
-    __PERSIAN_SIMPLE_ID: _typing.Final[str] = __PERSIAN_ID_BASE + " Simple"
-    __PERSIAN_ASTRONOMICAL_ID: _typing.Final[str] = __PERSIAN_ID_BASE + " Algorithmic"
-    __PERSIAN_ARITHMETIC_ID: _typing.Final[str] = __PERSIAN_ID_BASE + " Arithmetic"
+    __PERSIAN_NAME: typing.Final[str] = "Persian"
+    __PERSIAN_ID_BASE: typing.Final[str] = __PERSIAN_NAME
+    __PERSIAN_SIMPLE_ID: typing.Final[str] = __PERSIAN_ID_BASE + " Simple"
+    __PERSIAN_ASTRONOMICAL_ID: typing.Final[str] = __PERSIAN_ID_BASE + " Algorithmic"
+    __PERSIAN_ARITHMETIC_ID: typing.Final[str] = __PERSIAN_ID_BASE + " Arithmetic"
 
-    __HEBREW_NAME: _typing.Final[str] = "Hebrew"
-    __HEBREW_ID_BASE: _typing.Final[str] = __HEBREW_NAME
-    __HEBREW_CIVIL_ID: _typing.Final[str] = __HEBREW_ID_BASE + " Civil"
-    __HEBREW_SCRIPTURAL_ID: _typing.Final[str] = __HEBREW_ID_BASE + " Scriptural"
+    __HEBREW_NAME: typing.Final[str] = "Hebrew"
+    __HEBREW_ID_BASE: typing.Final[str] = __HEBREW_NAME
+    __HEBREW_CIVIL_ID: typing.Final[str] = __HEBREW_ID_BASE + " Civil"
+    __HEBREW_SCRIPTURAL_ID: typing.Final[str] = __HEBREW_ID_BASE + " Scriptural"
 
-    __UM_AL_QURA_NAME: _typing.Final[str] = "Um Al Qura"
-    __UM_AL_QURA_ID: _typing.Final[str] = __UM_AL_QURA_NAME
+    __UM_AL_QURA_NAME: typing.Final[str] = "Um Al Qura"
+    __UM_AL_QURA_ID: typing.Final[str] = __UM_AL_QURA_NAME
 
     # While we could implement some of these as auto-props, it probably adds more confusion than convenience.
-    __CALENDAR_BY_ORDINAL: _typing.Final[dict[_CalendarOrdinal, CalendarSystem]] = {}
+    __CALENDAR_BY_ORDINAL: typing.Final[dict[_CalendarOrdinal, CalendarSystem]] = {}
 
-    __ID_ORDINAL_MAP: _typing.Final[dict[str, _CalendarOrdinal]] = {
+    __ID_ORDINAL_MAP: typing.Final[dict[str, _CalendarOrdinal]] = {
         __BADI_ID: _CalendarOrdinal.BADI,
         __COPTIC_ID: _CalendarOrdinal.COPTIC,
         __GREGORIAN_ID: _CalendarOrdinal.GREGORIAN,
         __HEBREW_CIVIL_ID: _CalendarOrdinal.HEBREW_CIVIL,
         __HEBREW_SCRIPTURAL_ID: _CalendarOrdinal.HEBREW_SCRIPTURAL,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE15, _IslamicEpoch.CIVIL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.BASE15, IslamicEpoch.CIVIL
         ): _CalendarOrdinal.ISLAMIC_CIVIL_BASE15,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE15, _IslamicEpoch.ASTRONOMICAL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.BASE15, IslamicEpoch.ASTRONOMICAL
         ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE15,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE16, _IslamicEpoch.CIVIL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.BASE16, IslamicEpoch.CIVIL
         ): _CalendarOrdinal.ISLAMIC_CIVIL_BASE16,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.BASE16, _IslamicEpoch.ASTRONOMICAL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.BASE16, IslamicEpoch.ASTRONOMICAL
         ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.INDIAN, _IslamicEpoch.CIVIL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.INDIAN, IslamicEpoch.CIVIL
         ): _CalendarOrdinal.ISLAMIC_CIVIL_INDIAN,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.INDIAN, _IslamicEpoch.ASTRONOMICAL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.INDIAN, IslamicEpoch.ASTRONOMICAL
         ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_INDIAN,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.CIVIL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.HABASH_AL_HASIB, IslamicEpoch.CIVIL
         ): _CalendarOrdinal.ISLAMIC_CIVIL_HABASH_AL_HASIB,
         _get_islamic_id(
-            __ISLAMIC_ID_BASE, _IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.ASTRONOMICAL
+            __ISLAMIC_ID_BASE, IslamicLeapYearPattern.HABASH_AL_HASIB, IslamicEpoch.ASTRONOMICAL
         ): _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_HABASH_AL_HASIB,
         __ISO_ID: _CalendarOrdinal.ISO,
         __JULIAN_ID: _CalendarOrdinal.JULIAN,
@@ -348,7 +340,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         return cls._for_ordinal_uncached(ordinal)
 
     @classmethod
-    def _ids(cls) -> _typing.Iterable[str]:
+    def _ids(cls) -> typing.Iterable[str]:
         """Returns an iterable of all valid IDs.
 
         The public static property is implemented in the metaclass. This classmethod just exists to expose the keys of
@@ -357,50 +349,50 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         yield from cls.__ID_ORDINAL_MAP.keys()
 
     @classmethod
-    def get_hebrew_calendar(cls, month_numbering: _HebrewMonthNumbering) -> CalendarSystem:
+    def get_hebrew_calendar(cls, month_numbering: HebrewMonthNumbering) -> CalendarSystem:
         _Preconditions._check_argument_range("month_numbering", int(month_numbering), 1, 2)
         match month_numbering:
-            case _HebrewMonthNumbering.CIVIL:
+            case HebrewMonthNumbering.CIVIL:
                 return CalendarSystem.__ctor(
                     ordinal=_CalendarOrdinal.HEBREW_CIVIL,
                     id_=cls.__HEBREW_CIVIL_ID,
                     name=cls.__HEBREW_NAME,
                     year_month_day_calculator=_HebrewYearMonthDayCalculator(month_numbering),
-                    single_era=_Era.anno_mundi,
+                    single_era=Era.anno_mundi,
                 )
-            case _HebrewMonthNumbering.SCRIPTURAL:
+            case HebrewMonthNumbering.SCRIPTURAL:
                 return CalendarSystem.__ctor(
                     ordinal=_CalendarOrdinal.HEBREW_SCRIPTURAL,
                     id_=cls.__HEBREW_SCRIPTURAL_ID,
                     name=cls.__HEBREW_NAME,
                     year_month_day_calculator=_HebrewYearMonthDayCalculator(month_numbering),
-                    single_era=_Era.anno_mundi,
+                    single_era=Era.anno_mundi,
                 )
             case _:
                 raise ValueError(f"Unknown HebrewMonthNumbering: {month_numbering}")
 
     @classmethod
-    def get_islamic_calendar(cls, leap_year_pattern: _IslamicLeapYearPattern, epoch: _IslamicEpoch) -> CalendarSystem:
+    def get_islamic_calendar(cls, leap_year_pattern: IslamicLeapYearPattern, epoch: IslamicEpoch) -> CalendarSystem:
         _Preconditions._check_argument_range("leap_year_pattern", int(leap_year_pattern), 1, 4)
         _Preconditions._check_argument_range("epoch", int(epoch), 1, 2)
         match (epoch, leap_year_pattern):
             # Civil
-            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.BASE15):
+            case (IslamicEpoch.CIVIL, IslamicLeapYearPattern.BASE15):
                 ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_BASE15
-            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.BASE16):
+            case (IslamicEpoch.CIVIL, IslamicLeapYearPattern.BASE16):
                 ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_BASE16
-            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.INDIAN):
+            case (IslamicEpoch.CIVIL, IslamicLeapYearPattern.INDIAN):
                 ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_INDIAN
-            case (_IslamicEpoch.CIVIL, _IslamicLeapYearPattern.HABASH_AL_HASIB):
+            case (IslamicEpoch.CIVIL, IslamicLeapYearPattern.HABASH_AL_HASIB):
                 ordinal = _CalendarOrdinal.ISLAMIC_CIVIL_HABASH_AL_HASIB
             # Astronomical
-            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.BASE15):
+            case (IslamicEpoch.ASTRONOMICAL, IslamicLeapYearPattern.BASE15):
                 ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE15
-            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.BASE16):
+            case (IslamicEpoch.ASTRONOMICAL, IslamicLeapYearPattern.BASE16):
                 ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16
-            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.INDIAN):
+            case (IslamicEpoch.ASTRONOMICAL, IslamicLeapYearPattern.INDIAN):
                 ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_INDIAN
-            case (_IslamicEpoch.ASTRONOMICAL, _IslamicLeapYearPattern.HABASH_AL_HASIB):
+            case (IslamicEpoch.ASTRONOMICAL, IslamicLeapYearPattern.HABASH_AL_HASIB):
                 ordinal = _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_HABASH_AL_HASIB
             case _:
                 raise KeyError(
@@ -414,23 +406,23 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
             id_=cls._get_islamic_id(cls.__ISLAMIC_ID_BASE, leap_year_pattern=leap_year_pattern, epoch=epoch),
             name=cls.__ISLAMIC_NAME,
             year_month_day_calculator=calculator,
-            single_era=_Era.anno_hegirae,
+            single_era=Era.anno_hegirae,
         )
 
     # endregion
 
-    __ordinal: _typing.Annotated[_CalendarOrdinal, "Set by private constructor"]
-    __id: _typing.Annotated[str, "Set by private constructor"]
-    __name: _typing.Annotated[str, "Set by private constructor"]
-    __year_month_day_calculator: _typing.Annotated[_YearMonthDayCalculator, "Set by private constructor"]
-    __era_calculator: _typing.Annotated[_EraCalculator, "Set by private constructor"]
-    __min_year: _typing.Annotated[int, "Set by private constructor"]
-    __max_year: _typing.Annotated[int, "Set by private constructor"]
-    __min_days: _typing.Annotated[int, "Set by private constructor"]
-    __max_days: _typing.Annotated[int, "Set by private constructor"]
+    __ordinal: typing.Annotated[_CalendarOrdinal, "Set by private constructor"]
+    __id: typing.Annotated[str, "Set by private constructor"]
+    __name: typing.Annotated[str, "Set by private constructor"]
+    __year_month_day_calculator: typing.Annotated[_YearMonthDayCalculator, "Set by private constructor"]
+    __era_calculator: typing.Annotated[_EraCalculator, "Set by private constructor"]
+    __min_year: typing.Annotated[int, "Set by private constructor"]
+    __max_year: typing.Annotated[int, "Set by private constructor"]
+    __min_days: typing.Annotated[int, "Set by private constructor"]
+    __max_days: typing.Annotated[int, "Set by private constructor"]
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def __ctor(
         cls,
         *,
@@ -442,7 +434,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
     ) -> CalendarSystem: ...
 
     @classmethod
-    @_typing.overload
+    @typing.overload
     def __ctor(
         cls,
         *,
@@ -450,7 +442,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         id_: str,
         name: str,
         year_month_day_calculator: _YearMonthDayCalculator,
-        single_era: _Era,
+        single_era: Era,
     ) -> CalendarSystem: ...
 
     @classmethod
@@ -462,7 +454,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         name: str,
         year_month_day_calculator: _YearMonthDayCalculator,
         era_calculator: _EraCalculator | None = None,
-        single_era: _Era | None = None,
+        single_era: Era | None = None,
     ) -> CalendarSystem:
         """Private initialiser which emulates the two private constructors on the corresponding Noda Time class."""
         if ordinal in cls.__CALENDAR_BY_ORDINAL:
@@ -526,11 +518,11 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
 
     # region Era-based members
 
-    def eras(self) -> _typing.Iterable[_Era]:
+    def eras(self) -> typing.Iterable[Era]:
         """Gets a read-only iterable of eras used in this calendar system."""
         yield from self.__era_calculator._eras
 
-    def get_absolute_year(self, year_of_era: int, era: _Era) -> int:
+    def get_absolute_year(self, year_of_era: int, era: Era) -> int:
         """Returns the "absolute year" (the one used throughout most of the API, without respect to eras) from a year-
         of-era and an era.
 
@@ -545,7 +537,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         """
         return self.__era_calculator._get_absolute_year(year_of_era, era)
 
-    def get_max_year_of_era(self, era: _Era) -> int:
+    def get_max_year_of_era(self, era: Era) -> int:
         """Returns the maximum valid year-of-era in the given era.
 
         Note that depending on the calendar system, it's possible that only part of the returned year falls within the
@@ -558,7 +550,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         """
         return self.__era_calculator._get_max_year_of_era(era)
 
-    def get_min_year_of_era(self, era: _Era) -> int:
+    def get_min_year_of_era(self, era: Era) -> int:
         """Returns the minimum valid year-of-era in the given era.
 
         Note that depending on the calendar system, it's possible that only part of the returned year falls within the
@@ -667,7 +659,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         # TODO: _Preconditions._debug_check_argument_range()
         return self.__era_calculator._get_year_of_era(absolute_year)
 
-    def _get_era(self, absolute_year: int) -> _Era:
+    def _get_era(self, absolute_year: int) -> Era:
         # TODO: _Preconditions._debug_check_argument_range()
         return self.__era_calculator._get_era(absolute_year)
 
@@ -689,7 +681,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__BADI_ID,
                     name=cls.__BADI_NAME,
                     year_month_day_calculator=_BadiYearMonthDayCalculator(),
-                    single_era=_Era.bahai,
+                    single_era=Era.bahai,
                 )
             case _CalendarOrdinal.COPTIC:
                 return cls.__ctor(
@@ -697,7 +689,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__COPTIC_ID,
                     name=cls.__COPTIC_NAME,
                     year_month_day_calculator=_CopticYearMonthDayCalculator(),
-                    single_era=_Era.anno_martyrum,
+                    single_era=Era.anno_martyrum,
                 )
             case _CalendarOrdinal.GREGORIAN:
                 return cls.__ctor(
@@ -708,25 +700,25 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     era_calculator=cls.iso.__era_calculator,
                 )
             case _CalendarOrdinal.HEBREW_CIVIL:
-                return cls.get_hebrew_calendar(_HebrewMonthNumbering.CIVIL)
+                return cls.get_hebrew_calendar(HebrewMonthNumbering.CIVIL)
             case _CalendarOrdinal.HEBREW_SCRIPTURAL:
-                return cls.get_hebrew_calendar(_HebrewMonthNumbering.SCRIPTURAL)
+                return cls.get_hebrew_calendar(HebrewMonthNumbering.SCRIPTURAL)
             case _CalendarOrdinal.ISLAMIC_CIVIL_BASE15:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE15, _IslamicEpoch.CIVIL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.BASE15, IslamicEpoch.CIVIL)
             case _CalendarOrdinal.ISLAMIC_CIVIL_BASE16:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE16, _IslamicEpoch.CIVIL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.BASE16, IslamicEpoch.CIVIL)
             case _CalendarOrdinal.ISLAMIC_CIVIL_INDIAN:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.INDIAN, _IslamicEpoch.CIVIL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.INDIAN, IslamicEpoch.CIVIL)
             case _CalendarOrdinal.ISLAMIC_CIVIL_HABASH_AL_HASIB:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.CIVIL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.HABASH_AL_HASIB, IslamicEpoch.CIVIL)
             case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE15:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE15, _IslamicEpoch.ASTRONOMICAL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.BASE15, IslamicEpoch.ASTRONOMICAL)
             case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_BASE16:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.BASE16, _IslamicEpoch.ASTRONOMICAL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.BASE16, IslamicEpoch.ASTRONOMICAL)
             case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_INDIAN:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.INDIAN, _IslamicEpoch.ASTRONOMICAL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.INDIAN, IslamicEpoch.ASTRONOMICAL)
             case _CalendarOrdinal.ISLAMIC_ASTRONOMICAL_HABASH_AL_HASIB:
-                return cls.get_islamic_calendar(_IslamicLeapYearPattern.HABASH_AL_HASIB, _IslamicEpoch.ASTRONOMICAL)
+                return cls.get_islamic_calendar(IslamicLeapYearPattern.HABASH_AL_HASIB, IslamicEpoch.ASTRONOMICAL)
             case _CalendarOrdinal.ISO:
                 gregorian_calculator = _GregorianYearMonthDayCalculator()
                 gregorian_era_calculator = _GJEraCalculator(gregorian_calculator)
@@ -752,7 +744,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__PERSIAN_ARITHMETIC_ID,
                     name=cls.__PERSIAN_NAME,
                     year_month_day_calculator=_PersianYearMonthDayCalculator.Arithmetic(),
-                    single_era=_Era.anno_persico,
+                    single_era=Era.anno_persico,
                 )
             case _CalendarOrdinal.PERSIAN_ASTRONOMICAL:
                 return cls.__ctor(
@@ -760,7 +752,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__PERSIAN_ASTRONOMICAL_ID,
                     name=cls.__PERSIAN_NAME,
                     year_month_day_calculator=_PersianYearMonthDayCalculator.Astronomical(),
-                    single_era=_Era.anno_persico,
+                    single_era=Era.anno_persico,
                 )
             case _CalendarOrdinal.PERSIAN_SIMPLE:
                 return cls.__ctor(
@@ -768,7 +760,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__PERSIAN_SIMPLE_ID,
                     name=cls.__PERSIAN_NAME,
                     year_month_day_calculator=_PersianYearMonthDayCalculator.Simple(),
-                    single_era=_Era.anno_persico,
+                    single_era=Era.anno_persico,
                 )
             case _CalendarOrdinal.UM_AL_QURA:
                 return cls.__ctor(
@@ -776,7 +768,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                     id_=cls.__UM_AL_QURA_ID,
                     name=cls.__UM_AL_QURA_NAME,
                     year_month_day_calculator=_UmAlQuraYearMonthDayCalculator(),
-                    single_era=_Era.anno_hegirae,
+                    single_era=Era.anno_hegirae,
                 )
             case _:
                 raise RuntimeError(

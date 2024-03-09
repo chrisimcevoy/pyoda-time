@@ -4,18 +4,18 @@
 
 from __future__ import annotations
 
-import abc as _abc
-import base64 as _base64
-import typing as _typing
+import abc
+import base64
+import typing
 
 from ..utility import _csharp_modulo, _towards_zero_division
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 
 
-class _PersianYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
+class _PersianYearMonthDayCalculator(_RegularYearMonthDayCalculator, abc.ABC):
     """Base class for the three variants of the Persian (Solar Hijri) calendar.
 
     Concrete subclasses are nested to allow different start dates and leap year calculations.
@@ -24,13 +24,13 @@ class _PersianYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
     IsLeapYear in subclasses uses no instance fields.
     """
 
-    __DAYS_PER_NON_LEAP_YEAR: _typing.Final[int] = (31 * 6) + (30 * 5) + 29
-    __DAYS_PER_LEAP_YEAR: _typing.Final[int] = __DAYS_PER_NON_LEAP_YEAR + 1
+    __DAYS_PER_NON_LEAP_YEAR: typing.Final[int] = (31 * 6) + (30 * 5) + 29
+    __DAYS_PER_LEAP_YEAR: typing.Final[int] = __DAYS_PER_NON_LEAP_YEAR + 1
     # Approximation; it'll be pretty close in all variants.
-    __AVERAGE_DAYS_PER_10_YEARS: _typing.Final[int] = _towards_zero_division(
+    __AVERAGE_DAYS_PER_10_YEARS: typing.Final[int] = _towards_zero_division(
         (__DAYS_PER_NON_LEAP_YEAR * 25 + __DAYS_PER_LEAP_YEAR * 8) * 10, 33
     )
-    _MAX_PERSIAN_YEAR: _typing.Final[int] = 9377
+    _MAX_PERSIAN_YEAR: typing.Final[int] = 9377
 
     @staticmethod
     def __generate_total_days_by_month() -> list[int]:
@@ -50,7 +50,7 @@ class _PersianYearMonthDayCalculator(_RegularYearMonthDayCalculator, _abc.ABC):
 
     def __init__(self, days_at_start_of_year_1: int) -> None:
         super().__init__(1, self._MAX_PERSIAN_YEAR, 12, self.__AVERAGE_DAYS_PER_10_YEARS, days_at_start_of_year_1)
-        self.__start_of_year_in_days_cache: _typing.Final[list[int]] = []
+        self.__start_of_year_in_days_cache: typing.Final[list[int]] = []
         start_of_year = self._days_at_start_of_year_1 - self._get_days_in_year(0)
         for year in range(0, self._max_year + 2):
             self.__start_of_year_in_days_cache.append(start_of_year)
@@ -117,13 +117,13 @@ class _PersianSimpleYearMonthDayCalculator(_PersianYearMonthDayCalculator):
     This corresponds to System.Globalization.PersianCalendar before .NET 4.6.
     """
 
-    __LEAP_YEAR_PATTERN_BITS: _typing.Final[int] = (
+    __LEAP_YEAR_PATTERN_BITS: typing.Final[int] = (
         (1 << 1) | (1 << 5) | (1 << 9) | (1 << 13) | (1 << 17) | (1 << 22) | (1 << 26) | (1 << 30)
     )
-    __LEAP_YEAR_CYCLE_LENGTH: _typing.Final[int] = 33
+    __LEAP_YEAR_CYCLE_LENGTH: typing.Final[int] = 33
 
     # The ticks for the epoch of March 21st 622CE.
-    __DAYS_AT_START_OF_YEAR_1_CONSTANT: _typing.Final[int] = -492268
+    __DAYS_AT_START_OF_YEAR_1_CONSTANT: typing.Final[int] = -492268
 
     def __init__(self) -> None:
         super().__init__(self.__DAYS_AT_START_OF_YEAR_1_CONSTANT)
@@ -158,7 +158,7 @@ class _PersianAstronomicalYearMonthDayCalculator(_PersianYearMonthDayCalculator)
     """Persian calendar based on stored BCL 4.6 information (avoids complex arithmetic for midday in Tehran)."""
 
     # Ugly, but the simplest way of embedding a big chunk of binary data...
-    __astronomical_leap_year_bits: bytes = _base64.b64decode(
+    __astronomical_leap_year_bits: bytes = base64.b64decode(
         "ICIiIkJERESEiIiICBEREREiIiJCREREhIiIiAgRERERIiIiIkRERISIiIiIEBERESEiIiJEREREiIiI"
         + "iBAREREhIiIiQkRERISIiIgIERERESIiIkJERESEiIiICBEREREiIiIiRERERIiIiIgQERERISIiIkJE"
         + "RESEiIiICBEREREiIiIiREREhIiIiAgRERERISIiIkRERESIiIiIEBERESEiIiJCREREhIiIiAgRERER"

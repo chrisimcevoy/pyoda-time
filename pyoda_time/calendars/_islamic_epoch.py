@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-import enum as _enum
+import enum
 
 
-class IslamicEpoch(_enum.IntEnum):
+class IslamicEpoch(enum.IntEnum):
     """The epoch to use when constructing an Islamic calendar.
 
     The Islamic, or Hijri, calendar can either be constructed starting on July 15th 622CE (in the Julian calendar) or on

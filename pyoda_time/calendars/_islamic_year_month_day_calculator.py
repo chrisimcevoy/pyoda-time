@@ -4,45 +4,45 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
 from ..utility import _csharp_modulo, _sealed, _towards_zero_division
 from ._islamic_epoch import IslamicEpoch
 from ._islamic_leap_year_pattern import IslamicLeapYearPattern
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
-if _typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 
 
 @_sealed
 class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
     # Days in a pair of months, in days.
-    __MONTH_PAIR_LENGTH: _typing.Final[int] = 59
+    __MONTH_PAIR_LENGTH: typing.Final[int] = 59
 
     # The length of a long month, in days.
-    __LONG_MONTH_LENGTH: _typing.Final[int] = 30
+    __LONG_MONTH_LENGTH: typing.Final[int] = 30
 
     # The length of a short month, in days.
-    __SHORT_MONTH_LENGTH: _typing.Final[int] = 29
+    __SHORT_MONTH_LENGTH: typing.Final[int] = 29
 
     # The typical number of days in 10 years.
-    __AVERAGE_DAYS_PER_10_YEARS: _typing.Final[int] = 3544  # Ideally 354.36667 per year
+    __AVERAGE_DAYS_PER_10_YEARS: typing.Final[int] = 3544  # Ideally 354.36667 per year
 
     # The number of days in a non-leap year.
-    __DAYS_PER_NON_LEAP_YEAR: _typing.Final[int] = 354
+    __DAYS_PER_NON_LEAP_YEAR: typing.Final[int] = 354
 
     # The number of days in a leap year.
-    __DAYS_PER_LEAP_YEAR: _typing.Final[int] = 355
+    __DAYS_PER_LEAP_YEAR: typing.Final[int] = 355
 
     # The days for the civil (Friday) epoch of July 16th 622CE.
-    __DAYS_AT_CIVIL_EPOCH: _typing.Final[int] = -492148
+    __DAYS_AT_CIVIL_EPOCH: typing.Final[int] = -492148
 
     # The days for the civil (Thursday) epoch of July 15th 622CE.
-    __DAYS_AT_ASTRONOMICAL_EPOCH: _typing.Final[int] = __DAYS_AT_CIVIL_EPOCH - 1
+    __DAYS_AT_ASTRONOMICAL_EPOCH: typing.Final[int] = __DAYS_AT_CIVIL_EPOCH - 1
 
     # The length of the cycle of two leap years.
-    __LEAP_YEAR_CYCLE_LENGTH: _typing.Final[int] = 30
+    __LEAP_YEAR_CYCLE_LENGTH: typing.Final[int] = 30
 
     # The number of days in a leap cycle.
     __DAYS_PER_LEAP_CYCLE = 19 * __DAYS_PER_NON_LEAP_YEAR + 11 * __DAYS_PER_LEAP_YEAR
@@ -50,7 +50,7 @@ class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
     @staticmethod
     def __generate_total_days_by_month(
         long_month_length: int, short_month_length: int
-    ) -> _typing.Generator[int, _typing.Any, None]:
+    ) -> typing.Generator[int, typing.Any, None]:
         days = 0
         for i in range(1, 13):
             yield days
@@ -58,7 +58,7 @@ class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
             days += days_in_month
 
     # The number of days preceding the 1-indexed month - so [0, 0, 30, 59, ...]
-    __TOTAL_DAYS_BY_MONTH: _typing.Final[list[int]] = [
+    __TOTAL_DAYS_BY_MONTH: typing.Final[list[int]] = [
         # Here, the month number is 1-based, so odd months are long.
         # This doesn't take account of leap years, but that doesn't matter - because
         # it's not used on the last iteration, and leap years only affect the final month
@@ -71,7 +71,7 @@ class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
         super().__init__(1, 9665, 12, self.__AVERAGE_DAYS_PER_10_YEARS, self.__get_year_10_days(epoch))
 
         # The pattern of leap years within a cycle, one bit per year, for this calendar.
-        self.__leap_year_pattern_bits: _typing.Final[int] = self.__get_leap_year_pattern_bits(leap_year_pattern)
+        self.__leap_year_pattern_bits: typing.Final[int] = self.__get_leap_year_pattern_bits(leap_year_pattern)
 
     def _get_days_from_start_of_year_to_start_of_month(self, year: int, month: int) -> int:
         # The number of days at the *start* of a month isn't affected by

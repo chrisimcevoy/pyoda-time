@@ -4,8 +4,8 @@
 
 from __future__ import annotations
 
-import functools as _functools
-import typing as _typing
+import functools
+import typing
 
 from ..utility import _private, _sealed
 
@@ -83,7 +83,7 @@ class _EraMeta(type):
         return Era._ctor("BE", "Eras_Bahai")
 
 
-@_typing.final
+@typing.final
 @_private
 @_sealed
 class Era(metaclass=_EraMeta):
@@ -106,7 +106,7 @@ class Era(metaclass=_EraMeta):
     __resource_identifier: str
 
     @classmethod
-    @_functools.cache
+    @functools.cache
     def _ctor(cls, name: str, resource_identifier: str) -> Era:
         """Internal constructor implementation.
 

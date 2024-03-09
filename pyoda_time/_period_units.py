@@ -4,12 +4,12 @@
 
 from __future__ import annotations
 
-import enum as _enum
+import enum
 
 __all__ = ["PeriodUnits"]
 
 
-class PeriodUnits(_enum.Flag):
+class PeriodUnits(enum.Flag):
     """The units within a ``Period``.
 
     When a period is created to find the difference between two local values,

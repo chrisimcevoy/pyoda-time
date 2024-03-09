@@ -4,19 +4,19 @@
 
 from __future__ import annotations
 
-import typing as _typing
+import typing
 
-if _typing.TYPE_CHECKING:
-    from .._local_date import LocalDate as _LocalDate
+if typing.TYPE_CHECKING:
+    from .._local_date import LocalDate
 
 from ..utility import _sealed
 from ._i_date_period_field import _IDatePeriodField
 
 
 @_sealed
-@_typing.final
+@typing.final
 class _MonthsPeriodField(_IDatePeriodField):
-    def add(self, local_date: _LocalDate, value: int) -> _LocalDate:
+    def add(self, local_date: LocalDate, value: int) -> LocalDate:
         from pyoda_time import LocalDate
 
         calendar = local_date.calendar
@@ -24,5 +24,5 @@ class _MonthsPeriodField(_IDatePeriodField):
         year_month_day = calculator._add_months(local_date._year_month_day, value)
         return LocalDate._ctor(year_month_day_calendar=year_month_day._with_calendar(calendar))
 
-    def units_between(self, start: _LocalDate, end: _LocalDate) -> int:
+    def units_between(self, start: LocalDate, end: LocalDate) -> int:
         return start.calendar._year_month_day_calculator._months_between(start._year_month_day, end._year_month_day)
