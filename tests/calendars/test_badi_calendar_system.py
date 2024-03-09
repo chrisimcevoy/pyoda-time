@@ -8,7 +8,16 @@ from typing import Final
 
 import pytest
 
-from pyoda_time import CalendarSystem, DateAdjusters, IsoDayOfWeek, LocalDate
+from pyoda_time import (
+    CalendarSystem,
+    DateAdjusters,
+    DateTimeZone,
+    IsoDayOfWeek,
+    LocalDate,
+    Period,
+    PeriodUnits,
+    PyodaConstants,
+)
 from pyoda_time.calendars import Era, _BadiYearMonthDayCalculator
 from pyoda_time.utility import _Preconditions
 
@@ -23,7 +32,13 @@ class TestBadiCalendarSystem:
 
     # TODO: def test_badi_epoch(self) -> None: [requires LocalDatePattern.bclsupport]
 
-    # TODO: def test_unix_epoch(self) -> None: [requires DateTimeZone.utc]
+    def test_unix_epoch(self) -> None:
+        badi: CalendarSystem = CalendarSystem.badi
+        unix_epoch_in_badi_calendar: LocalDate = PyodaConstants.UNIX_EPOCH.in_zone(
+            DateTimeZone.utc, badi
+        ).local_date_time.date
+        expected: LocalDate = self.__create_badi_date(126, 16, 2)
+        assert unix_epoch_in_badi_calendar == expected
 
     def test_sample_date(self) -> None:
         badi_calendar: CalendarSystem = CalendarSystem.badi
@@ -354,7 +369,151 @@ class TestBadiCalendarSystem:
         with pytest.raises(ValueError):
             self.__create_badi_date(year, month, day)
 
-    # TODO: Period-based tests
+    # Period-related tests
+
+    @property
+    def __test_date_1_167_5_15(self) -> LocalDate:
+        return self.__create_badi_date(167, 5, 15)
+
+    @property
+    def __test_date_1_167_6_7(self) -> LocalDate:
+        return self.__create_badi_date(167, 6, 7)
+
+    @property
+    def __test_date_2_167_ayyam_4(self) -> LocalDate:
+        return self.__create_badi_date(167, self.__AYYAMI_HA_MONTH, 4)
+
+    @property
+    def __test_date_3_168_ayyam_5(self) -> LocalDate:
+        return self.__create_badi_date(168, self.__AYYAMI_HA_MONTH, 5)
+
+    def test_between_local_dates_invalid_units(self) -> None:
+        with pytest.raises(ValueError):  # TODO: ArgumentException
+            Period.between(self.__test_date_1_167_5_15, self.__test_date_2_167_ayyam_4, PeriodUnits.NONE)
+        with pytest.raises(ValueError):  # TODO: ArgumentException
+            Period.between(self.__test_date_1_167_5_15, self.__test_date_2_167_ayyam_4, PeriodUnits(-1))
+        with pytest.raises(ValueError):  # TODO: ArgumentException
+            Period.between(self.__test_date_1_167_5_15, self.__test_date_2_167_ayyam_4, PeriodUnits.ALL_TIME_UNITS)
+        with pytest.raises(ValueError):  # TODO: ArgumentException
+            Period.between(
+                self.__test_date_1_167_5_15, self.__test_date_2_167_ayyam_4, PeriodUnits.YEARS | PeriodUnits.HOURS
+            )
+
+    def test_set_year(self) -> None:
+        # crafted to test SetYear with 0
+        d1 = self.__create_badi_date(180, 1, 1)
+        result: LocalDate = d1 + Period.from_years(0)
+        assert result.year == 180
+
+    def test_between_local_dates_moving_forward_no_leap_years_with_exact_results(self) -> None:
+        actual: Period = Period.between(self.__test_date_1_167_5_15, self.__test_date_1_167_6_7)
+        expected: Period = Period.from_days(11)
+        assert actual == expected
+
+    def test_between_local_dates_moving_forward_no_leap_years_with_exact_results_2(self) -> None:
+        actual: Period = Period.between(self.__test_date_1_167_5_15, self.__test_date_2_167_ayyam_4)
+        expected: Period = Period.from_months(13) + Period.from_days(8)
+        assert actual == expected
+
+    def test_between_local_dates_moving_forward_in_leap_year_with_exact_results(self) -> None:
+        actual: Period = Period.between(self.__test_date_1_167_5_15, self.__test_date_3_168_ayyam_5)
+        expected: Period = Period.from_years(1) + Period.from_months(13) + Period.from_days(9)
+        assert actual == expected
+
+    def test_between_local_dates_moving_backward_no_leap_years_with_exact_results(self) -> None:
+        actual: Period = Period.between(self.__test_date_2_167_ayyam_4, self.__test_date_1_167_5_15)
+        expected: Period = Period.from_months(-13) + Period.from_days(-8)
+        assert actual == expected
+
+    def test_between_local_dates_moving_backward_with_exact_results(self) -> None:
+        # should be -1y -13m -9d
+        # but system first moves back a year, and in that year, the last day of Ayyam-i-Ha is day 4
+        # from there, it is -13m -8d
+
+        expected: Period = Period.from_years(-1) + Period.from_months(-13) + Period.from_days(-8)
+        actual: Period = Period.between(self.__test_date_3_168_ayyam_5, self.__test_date_1_167_5_15)
+        assert actual == expected
+
+    def test_between_local_dates_moving_forward_with_just_months(self) -> None:
+        actual: Period = Period.between(self.__test_date_1_167_5_15, self.__test_date_3_168_ayyam_5, PeriodUnits.MONTHS)
+        expected: Period = Period.from_months(32)
+        assert actual == expected
+
+    def test_between_local_dates_moving_backward_with_just_months(self) -> None:
+        actual: Period = Period.between(self.__test_date_3_168_ayyam_5, self.__test_date_1_167_5_15, PeriodUnits.MONTHS)
+        expected: Period = Period.from_months(-32)
+        assert actual == expected
+
+    def test_between_local_dates_asymmetric_forward_and_backward(self) -> None:
+        d1: LocalDate = self.__create_badi_date(166, 18, 4)
+        d2: LocalDate = self.__create_badi_date(167, 1, 10)
+
+        # spanning Ayyam-i-Ha - not counted as a month
+        assert Period.between(d1, d2) == Period.from_months(2) + Period.from_days(6)
+        assert Period.between(d2, d1) == Period.from_months(-2) + Period.from_days(-6)
+
+    def test_between_local_dates_end_of_month(self) -> None:
+        d1: LocalDate = self.__create_badi_date(171, 5, 19)
+        d2: LocalDate = self.__create_badi_date(171, 6, 19)
+        assert Period.between(d1, d2) == Period.from_months(1)
+        assert Period.between(d2, d1) == Period.from_months(-1)
+
+    def test_between_local_dates_on_leap_year(self) -> None:
+        d1: LocalDate = LocalDate(year=2012, month=2, day=29).with_calendar(CalendarSystem.badi)
+        d2: LocalDate = LocalDate(year=2013, month=2, day=28).with_calendar(CalendarSystem.badi)
+
+        assert self.as_badi_string(d1) == "168-0-4"
+        assert self.as_badi_string(d2) == "169-0-3"
+
+        assert Period.between(d1, d2) == Period.from_months(19) + Period.from_days(18)
+
+    def test_between_local_dates_after_leap_year(self) -> None:
+        d1: LocalDate = self.__create_badi_date(180, 19, 5)
+        d2: LocalDate = self.__create_badi_date(181, 19, 5)
+        assert Period.between(d1, d2) == Period.from_years(1)
+        assert Period.between(d2, d1) == Period.from_years(-1)
+
+    def test_addition_day_crossing_month_boundary(self) -> None:
+        start: LocalDate = self.__create_badi_date(182, 4, 13)
+        result: LocalDate = start + Period.from_days(10)
+        assert result == self.__create_badi_date(182, 5, 4)
+
+    def test_addition(self) -> None:
+        start = self.__create_badi_date(182, 1, 1)
+
+        result = start + Period.from_days(3)
+        assert result == self.__create_badi_date(182, 1, 4)
+
+        result = start + Period.from_days(20)
+        assert result == self.__create_badi_date(182, 2, 2)
+
+    def test_addition_day_crossing_month_boundary_from_ayyami_ha(self) -> None:
+        start = self.__create_badi_date(182, self.__AYYAMI_HA_MONTH, 3)
+        result = start + Period.from_days(10)
+        # in 182, Ayyam-i-Ha has 5 days
+        assert result == self.__create_badi_date(182, 19, 8)
+
+    def test_addition_one_year_on_leap_day(self) -> None:
+        start: LocalDate = self.__create_badi_date(182, self.__AYYAMI_HA_MONTH, 5)
+        result: LocalDate = start + Period.from_years(1)
+        # Ayyam-i-Ha 5 becomes Ayyam-i-Ha 4
+        assert result == self.__create_badi_date(183, self.__AYYAMI_HA_MONTH, 4)
+
+    def test_addition_five_years_on_leap_day(self) -> None:
+        start: LocalDate = self.__create_badi_date(182, self.__AYYAMI_HA_MONTH, 5)
+        result: LocalDate = start + Period.from_years(5)
+        assert result == self.__create_badi_date(187, self.__AYYAMI_HA_MONTH, 5)
+
+    def test_addition_year_month_day(self) -> None:
+        # One year, one month, two days
+        period: Period = Period.from_years(1) + Period.from_months(1) + Period.from_days(2)
+        start: LocalDate = self.__create_badi_date(171, 1, 19)
+        # Periods are added in order, so this becomes...
+        # Add one year: 172.1.19
+        # Add one month: 172.2.19
+        # Add two days: 172.3.2
+        result: LocalDate = start + period
+        assert result == self.__create_badi_date(172, 3, 2)
 
     def test_plus_months_overflow(self) -> None:
         calendar: CalendarSystem = CalendarSystem.badi
