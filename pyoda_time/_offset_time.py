@@ -24,13 +24,11 @@ class OffsetTime:
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, nanosecond_of_day_zero_offset: int) -> OffsetTime:
-        ...
+    def _ctor(cls, *, nanosecond_of_day_zero_offset: int) -> OffsetTime: ...
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, nanosecond_of_day: int, offset_seconds: int) -> OffsetTime:
-        ...
+    def _ctor(cls, *, nanosecond_of_day: int, offset_seconds: int) -> OffsetTime: ...
 
     @classmethod
     def _ctor(

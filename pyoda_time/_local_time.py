@@ -53,16 +53,13 @@ class LocalTime(metaclass=_LocalTimeMeta):
     zone or date."""
 
     @_typing.overload
-    def __init__(self, *, hour: int, minute: int) -> None:
-        ...
+    def __init__(self, *, hour: int, minute: int) -> None: ...
 
     @_typing.overload
-    def __init__(self, *, hour: int, minute: int, second: int) -> None:
-        ...
+    def __init__(self, *, hour: int, minute: int, second: int) -> None: ...
 
     @_typing.overload
-    def __init__(self, *, hour: int, minute: int, second: int, millisecond: int) -> None:
-        ...
+    def __init__(self, *, hour: int, minute: int, second: int, millisecond: int) -> None: ...
 
     def __init__(self, *, hour: int, minute: int, second: int = 0, millisecond: int = 0):
         if (

@@ -30,16 +30,13 @@ class ZonedDateTime:
         return self
 
     @_typing.overload
-    def __init__(self, *, instant: Instant, zone: DateTimeZone) -> None:
-        ...
+    def __init__(self, *, instant: Instant, zone: DateTimeZone) -> None: ...
 
     @_typing.overload
-    def __init__(self, *, local_date_time: LocalDateTime, zone: DateTimeZone, offset: Offset) -> None:
-        ...
+    def __init__(self, *, local_date_time: LocalDateTime, zone: DateTimeZone, offset: Offset) -> None: ...
 
     @_typing.overload
-    def __init__(self, *, instant: Instant, zone: DateTimeZone, calendar: CalendarSystem) -> None:
-        ...
+    def __init__(self, *, instant: Instant, zone: DateTimeZone, calendar: CalendarSystem) -> None: ...
 
     def __init__(
         self,

@@ -179,12 +179,10 @@ class _YearMonthDayCalculator(_abc.ABC):
         )
 
     @_typing.overload
-    def _get_year_month_day(self, *, year: int, day_of_year: int) -> _YearMonthDay:
-        ...
+    def _get_year_month_day(self, *, year: int, day_of_year: int) -> _YearMonthDay: ...
 
     @_typing.overload
-    def _get_year_month_day(self, *, days_since_epoch: int) -> _YearMonthDay:
-        ...
+    def _get_year_month_day(self, *, days_since_epoch: int) -> _YearMonthDay: ...
 
     def _get_year_month_day(
         self, *, year: int | None = None, day_of_year: int | None = None, days_since_epoch: int | None = None

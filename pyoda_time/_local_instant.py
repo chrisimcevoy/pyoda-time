@@ -46,13 +46,11 @@ class _LocalInstant:
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, nanoseconds: Duration) -> _LocalInstant:
-        ...
+    def _ctor(cls, *, nanoseconds: Duration) -> _LocalInstant: ...
 
     @classmethod
     @_typing.overload
-    def _ctor(cls, *, days: int, nano_of_day: int) -> _LocalInstant:
-        ...
+    def _ctor(cls, *, days: int, nano_of_day: int) -> _LocalInstant: ...
 
     @classmethod
     def _ctor(cls, nanoseconds: Duration | None = None, days: int | None = None, nano_of_day: int = 0) -> _LocalInstant:

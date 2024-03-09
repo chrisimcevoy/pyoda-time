@@ -283,25 +283,21 @@ class Period(metaclass=_PeriodMeta):
     @_typing.overload
     def between(
         cls, start: LocalDateTime, end: LocalDateTime, units: PeriodUnits = PeriodUnits.DATE_AND_TIME
-    ) -> Period:
-        ...
+    ) -> Period: ...
 
     @classmethod
     @_typing.overload
-    def between(cls, start: LocalDate, end: LocalDate, units: PeriodUnits = PeriodUnits.YEAR_MONTH_DAY) -> Period:
-        ...
+    def between(cls, start: LocalDate, end: LocalDate, units: PeriodUnits = PeriodUnits.YEAR_MONTH_DAY) -> Period: ...
 
     @classmethod
     @_typing.overload
-    def between(cls, start: LocalTime, end: LocalTime, units: PeriodUnits = PeriodUnits.ALL_TIME_UNITS) -> Period:
-        ...
+    def between(cls, start: LocalTime, end: LocalTime, units: PeriodUnits = PeriodUnits.ALL_TIME_UNITS) -> Period: ...
 
     @classmethod
     @_typing.overload
     def between(
         cls, start: YearMonth, end: YearMonth, units: PeriodUnits = PeriodUnits.YEARS | PeriodUnits.MONTHS
-    ) -> Period:
-        ...
+    ) -> Period: ...
 
     @classmethod
     def between(

@@ -12,5 +12,4 @@ T = TypeVar("T")
 class _IPatternParser(Protocol[T]):
     """Internal interface used by FixedFormatInfoPatternParser."""
 
-    def parse_pattern(self, pattern: str, format_info: _PyodaFormatInfo) -> IPattern[T]:
-        ...
+    def parse_pattern(self, pattern: str, format_info: _PyodaFormatInfo) -> IPattern[T]: ...

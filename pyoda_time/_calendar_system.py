@@ -439,8 +439,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         name: str,
         year_month_day_calculator: _YearMonthDayCalculator,
         era_calculator: _EraCalculator,
-    ) -> CalendarSystem:
-        ...
+    ) -> CalendarSystem: ...
 
     @classmethod
     @_typing.overload
@@ -452,8 +451,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         name: str,
         year_month_day_calculator: _YearMonthDayCalculator,
         single_era: _Era,
-    ) -> CalendarSystem:
-        ...
+    ) -> CalendarSystem: ...
 
     @classmethod
     def __ctor(

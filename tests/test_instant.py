@@ -114,8 +114,7 @@ class TestInstant:
         assert Instant.from_unix_time_milliseconds(min_.to_unix_time_milliseconds()) == min_
         assert Instant.from_unix_time_ticks(min_.to_unix_time_ticks()) == min_
 
-    def test_in_zone_with_calendar(self) -> None:
-        ...  # TODO
+    def test_in_zone_with_calendar(self) -> None: ...  # TODO
 
     def test_max(self) -> None:
         """This follows the Noda Time test which covers Instant.Max(), but additionally covers support for the max()
