@@ -1,13 +1,21 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from typing import Final
+from typing import Final, Iterable
 
 from pyoda_time._compatibility._culture_info import CultureInfo
+from pyoda_time._compatibility._culture_types import CultureTypes
 
 
 class _CulturesMeta(type):
     __cache: Final[dict[str, CultureInfo]] = {}
+
+    @property
+    def all_cultures(cls) -> Iterable[CultureInfo]:
+        """Force the cultures to be read-only for tests, to take advantage of caching."""
+        # In Pyoda Time, there is some special casing for cultures which
+        # don't behave as expected on Mono and dotnet core.
+        return [CultureInfo.read_only(culture) for culture in CultureInfo.get_cultures(CultureTypes.SPECIFIC_CULTURES)]
 
     @classmethod
     def __get_or_create(cls, name: str) -> CultureInfo:

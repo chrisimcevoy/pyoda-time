@@ -11,10 +11,15 @@ from typing import Iterable
 import icu
 
 from pyoda_time._compatibility._calendar import Calendar
+from pyoda_time._compatibility._calendar_data import _CalendarData
+from pyoda_time._compatibility._calendar_id import _CalendarId
+from pyoda_time._compatibility._culture_types import CultureTypes
+from pyoda_time._compatibility._globalization_mode import _GlobalizationMode
 from pyoda_time._compatibility._gregorian_calendar import GregorianCalendar
 from pyoda_time._compatibility._string_builder import StringBuilder
 
 if typing.TYPE_CHECKING:
+    from pyoda_time._compatibility._culture_info import CultureInfo
     from pyoda_time._compatibility._number_format_info import NumberFormatInfo
 
 
@@ -67,6 +72,8 @@ class _CultureData(metaclass=_CultureDataMeta):
     (That is unlikely to change; As of dotnet 5, the globalization mode defaults to ICU over NLS.)
     """
 
+    __LOCALE_NAME_MAX_LENGTH: typing.Final[int] = 85
+
     def __init__(self, name: str = "") -> None:
         name = name.strip()
 
@@ -82,13 +89,10 @@ class _CultureData(metaclass=_CultureDataMeta):
             if not self.__is_valid_culture_name(icu_compatible_name):
                 raise ValueError(f"{name} is not a valid culture name.")
 
-            available_locales: Iterable[str] = icu.Locale.getAvailableLocales().keys()
-
-            # TODO: Should this be case-insensitive?
-            #  My gut says no, because we don't own the data.
-            #  Better to be strict at first then more lenient
-            #  later than the other way around.
-            if icu_compatible_name not in available_locales:
+            # According to the BCP47 standard, this should be case-insensitive.
+            # So "en_US", "EN_us" and "EN_US" should all result in the same Locale object.
+            available_locales: Iterable[str] = (k.lower() for k in icu.Locale.getAvailableLocales().keys())
+            if icu_compatible_name.lower() not in available_locales:
                 # PyICU doesn't do this validation for us.
                 # If we don't do this check ourselves, it will
                 # happily just return a locale with our name
@@ -96,7 +100,24 @@ class _CultureData(metaclass=_CultureDataMeta):
                 raise ValueError(f"Unknown locale: {name}")
 
         self.__raw_name: str = name
+        self.__sName, self.__bNeutral = self.__normalize_culture_name(self.__raw_name)
+        self.__sRealName = self.__sWindowsName = self.__sName
         self.__locale: icu.Locale = icu.Locale(icu_compatible_name)
+
+        self.__calendars: dict[int, _CalendarData] = {}
+        self.__sTimeSeparator: str | None = None
+
+    @classmethod
+    def _get_cultures(cls, types: CultureTypes) -> typing.Sequence[CultureInfo]:
+        # TODO: ArgumentOutOfRange validation?
+
+        # TODO: WindowsOnlyCulture check
+
+        # TODO: GlobalizationMode.Invariant check
+
+        # TODO: GlobalizationMode.UseNls check
+
+        return cls.__icu_enum_cultures(types)
 
     @property
     def _culture_name(self) -> str:
@@ -106,51 +127,54 @@ class _CultureData(metaclass=_CultureDataMeta):
     @property
     def name(self) -> str:
         """Locale name (ie: de-DE, NO sort information)"""
-        return str(self.__locale.getName())  # Wrapped in str() for mypy reasons
+        return self.__sName  # Wrapped in str() for mypy reasons
 
-    @staticmethod
-    def __is_valid_culture_name(subject: str) -> tuple[bool, int, int]:
-        """Port of the private static ``CultueData.IsValidCultureName()`` method in .NET.
+    def _day_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+        # Cast required as mypy thinks this might be None.
+        # Can be refactored out later.
+        return typing.cast(list[str], self._get_calendar(calendar_id)._saDayNames)
 
-        In .NET this method is 'a fast approximate implementation based on the BCP47 spec'.
+    def _abbreviated_day_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+        return typing.cast(list[str], self._get_calendar(calendar_id)._saAbbrevDayNames)
 
-        https://en.wikipedia.org/wiki/IETF_language_tag
+    def _month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+        # Cast required as mypy thinks this might be None.
+        # Can be refactored out later.
+        return typing.cast(list[str], self._get_calendar(calendar_id)._saMonthNames)
 
-        When it returns False, the input is definitely wrong. However, it may return True in some
-        cases where the name contains characters which aren't strictly allowed by the spec.
+    def _genitive_month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+        return typing.cast(list[str], self._get_calendar(calendar_id)._saMonthGenitiveNames)
 
-        It accommodates the input length of zero for invariant culture purposes.
-        """
+    def _abbreviated_month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+        return typing.cast(list[str], self._get_calendar(calendar_id)._saAbbrevMonthNames)
 
-        index_of_underscore = -1
-        index_of_extensions = -1
-        if len(subject) == 0:
-            return True, index_of_underscore, index_of_extensions
-        if len(subject) == 1 or len(subject) > 85:
-            return False, index_of_underscore, index_of_extensions
+    def _abbreviated_genitive_month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+        return typing.cast(list[str], self._get_calendar(calendar_id)._saAbbrevMonthGenitiveNames)
 
-        flag = False
-        for index, ch in enumerate(subject):
-            if not ("A" <= ch <= "Z" or "a" <= ch <= "z" or ch in "0123456789" or ch in ["-", "_"]):
-                return False, index_of_underscore, index_of_extensions
+    def _short_dates(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+        """(user can override default only) short date format."""
+        # Cast required as mypy thinks this might be None.
+        # Can be refactored out later.
+        return typing.cast(list[str], self._get_calendar(calendar_id)._saShortDates)
 
-            if ch in ["-", "_"]:
-                if index == 0 or index == len(subject) - 1 or subject[index - 1] in ["_", "-"]:
-                    return False, index_of_underscore, index_of_extensions
-                if ch == "_":
-                    if flag:
-                        return False, index_of_underscore, index_of_extensions
-                    flag = True
-                    index_of_underscore = index
-                elif ch == "-" and index_of_extensions < 0 and index < len(subject) - 2:
-                    if subject[index + 1] in ["t", "u"]:
-                        if subject[index + 2] == "-" and (
-                            subject[index + 1] == "t"
-                            or index >= len(subject) - 6
-                            or subject[index + 3 : index + 6] != "co-"
-                        ):
-                            index_of_extensions = index
-        return True, index_of_underscore, index_of_extensions
+    def _get_calendar(self, calendar_id: _CalendarId) -> _CalendarData:
+        if _GlobalizationMode._invariant:
+            return _CalendarData._invariant
+
+        assert 0 < calendar_id.value < _CalendarId.LAST_CALENDAR.value, "Expect calendarId to be in a valid range"
+
+        # arrays are 0 based, calendarIds are 1 based
+        calendar_index = calendar_id.value - 1
+
+        if not (calendar := self.__calendars.get(calendar_index)):
+            # TODO: A literal port would be:
+            #  calendar = _CalendarData(self.__sWindowsName, calendar_id, self.__bUseOverrides)
+            calendar = _CalendarData(self.name, calendar_id, False)
+        return calendar
+
+    @property
+    def _is_invariant_culture(self) -> bool:
+        return not self.name  # string.IsNullOrEmpty(this.Name)
 
     @property
     def _default_calendar(self) -> Calendar:
@@ -158,9 +182,24 @@ class _CultureData(metaclass=_CultureDataMeta):
 
         This returns an instance of the default ``System.Globalization.Calendar`` for the locale.
         """
-        # TODO: Only the invariant culture is supported.
-        if True:  # if (GlobalizationMode.Invariant) {...}
+
+        if _GlobalizationMode._invariant:
             return GregorianCalendar()
+
+        # TODO: .NET calls into ICU to get the supported calendars and the default/preferred one.
+        #  https://github.com/dotnet/runtime/blob/b181ed507c07bdcfb84e2a2b4786d3c2c763db8c/src/native/libs/System.Globalization.Native/pal_calendarData.c#L109-L140
+        #  That part of the ICU API is not exposed by PyICU...
+        #  So we have to get a bit creative here to map it to a .NET style calendar ID.
+
+        calendar: icu.Calendar = icu.Calendar.createInstance(self.__locale)
+        icu_calendar_name: str = calendar.getType()
+        calendar_id: _CalendarId = _CalendarId.from_icu_calendar_name(icu_calendar_name)
+        from ._culture_info import CultureInfo
+
+        return CultureInfo._get_calendar_instance(calendar_id)
+
+    def _era_names(self, calendar_id: _CalendarId) -> list[str]:
+        return self._get_calendar(calendar_id)._saEraNames
 
     @property
     def _time_separator(self) -> str:
@@ -168,16 +207,24 @@ class _CultureData(metaclass=_CultureDataMeta):
 
         As in .NET, the time separator is determined by parsing the locale's long time format.
         """
-        # TODO: Check/test this is actually the case
-        #  As in .NET, fr-CA is special cased to force the colon separator.
-        #  The pattern there is "HH 'h' mm 'min' ss 's'", from which the
-        #  separator cannot be derived.
-        if self.name == "fr-CA":
-            return ":"
+        if self.__sTimeSeparator is None and not _GlobalizationMode._invariant:
+            # TODO: Check/test this is actually the case
+            #  As in .NET, fr-CA is special cased to force the colon separator.
+            #  The pattern there is "HH 'h' mm 'min' ss 's'", from which the
+            #  separator cannot be derived.
+            if self.name == "fr-CA":
+                self._sTimeSeparator = ":"
+            else:
+                long_time_format = self.__icu_get_time_format_string()
+                if not long_time_format or not long_time_format.strip():
+                    raise NotImplementedError("longTimeFormat = LongTimes[0];")
+                self._sTimeSeparator = self.__get_time_separator(long_time_format)
 
-        long_time_format: str = icu.SimpleDateFormat(style=icu.DateFormat.kLong, locale=self.__locale).toPattern()
+        return self._sTimeSeparator
 
-        return self.__get_time_separator(long_time_format)
+    def __icu_get_time_format_string(self, short_format: bool = False) -> str:
+        style = icu.DateFormat.kShort if short_format else icu.DateFormat.kLong
+        return str(icu.SimpleDateFormat(style=style, locale=self.__locale).toPattern())
 
     @classmethod
     def __get_time_separator(cls, pattern: str) -> str:
@@ -246,6 +293,23 @@ class _CultureData(metaclass=_CultureDataMeta):
             i += 1
         return -1
 
+    def _date_separator(self, calendar_id: _CalendarId) -> str:
+        """Date separator (derived from short date format)."""
+        if _GlobalizationMode._invariant:
+            return "/"
+
+        if calendar_id == _CalendarId.JAPAN:  # TODO: && !LocalAppContextSwitches.EnforceLegacyJapaneseDateParsing)
+            # The date separator is derived from the default short date pattern. So far this pattern is using
+            # '/' as date separator when using the Japanese calendar which make the formatting and parsing work fine.
+            # changing the default pattern is likely will happen in the near future which can easily break formatting
+            # and parsing.
+            # We are forcing here the date separator to '/' to ensure the parsing is not going to break when changing
+            # the default short date pattern. The application still can override this in the code by
+            # DateTimeFormatInfo.DateSeparator.
+            return "/"
+
+        return self.__get_date_separator(self._short_dates(calendar_id)[0])
+
     @classmethod
     def __unescape_nls_string(cls, s: str, start: int, end: int) -> str:
         """Used to unescape NLS strings in .NET Framework.
@@ -281,6 +345,75 @@ class _CultureData(metaclass=_CultureDataMeta):
         else:
             return result.to_string()
 
+    def _get_nfi_values(self, nfi: NumberFormatInfo) -> None:
+        """Populate the provided ``NumberFormatInfo`` with locale-specific values from ICU."""
+        # TODO: This is a bare-bones port; just as much as we needed at the time and no more.
+        number_format: icu.DecimalFormatSymbols = icu.DecimalFormatSymbols(self.__locale)
+        nfi.positive_sign = number_format.getSymbol(icu.DecimalFormatSymbols.kPlusSignSymbol)
+
+    @classmethod
+    def __icu_enum_cultures(cls, types: CultureTypes) -> typing.Sequence[CultureInfo]:
+        from ._culture_info import CultureInfo
+
+        if not (types & (CultureTypes.NEUTRAL_CULTURES | CultureTypes.SPECIFIC_CULTURES)):
+            return []
+
+        enum_neutrals = bool(types & CultureTypes.NEUTRAL_CULTURES)
+        enum_specifics = bool(types & CultureTypes.SPECIFIC_CULTURES)
+
+        culture_info_list: list[CultureInfo] = []
+
+        for k, v in icu.Locale.getAvailableLocales().items():
+            ci: CultureInfo = CultureInfo(k)
+            if (enum_neutrals and ci.is_neutral_culture) or (enum_specifics and not ci.is_neutral_culture):
+                culture_info_list.append(ci)
+
+        return culture_info_list
+
+    @staticmethod
+    def __is_valid_culture_name(subject: str) -> tuple[bool, int, int]:
+        """Port of the private static ``CultueData.IsValidCultureName()`` method in .NET.
+
+        In .NET this method is 'a fast approximate implementation based on the BCP47 spec'.
+
+        https://en.wikipedia.org/wiki/IETF_language_tag
+
+        When it returns False, the input is definitely wrong. However, it may return True in some
+        cases where the name contains characters which aren't strictly allowed by the spec.
+
+        It accommodates the input length of zero for invariant culture purposes.
+        """
+
+        index_of_underscore = -1
+        index_of_extensions = -1
+        if len(subject) == 0:
+            return True, index_of_underscore, index_of_extensions
+        if len(subject) == 1 or len(subject) > 85:
+            return False, index_of_underscore, index_of_extensions
+
+        flag = False
+        for index, ch in enumerate(subject):
+            if not ("A" <= ch <= "Z" or "a" <= ch <= "z" or ch in "0123456789" or ch in ["-", "_"]):
+                return False, index_of_underscore, index_of_extensions
+
+            if ch in ["-", "_"]:
+                if index == 0 or index == len(subject) - 1 or subject[index - 1] in ["_", "-"]:
+                    return False, index_of_underscore, index_of_extensions
+                if ch == "_":
+                    if flag:
+                        return False, index_of_underscore, index_of_extensions
+                    flag = True
+                    index_of_underscore = index
+                elif ch == "-" and index_of_extensions < 0 and index < len(subject) - 2:
+                    if subject[index + 1] in ["t", "u"]:
+                        if subject[index + 2] == "-" and (
+                            subject[index + 1] == "t"
+                            or index >= len(subject) - 6
+                            or subject[index + 3 : index + 6] != "co-"
+                        ):
+                            index_of_extensions = index
+        return True, index_of_underscore, index_of_extensions
+
     def __deepcopy__(self, memo: dict) -> _CultureData:
         """Implementation to support CultureInfo.clone(), so we can copy.deepcopy(some_culture_info)
 
@@ -295,12 +428,60 @@ class _CultureData(metaclass=_CultureDataMeta):
         result.__locale = icu.Locale(self.__locale.getName())
         return result
 
-    def _get_nfi_values(self, nfi: NumberFormatInfo) -> None:
-        """Populate the provided ``NumberFormatInfo`` with locale-specific values from ICU."""
-        # TODO: This is a bare-bones port; just as much as we needed at the time and no more.
-        number_format: icu.DecimalFormatSymbols = icu.DecimalFormatSymbols(self.__locale)
-        nfi.positive_sign = number_format.getSymbol(icu.DecimalFormatSymbols.kPlusSignSymbol)
+    @property
+    def _two_letter_iso_country_name(self) -> str:
+        """ISO 3166 Country Name."""
+        return str(self.__locale.getCountry())
 
     @property
-    def _is_invariant_culture(self) -> bool:
-        return not self.name  # string.IsNullOrEmpty(this.Name)
+    def _three_letter_iso_country_name(self) -> str:
+        """3 letter ISO 3166 country code."""
+        return str(self.__locale.getISO3Country())
+
+    @property
+    def _text_info_name(self) -> str:
+        return self._culture_name
+
+    @property
+    def _is_neutral_culture(self) -> bool:
+        return len(self._two_letter_iso_country_name) == 0
+
+    @classmethod
+    def __normalize_culture_name(cls, name: str) -> tuple[str, bool]:
+        """Normalize the culture name.
+
+        Returns a 2-tuple of the normalized name, and a bool indicating whether the culture is neutral.
+        """
+        if len(name) > cls.__LOCALE_NAME_MAX_LENGTH:
+            raise ValueError(f"Invalid id for 'name': {name}")
+
+        is_neutral_name = True
+        normalized_name = []
+        changed = False
+        i = 0
+
+        # Process characters before '-' or '_'
+        while i < len(name) and name[i] not in ["-", "_"]:
+            if name[i].isupper():
+                normalized_name.append(name[i].lower())
+                changed = True
+            else:
+                normalized_name.append(name[i])
+            i += 1
+
+        if i < len(name):
+            # If we encounter '-' or '_', it's not a neutral culture name
+            is_neutral_name = False
+
+        # Process characters after '-' or '_'
+        while i < len(name):
+            if name[i].islower():
+                normalized_name.append(name[i].upper())
+                changed = True
+            else:
+                normalized_name.append(name[i])
+            i += 1
+
+        if changed:
+            return "".join(normalized_name), is_neutral_name
+        return name, is_neutral_name

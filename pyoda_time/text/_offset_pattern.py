@@ -24,7 +24,7 @@ class _OffsetPatternMeta(type):
     @cache
     def _bcl_support(self) -> _PatternBclSupport[Offset]:
         def pattern_parser(format_info: _PyodaFormatInfo) -> _FixedFormatInfoPatternParser[Offset]:
-            return format_info.offset_pattern_parser
+            return format_info._offset_pattern_parser
 
         return _PatternBclSupport(
             OffsetPattern._DEFAULT_FORMAT_PATTERN,
@@ -114,8 +114,8 @@ class OffsetPattern(IPattern[Offset], metaclass=_CombinedMeta):
         _Preconditions._check_not_null(pattern_text, "pattern_text")
         _Preconditions._check_not_null(format_info, "format_info")
         if isinstance(format_info, CultureInfo):
-            format_info = _PyodaFormatInfo.get_format_info(format_info)
-        pattern = cast(_IPartialPattern[Offset], format_info.offset_pattern_parser._parse_pattern(pattern_text))
+            format_info = _PyodaFormatInfo._get_format_info(format_info)
+        pattern = cast(_IPartialPattern[Offset], format_info._offset_pattern_parser._parse_pattern(pattern_text))
         return OffsetPattern(pattern_text, pattern)
 
     @classmethod
@@ -165,4 +165,4 @@ class OffsetPattern(IPattern[Offset], metaclass=_CombinedMeta):
         :param culture_info: The culture to use in the new pattern.
         :return: A new pattern with the given culture.
         """
-        return self._create(self.pattern_text, _PyodaFormatInfo.get_format_info(culture_info))
+        return self._create(self.pattern_text, _PyodaFormatInfo._get_format_info(culture_info))
