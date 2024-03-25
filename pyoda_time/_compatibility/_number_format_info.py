@@ -3,16 +3,29 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
+import copy
+from typing import Any
+
 from pyoda_time._compatibility._culture_data import _CultureData
+from pyoda_time._compatibility._i_format_provider import IFormatProvider
 
 
-class NumberFormatInfo:
+class NumberFormatInfo(IFormatProvider):
     """Provides culture-specific information for formatting and parsing numeric values."""
 
     def __init__(self) -> None:
         self._positive_sign = "+"
         self._negative_sign = "-"
         self._is_read_only: bool = False
+
+    def __verify_writable(self) -> None:
+        if self._is_read_only:
+            raise RuntimeError("Cannot write read-only CultureInfo")
+
+    @property
+    def is_read_only(self) -> bool:
+        """Gets a value that indicates whether this ``NumberFormatInfo`` is read-only."""
+        return self._is_read_only
 
     @classmethod
     def _ctor(cls, culture_data: _CultureData) -> NumberFormatInfo:
@@ -44,6 +57,16 @@ class NumberFormatInfo:
         self.__verify_writable()
         self._negative_sign = value
 
-    def __verify_writable(self) -> None:
-        if self._is_read_only:
-            raise RuntimeError("Cannot write read-only CultureInfo")
+    @staticmethod
+    def read_only(nfi: NumberFormatInfo) -> NumberFormatInfo:
+        """Returns a read-only ``NumberFormatInfo`` wrapper."""
+        if nfi is None:
+            raise ValueError("nfi cannot be None")
+        if nfi.is_read_only:
+            return nfi
+        number_format_info = copy.copy(nfi)
+        number_format_info._is_read_only = True
+        return number_format_info
+
+    def get_format(self, format_type: type) -> Any | None:
+        raise NotImplementedError

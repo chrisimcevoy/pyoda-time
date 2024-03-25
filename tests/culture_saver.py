@@ -21,13 +21,11 @@ class _BothSaver(ContextManager):
 
     @property
     def __current_ui_culture(self) -> CultureInfo:
-        # TODO: fix or remove this - it's only here for completeness sake
-        return CultureInfo.invariant_culture
+        return CultureInfo.current_ui_culture
 
     @__current_ui_culture.setter
     def __current_ui_culture(self, value: CultureInfo) -> None:
-        # TODO: fix or remove this - it's only here for completeness sake
-        CultureInfo.current_culture = value
+        CultureInfo.current_ui_culture = value
 
     def __init__(self, new_culture: CultureInfo, new_ui_culture: CultureInfo) -> None:
         self.__old_culture = self.__current_culture
@@ -60,10 +58,15 @@ class CultureSaver:
     """
 
     @classmethod
-    def set_cultures(cls, new_culture_info: CultureInfo) -> ContextManager:
+    def set_cultures(
+        cls, new_culture_info: CultureInfo, new_ui_culture_info: CultureInfo | None = None
+    ) -> ContextManager:
         """Sets both the UI and basic cultures of the current thread.
 
         :param new_culture_info: The new culture info.
+        :param new_ui_culture_info: The new ui culture info.
         :return: A context manager which temporarily sets the current culture, then resets the culture upon exit.
         """
-        return _BothSaver(new_culture_info, new_culture_info)
+        if new_ui_culture_info is None:
+            new_ui_culture_info = new_culture_info
+        return _BothSaver(new_culture_info, new_ui_culture_info)
