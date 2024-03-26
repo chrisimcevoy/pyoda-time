@@ -9,7 +9,9 @@ import decimal
 import typing
 
 from ._pyoda_constants import PyodaConstants
-from .utility import _csharp_modulo, _Preconditions, _sealed, _TickArithmetic, _towards_zero_division
+from .utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
+from .utility._preconditions import _Preconditions
+from .utility._tick_arithmetic import _TickArithmetic
 
 __all__ = ["Duration"]
 
@@ -407,7 +409,7 @@ class Duration(metaclass=_DurationMeta):
             # nanoOfDay is always non-negative (and much less than half of long.MaxValue), so adding two
             # of them together will never produce a negative result.
             return Duration._ctor(days=days, nano_of_day=nanos)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
     def add(left: Duration, right: Duration) -> Duration:
@@ -435,7 +437,7 @@ class Duration(metaclass=_DurationMeta):
                 days -= 1
                 nanos += PyodaConstants.NANOSECONDS_PER_DAY
             return Duration._ctor(days=days, nano_of_day=nanos)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
     def subtract(left: Duration, right: Duration) -> Duration:
@@ -467,7 +469,7 @@ class Duration(metaclass=_DurationMeta):
             return self.from_nanoseconds(_towards_zero_division(self.total_nanoseconds, other))
         if isinstance(other, Duration):
             return self.total_nanoseconds / other.total_nanoseconds
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
     @typing.overload
@@ -486,12 +488,12 @@ class Duration(metaclass=_DurationMeta):
         # TODO: This is much simpler than the Noda Time implementation
         if isinstance(other, int | float):
             return self.from_nanoseconds(self.to_nanoseconds() * other)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __rmul__(self, other: int | float) -> Duration:
         if isinstance(other, int | float):
             return self * other
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
     @typing.overload
@@ -525,7 +527,7 @@ class Duration(metaclass=_DurationMeta):
             return self.__days < other.__days or (
                 self.__days == other.__days and self.__nano_of_day < other.__nano_of_day
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __le__(self, other: Duration | None) -> bool:
         return self < other or self == other
@@ -537,7 +539,7 @@ class Duration(metaclass=_DurationMeta):
             return (self.__days > other.__days) or (
                 (self.__days == other.__days) and (self.__nano_of_day > other.__nano_of_day)
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __ge__(self, other: Duration | None) -> bool:
         return self > other or self == other
@@ -563,7 +565,7 @@ class Duration(metaclass=_DurationMeta):
 
     # region IComparable<Duration> Members
 
-    def compare_to(self, other: Duration) -> int:
+    def compare_to(self, other: Duration | None) -> int:
         """Compares the current object with another object of the same type. See the type documentation for a
         description of ordering semantics.
 

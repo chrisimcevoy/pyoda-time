@@ -6,7 +6,7 @@ from typing import Callable, Final, Generic, TypeVar, final
 
 from ..._compatibility._i_format_provider import IFormatProvider
 from ...globalization._pyoda_format_info import _PyodaFormatInfo
-from ...utility import _sealed
+from ...utility._csharp_compatibility import _sealed
 from .._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
 from .._i_pattern import IPattern
 

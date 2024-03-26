@@ -7,7 +7,7 @@ from __future__ import annotations
 import base64
 import typing
 
-from ..utility import _Preconditions
+from ..utility._preconditions import _Preconditions
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
 if typing.TYPE_CHECKING:

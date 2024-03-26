@@ -14,17 +14,28 @@ from typing import (
     runtime_checkable,
 )
 
+from pyoda_time.text._parse_bucket import _ParseBucket
+from pyoda_time.text._value_cursor import _ValueCursor
+
 from ..._compatibility._string_builder import StringBuilder
-from ...globalization import _PyodaFormatInfo
-from ...utility import _Preconditions, _sealed
-from .. import InvalidPatternError, ParseResult, _ParseBucket, _ValueCursor
+from ...globalization._pyoda_format_info import _PyodaFormatInfo
+from ...utility._csharp_compatibility import _sealed
+from ...utility._preconditions import _Preconditions
+from .. import InvalidPatternError, ParseResult
 from .._format_helper import FormatHelper
 from .._i_partial_pattern import _IPartialPattern
 from .._text_error_messages import TextErrorMessages
-from . import _PatternCursor, _PatternFields
+from ._pattern_cursor import _PatternCursor
+from ._pattern_fields import _PatternFields
+
+# TODO: Look at TResult and TBucket again...
+#  It doesn't seem possible to replicate the generic type constraints faithfully in Python.
+#  The type:ignore is there now because mypy doesn't like _ParseBucket with no generic type parameter.
+#  But if you add the generic type parameter, e.g. `bound="_ParseBucket[TResult]"`, it doesn't like
+#  that either because bounds cannot be generic types apparently.
 
 TResult = TypeVar("TResult")
-TBucket = TypeVar("TBucket", bound="_ParseBucket")
+TBucket = TypeVar("TBucket", bound="_ParseBucket")  # type: ignore[type-arg]
 
 
 @_sealed
@@ -128,7 +139,11 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
             # TODO: Consider using hasattr() instead of isinstance().
             #  The python docs say isinstance() is markedly slower with runtime_checkable Protocols.
             if isinstance(format_action, self._IPostPatternParseFormatAction):
-                delegates.append(format_action.build_format_action(self.__used_fields))
+                # TODO: had to type:ignore this as mypy says it is unreachable.
+                #  That is True, but only because we haven't ported DatePatternHelper
+                #  yet, which is the only file where IPostPatternParseFormatAction
+                #  is actually used.
+                delegates.append(format_action.build_format_action(self.__used_fields))  # type: ignore[unreachable]
             else:
                 delegates.append(format_action)
 
@@ -364,7 +379,11 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
             if self.__parse_actions is None:
                 return ParseResult[TResult]._format_only_pattern
             if text is None:
-                return ParseResult[TResult]._argument_null("text")
+                # TODO: The type:ignore here is because text is str, not str|None.
+                #  This faithfully recreates a quirk in the Noda Time implementation
+                #  where the type is string in a non-nullable context, but the code
+                #  checks whether text is null anyway. Can this be safely removed?
+                return ParseResult[TResult]._argument_null("text")  # type: ignore[unreachable]
             if len(text) == 0:
                 return ParseResult[TResult]._value_string_empty()
 

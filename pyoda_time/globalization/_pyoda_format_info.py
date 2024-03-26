@@ -26,8 +26,8 @@ if typing.TYPE_CHECKING:
     from .._year_month import YearMonth
     from .._zoned_date_time import ZonedDateTime
     from ..text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
-from ..utility import _Preconditions
 from ..utility._csharp_compatibility import _sealed
+from ..utility._preconditions import _Preconditions
 from ._pattern_resources import _PatternResources
 
 
@@ -107,7 +107,7 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
 
         with self.__FIELD_LOCK:
             if self.__long_month_names is not None:
-                return
+                return  # type: ignore[unreachable]
             # Turn month names into 1-based read-only lists
             self.__long_month_names = self.__convert_month_array(self.date_time_format.month_names)
             self.__short_month_names = self.__convert_month_array(self.date_time_format.abbreviated_month_names)
@@ -132,7 +132,7 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
 
         with self.__FIELD_LOCK:
             if self.__long_day_names is not None:
-                return
+                return  # type: ignore[unreachable]
             self.__long_day_names = self.__convert_day_array(self.date_time_format.day_names)
             self.__short_day_names = self.__convert_day_array(self.date_time_format.abbreviated_day_names)
 

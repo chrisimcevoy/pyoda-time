@@ -2,9 +2,9 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 import math
-from typing import final
+from typing import Any, final
 
-from ..utility import _CsharpConstants, _sealed
+from ..utility._csharp_compatibility import _CsharpConstants, _sealed
 from ._parse_result import ParseResult
 from ._text_cursor import _TextCursor
 
@@ -75,7 +75,7 @@ class _ValueCursor(_TextCursor):
             result = (remaining[: len(match)] > match) - (remaining[: len(match)] < match)
             return result
 
-    def _parse_int64(self) -> tuple[ParseResult | None, int]:
+    def _parse_int64(self) -> tuple[ParseResult[None] | None, int]:
         """Parses digits at the current point in the string as a signed 64-bit integer value. Currently this method only
         supports cultures whose negative sign is "-" (and using ASCII digits).
 
@@ -123,7 +123,7 @@ class _ValueCursor(_TextCursor):
             result = -result
         return None, result
 
-    def __build_number_out_of_range_result(self, start_index: int) -> ParseResult:
+    def __build_number_out_of_range_result(self, start_index: int) -> ParseResult[Any]:
         self.move(start_index)
         if self.current == "-":
             self.move_next()

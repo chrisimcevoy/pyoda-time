@@ -4,7 +4,7 @@
 
 from typing import final
 
-from pyoda_time.utility import _sealed
+from pyoda_time.utility._csharp_compatibility import _sealed
 
 
 @_sealed

@@ -4,7 +4,6 @@
 
 import pytest
 from _pytest.fixtures import FixtureRequest
-from _pytest.mark import ParameterSet
 
 from pyoda_time import Offset
 from pyoda_time._compatibility._culture_info import CultureInfo
@@ -348,22 +347,26 @@ FORMAT_DATA = FORMAT_ONLY_DATA + FORMAT_AND_PARSE_DATA
 
 
 @pytest.fixture(params=[pytest.param(data, id=f"{data.pattern=}") for data in INVALID_PATTERN_DATA])
-def invalid_pattern_data(request: FixtureRequest) -> ParameterSet:
+def invalid_pattern_data(request: FixtureRequest) -> Data:
+    assert isinstance(request.param, Data)
     return request.param
 
 
 @pytest.fixture(params=[pytest.param(data, id=f"{data.pattern=} {data.text=}") for data in PARSE_FAILURE_DATA])
-def parse_failure_data(request: FixtureRequest) -> ParameterSet:
+def parse_failure_data(request: FixtureRequest) -> Data:
+    assert isinstance(request.param, Data)
     return request.param
 
 
 @pytest.fixture(params=[pytest.param(data, id=f"{data.pattern=} {data.text=}") for data in PARSE_DATA])
-def parse_data(request: FixtureRequest) -> ParameterSet:
+def parse_data(request: FixtureRequest) -> Data:
+    assert isinstance(request.param, Data)
     return request.param
 
 
 @pytest.fixture(params=[pytest.param(data, id=f"{data.pattern=} {data.text=} {data.culture=}") for data in FORMAT_DATA])
-def format_data(request: FixtureRequest) -> ParameterSet:
+def format_data(request: FixtureRequest) -> Data:
+    assert isinstance(request.param, Data)
     return request.param
 
 

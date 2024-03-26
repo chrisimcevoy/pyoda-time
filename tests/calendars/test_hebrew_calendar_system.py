@@ -6,7 +6,9 @@ import pytest
 
 from pyoda_time import CalendarSystem, LocalDate
 from pyoda_time._year_month_day import _YearMonthDay
-from pyoda_time.calendars import HebrewMonthNumbering, _HebrewScripturalCalculator, _HebrewYearMonthDayCalculator
+from pyoda_time.calendars import HebrewMonthNumbering
+from pyoda_time.calendars._hebrew_scriptural_calculator import _HebrewScripturalCalculator
+from pyoda_time.calendars._hebrew_year_month_day_calculator import _HebrewYearMonthDayCalculator
 
 
 class TestHebrewCalendarSystem:

@@ -3,7 +3,7 @@
 # as found in the LICENSE.txt file.
 from typing import Protocol, TypeVar
 
-from ...globalization import _PyodaFormatInfo
+from ...globalization._pyoda_format_info import _PyodaFormatInfo
 from .._i_pattern import IPattern
 
 T = TypeVar("T")

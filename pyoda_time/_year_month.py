@@ -7,7 +7,8 @@ from __future__ import annotations
 import typing
 
 from ._calendar_system import CalendarSystem
-from .utility import _Preconditions, _sealed
+from .utility._csharp_compatibility import _sealed
+from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
     from ._calendar_ordinal import _CalendarOrdinal
@@ -187,7 +188,7 @@ class YearMonth:
                 "Only values in the same calendar can be compared",
             )
             return self.__trusted_compare_to(other) < 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __le__(self, other: YearMonth | None) -> bool:
         if other is None:
@@ -199,7 +200,7 @@ class YearMonth:
                 "Only values in the same calendar can be compared",
             )
             return self.__trusted_compare_to(other) <= 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __gt__(self, other: YearMonth | None) -> bool:
         if other is None:
@@ -211,7 +212,7 @@ class YearMonth:
                 "Only values in the same calendar can be compared",
             )
             return self.__trusted_compare_to(other) > 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __ge__(self, other: YearMonth | None) -> bool:
         if other is None:
@@ -223,7 +224,7 @@ class YearMonth:
                 "Only values in the same calendar can be compared",
             )
             return self.__trusted_compare_to(other) >= 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __hash__(self) -> int:
         return hash(self.__start_of_month)

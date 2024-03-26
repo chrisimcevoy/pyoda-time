@@ -9,7 +9,8 @@ import typing
 if typing.TYPE_CHECKING:
     from . import LocalDate
 
-from .utility import _Preconditions, _sealed
+from .utility._csharp_compatibility import _sealed
+from .utility._preconditions import _Preconditions
 
 __all__ = ["DateInterval"]
 

@@ -9,17 +9,20 @@ from typing import Callable, Final, Mapping, final
 from pyoda_time import PyodaConstants
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time._offset import Offset
-from pyoda_time.globalization import _PyodaFormatInfo
-from pyoda_time.text import InvalidPatternError, ParseResult, _ValueCursor
+from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
+from pyoda_time.text import InvalidPatternError, ParseResult
 from pyoda_time.text._composite_pattern_builder import CompositePatternBuilder
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._parse_bucket import _ParseBucket
 from pyoda_time.text._text_error_messages import TextErrorMessages
-from pyoda_time.text.patterns import _PatternCursor, _PatternFields
+from pyoda_time.text._value_cursor import _ValueCursor
 from pyoda_time.text.patterns._i_pattern_parser import _IPatternParser
+from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
+from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
-from pyoda_time.utility import _csharp_modulo, _Preconditions, _sealed, _towards_zero_division
+from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
+from pyoda_time.utility._preconditions import _Preconditions
 
 
 @_sealed

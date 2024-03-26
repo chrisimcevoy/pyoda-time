@@ -5,7 +5,7 @@
 import pytest
 
 from pyoda_time._year_month_day import _YearMonthDay
-from pyoda_time.calendars import _UmAlQuraYearMonthDayCalculator
+from pyoda_time.calendars._um_al_qura_year_month_day_calculator import _UmAlQuraYearMonthDayCalculator
 
 
 class TestUmAlQuraYearMonthDayCalculator:

@@ -10,7 +10,8 @@ from ._calendar_ordinal import _CalendarOrdinal
 from ._calendar_system import CalendarSystem
 from ._iso_day_of_week import IsoDayOfWeek
 from .calendars import Era
-from .utility import _Preconditions, _sealed
+from .utility._csharp_compatibility import _sealed
+from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
     from . import LocalDateTime, LocalTime, Period, YearMonth
@@ -26,7 +27,7 @@ class _LocalDateMeta(type):
     def max_iso_value(self) -> LocalDate:
         """The maximum (latest) date representable in the ISO calendar system."""
         from ._year_month_day_calendar import _YearMonthDayCalendar
-        from .calendars import _GregorianYearMonthDayCalculator
+        from .calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
 
         return LocalDate._ctor(
             year_month_day_calendar=_YearMonthDayCalendar._ctor(
@@ -41,7 +42,7 @@ class _LocalDateMeta(type):
     def min_iso_value(self) -> LocalDate:
         """The minimum (earliest) date representable in the ISO calendar system."""
         from ._year_month_day_calendar import _YearMonthDayCalendar
-        from .calendars import _GregorianYearMonthDayCalculator
+        from .calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
 
         return LocalDate._ctor(
             year_month_day_calendar=_YearMonthDayCalendar._ctor(
@@ -118,7 +119,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         days_since_epoch: int | None = None,
         calendar: CalendarSystem | None = None,
     ) -> LocalDate:
-        from .calendars import _GregorianYearMonthDayCalculator
+        from .calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
 
         self = super().__new__(cls)
         if year_month_day_calendar is not None:
@@ -228,7 +229,7 @@ class LocalDate(metaclass=_LocalDateMeta):
             return self.plus_years(other.years).plus_months(other.months).plus_weeks(other.weeks).plus_days(other.days)
         if isinstance(other, LocalTime):
             return LocalDateTime._ctor(local_date=self, local_time=other)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LocalDate):
@@ -248,7 +249,7 @@ class LocalDate(metaclass=_LocalDateMeta):
                 "Only values in the same calendar can be compared",
             )
             return self.__trusted_compare_to(other) < 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __le__(self, other: LocalDate) -> bool:
         if isinstance(other, LocalDate):
@@ -267,7 +268,7 @@ class LocalDate(metaclass=_LocalDateMeta):
                 "Only values in the same calendar can be compared",
             )
             return self.__trusted_compare_to(other) > 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __ge__(self, other: LocalDate) -> bool:
         if isinstance(other, LocalDate):
@@ -315,7 +316,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         :param years: The number of years to add.
         :return: The current value plus the given number of years.
         """
-        from .fields import _DatePeriodFields
+        from .fields._date_period_fields import _DatePeriodFields
 
         return _DatePeriodFields._years_field.add(self, years)
 
@@ -332,17 +333,17 @@ class LocalDate(metaclass=_LocalDateMeta):
         :param months: The number of months to add
         :return: The current date plus the given number of months
         """
-        from .fields import _DatePeriodFields
+        from .fields._date_period_fields import _DatePeriodFields
 
         return _DatePeriodFields._months_field.add(self, months)
 
     def plus_days(self, days: int) -> LocalDate:
-        from .fields import _DatePeriodFields
+        from .fields._date_period_fields import _DatePeriodFields
 
         return _DatePeriodFields._days_field.add(self, days)
 
     def plus_weeks(self, weeks: int) -> LocalDate:
-        from .fields import _DatePeriodFields
+        from .fields._date_period_fields import _DatePeriodFields
 
         return _DatePeriodFields._weeks_field.add(self, weeks)
 

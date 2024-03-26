@@ -20,7 +20,9 @@ if typing.TYPE_CHECKING:
     )
     from ._local_instant import _LocalInstant
 
-from .utility import _Preconditions, _sealed, _TickArithmetic, _to_ticks, _towards_zero_division
+from .utility._csharp_compatibility import _sealed, _to_ticks, _towards_zero_division
+from .utility._preconditions import _Preconditions
+from .utility._tick_arithmetic import _TickArithmetic
 
 
 class _InstantMeta(type):
@@ -146,19 +148,19 @@ class Instant(metaclass=_InstantMeta):
     def __lt__(self, other: Instant) -> bool:
         if isinstance(other, Instant):
             return self.__duration < other.__duration
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __le__(self, other: Instant) -> bool:
         if isinstance(other, Instant):
             return self < other or self == other
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __add__(self, other: Duration) -> Instant:
         from . import Duration
 
         if isinstance(other, Duration):
             return self._from_untrusted_duration(self.__duration + other)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @typing.overload
     def __sub__(self, other: Instant) -> Duration: ...
@@ -173,7 +175,7 @@ class Instant(metaclass=_InstantMeta):
             return self.__duration - other.__duration
         if isinstance(other, Duration):
             return self._from_trusted_duration(self.__duration - other)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @property
     def _days_since_epoch(self) -> int:

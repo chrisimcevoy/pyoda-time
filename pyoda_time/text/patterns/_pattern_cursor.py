@@ -5,7 +5,7 @@
 from typing import Final, final
 
 from ..._compatibility._string_builder import StringBuilder
-from ...utility import _sealed
+from ...utility._csharp_compatibility import _sealed
 from .._invalid_pattern_exception import InvalidPatternError
 from .._text_cursor import _TextCursor
 from .._text_error_messages import TextErrorMessages

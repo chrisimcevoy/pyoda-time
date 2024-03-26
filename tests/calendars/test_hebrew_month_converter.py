@@ -4,7 +4,7 @@
 
 import pytest
 
-from pyoda_time.calendars import _HebrewMonthConverter
+from pyoda_time.calendars._hebrew_month_converter import _HebrewMonthConverter
 
 
 class TestHebrewMonthConverter:

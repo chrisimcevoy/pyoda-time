@@ -9,7 +9,8 @@ import typing
 
 from ._compatibility._culture_info import CultureInfo
 from ._pyoda_constants import PyodaConstants
-from .utility import _Preconditions, _sealed, _towards_zero_division
+from .utility._csharp_compatibility import _sealed, _towards_zero_division
+from .utility._preconditions import _Preconditions
 
 
 class _OffsetMeta(type):
@@ -151,7 +152,7 @@ class Offset(metaclass=_OffsetMeta):
         """
         if isinstance(other, Offset):
             return self.from_seconds(self.seconds + other.seconds)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
     def add(left: Offset, right: Offset) -> Offset:
@@ -182,7 +183,7 @@ class Offset(metaclass=_OffsetMeta):
         """
         if isinstance(other, Offset):
             return self.from_seconds(self.seconds - other.seconds)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
     def subtract(minuend: Offset, subtrahend: Offset) -> Offset:

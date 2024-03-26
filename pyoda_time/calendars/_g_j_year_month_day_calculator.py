@@ -9,13 +9,13 @@ import typing
 
 if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
-from ..utility import _towards_zero_division
+from ..utility._csharp_compatibility import _towards_zero_division
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
 
 class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, abc.ABC):
-    _NON_LEAP_DAYS_PER_MONTH: typing.Final[tuple] = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    _LEAP_DAYS_PER_MONTH: typing.Final[tuple] = (0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    _NON_LEAP_DAYS_PER_MONTH: typing.Final[list[int]] = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    _LEAP_DAYS_PER_MONTH: typing.Final[list[int]] = [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
     @staticmethod
     def __generate_total_days_by_month(*month_lengths: int) -> list[int]:

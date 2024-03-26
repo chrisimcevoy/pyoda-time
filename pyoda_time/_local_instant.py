@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 
-from .utility import _sealed
+from .utility._csharp_compatibility import _sealed
 
 if typing.TYPE_CHECKING:
     from . import Duration, Instant, Offset
@@ -111,12 +111,12 @@ class _LocalInstant:
     def __lt__(self, other: _LocalInstant) -> bool:
         if isinstance(other, _LocalInstant):
             return self.__duration < other.__duration
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __le__(self, other: _LocalInstant) -> bool:
         if isinstance(other, _LocalInstant):
             return self.__duration <= other.__duration
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     # endregion
 

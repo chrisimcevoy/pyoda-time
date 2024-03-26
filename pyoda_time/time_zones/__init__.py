@@ -4,5 +4,4 @@
 
 __all__ = ["ZoneInterval"]
 
-from ._fixed_date_time_zone import _FixedDateTimeZone  # noqa: F401
 from ._zone_interval import ZoneInterval

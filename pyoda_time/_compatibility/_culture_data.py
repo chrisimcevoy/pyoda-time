@@ -414,7 +414,7 @@ class _CultureData(metaclass=_CultureDataMeta):
                             index_of_extensions = index
         return True, index_of_underscore, index_of_extensions
 
-    def __deepcopy__(self, memo: dict) -> _CultureData:
+    def __deepcopy__(self, memo: dict[int, typing.Any]) -> _CultureData:
         """Implementation to support CultureInfo.clone(), so we can copy.deepcopy(some_culture_info)
 
         icu.Locale is not pickleable, so we need to handle it manually.

@@ -13,7 +13,7 @@ from icu import DateFormat, DateFormatSymbols, DateTimePatternGenerator, Locale
 from pyoda_time._compatibility._calendar_id import _CalendarId
 from pyoda_time._compatibility._globalization_mode import _GlobalizationMode
 from pyoda_time._compatibility._string_builder import StringBuilder
-from pyoda_time.utility import _sealed
+from pyoda_time.utility._csharp_compatibility import _sealed
 
 
 class _CalendarDataType(IntEnum):
@@ -200,17 +200,17 @@ class _CalendarData(metaclass=_CalendarDataMeta):
                 if are_era_names_empty():
                     self._saEraNames = ["A.D."]
             # The rest of the calendars have constant data, so we'll just use that
-            case _CalendarId.GREGORIAN_US, _CalendarId.JULIAN:
+            case _CalendarId.GREGORIAN_US | _CalendarId.JULIAN:
                 self._saEraNames = ["A.D."]
             case _CalendarId.HEBREW:
                 self._saEraNames = ["C.E."]
-            case _CalendarId.HIJRI, _CalendarId.UMALQURA:
+            case _CalendarId.HIJRI | _CalendarId.UMALQURA:
                 if locale_name == "dv-MV":
                     # Special case for Divehi
                     self._saEraNames = ["\u0780\u07a8\u0796\u07b0\u0783\u07a9"]
                 else:
                     self._saEraNames = ["\u0628\u0639\u062f \u0627\u0644\u0647\u062c\u0631\u0629"]
-            case _CalendarId.GREGORIAN_ARABIC, _CalendarId.GREGORIAN_XLIT_ENGLISH, _CalendarId.GREGORIAN_XLIT_FRENCH:
+            case _CalendarId.GREGORIAN_ARABIC | _CalendarId.GREGORIAN_XLIT_ENGLISH | _CalendarId.GREGORIAN_XLIT_FRENCH:
                 # These are all the same:
                 self._saEraNames = ["\u0645"]
             case _CalendarId.GREGORIAN_ME_FRENCH:
@@ -224,7 +224,7 @@ class _CalendarData(metaclass=_CalendarDataMeta):
                 self._saEraNames = ["\ub2e8\uae30"]
             case _CalendarId.THAI:
                 self._saEraNames = ["\u0e1e\u002e\u0e28\u002e"]
-            case _CalendarId.JAPAN, _CalendarId.JAPANESELUNISOLAR:
+            case _CalendarId.JAPAN | _CalendarId.JAPANESELUNISOLAR:
                 from pyoda_time._compatibility._japanese_calendar import JapaneseCalendar
 
                 self._saEraNames = JapaneseCalendar._era_names()
@@ -263,14 +263,14 @@ class _CalendarData(metaclass=_CalendarDataMeta):
                         index += 1
                         if current == "'":
                             break
-                case "E", "e", "c":
+                case "E" | "e" | "c":
                     # 'E' in ICU is the day of the week, which maps to 3 or 4 'd's in .NET
                     # 'e' in ICU is the local day of the week, which has no representation in .NET, but
                     # maps closest to 3 or 4 'd's in .NET
                     # 'c' in ICU is the stand-alone day of the week, which has no representation in .NET, but
                     # maps closest to 3 or 4 'd's in .NET
                     index = cls.__normalize_day_of_week(date_pattern, destination, index)
-                case "L", "M":
+                case "L" | "M":
                     # 'L' in ICU is the stand-alone name of the month,
                     # which maps closest to 'M' in .NET since it doesn't support stand-alone month names in patterns
                     # 'M' in both ICU and .NET is the month,

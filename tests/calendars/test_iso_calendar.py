@@ -16,7 +16,7 @@ from pyoda_time import (
 )
 from pyoda_time._local_instant import _LocalInstant
 from pyoda_time.calendars import Era, WeekYearRules
-from pyoda_time.utility import _towards_zero_division
+from pyoda_time.utility._csharp_compatibility import _towards_zero_division
 
 ISO: CalendarSystem = CalendarSystem.iso
 

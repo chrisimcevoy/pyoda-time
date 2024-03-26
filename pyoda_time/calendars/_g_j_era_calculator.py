@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 
-from ..utility import _Preconditions
+from ..utility._preconditions import _Preconditions
 from ._era import Era
 from ._era_calculator import _EraCalculator
 from ._year_month_day_calculator import _YearMonthDayCalculator

@@ -7,7 +7,8 @@ from __future__ import annotations
 import typing
 
 from ._calendar_system import CalendarSystem
-from .utility import _Preconditions, _sealed
+from .utility._csharp_compatibility import _sealed
+from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
     from . import Period
@@ -224,32 +225,32 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         return LocalDateTime._ctor(local_date=self.__date.plus_weeks(weeks), local_time=self.__time)
 
     def plus_hours(self, hours: int) -> LocalDateTime:
-        from .fields import _TimePeriodField
+        from .fields._time_period_field import _TimePeriodField
 
         return _TimePeriodField._hours._add_local_date_time(self, hours)
 
     def plus_minutes(self, minutes: int) -> LocalDateTime:
-        from .fields import _TimePeriodField
+        from .fields._time_period_field import _TimePeriodField
 
         return _TimePeriodField._minutes._add_local_date_time(self, minutes)
 
     def plus_seconds(self, seconds: int) -> LocalDateTime:
-        from .fields import _TimePeriodField
+        from .fields._time_period_field import _TimePeriodField
 
         return _TimePeriodField._seconds._add_local_date_time(self, seconds)
 
     def plus_milliseconds(self, milliseconds: int) -> LocalDateTime:
-        from .fields import _TimePeriodField
+        from .fields._time_period_field import _TimePeriodField
 
         return _TimePeriodField._milliseconds._add_local_date_time(self, milliseconds)
 
     def plus_ticks(self, ticks: int) -> LocalDateTime:
-        from .fields import _TimePeriodField
+        from .fields._time_period_field import _TimePeriodField
 
         return _TimePeriodField._ticks._add_local_date_time(self, ticks)
 
     def plus_nanoseconds(self, nanoseconds: int) -> LocalDateTime:
-        from .fields import _TimePeriodField
+        from .fields._time_period_field import _TimePeriodField
 
         return _TimePeriodField._nanoseconds._add_local_date_time(self, nanoseconds)
 
@@ -290,7 +291,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
                 self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
             )
             return self.compare_to(other) < 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __le__(self, other: LocalDateTime) -> bool:
         if isinstance(other, LocalDateTime):
@@ -298,7 +299,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
                 self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
             )
             return self.compare_to(other) <= 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __gt__(self, other: LocalDateTime) -> bool:
         if isinstance(other, LocalDateTime):
@@ -306,7 +307,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
                 self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
             )
             return self.compare_to(other) > 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __ge__(self, other: LocalDateTime) -> bool:
         if isinstance(other, LocalDateTime):
@@ -314,7 +315,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
                 self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
             )
             return self.compare_to(other) >= 0
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def compare_to(self, other: LocalDateTime) -> int:
         # This will check calendars...
@@ -328,13 +329,13 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
 
         if isinstance(other, Period):
             return self.plus(other)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def plus(self, period: Period) -> LocalDateTime:
         _Preconditions._check_not_null(period, "period")
         extra_days = 0
         time = self.time_of_day
-        from .fields import _TimePeriodField
+        from .fields._time_period_field import _TimePeriodField
 
         time, plus_extra_days = _TimePeriodField._hours._add_local_time_with_extra_days(time, period.hours)
         extra_days += plus_extra_days

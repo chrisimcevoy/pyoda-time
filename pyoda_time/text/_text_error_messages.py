@@ -4,7 +4,7 @@
 
 from typing import Final, final
 
-from ..utility import _private, _sealed
+from ..utility._csharp_compatibility import _private, _sealed
 
 
 @final

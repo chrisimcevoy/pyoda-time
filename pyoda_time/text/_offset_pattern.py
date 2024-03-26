@@ -10,13 +10,14 @@ from typing import Final, _ProtocolMeta, cast, final
 from pyoda_time import Offset
 from pyoda_time._compatibility._culture_info import CultureInfo
 from pyoda_time._compatibility._string_builder import StringBuilder
-from pyoda_time.globalization import _PyodaFormatInfo
+from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import ParseResult
 from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
-from pyoda_time.text.patterns import _PatternBclSupport
-from pyoda_time.utility import _Preconditions, _sealed
+from pyoda_time.text.patterns._pattern_bcl_support import _PatternBclSupport
+from pyoda_time.utility._csharp_compatibility import _sealed
+from pyoda_time.utility._preconditions import _Preconditions
 
 
 class _OffsetPatternMeta(type):
@@ -113,8 +114,6 @@ class OffsetPattern(IPattern[Offset], metaclass=_CombinedMeta):
         """
         _Preconditions._check_not_null(pattern_text, "pattern_text")
         _Preconditions._check_not_null(format_info, "format_info")
-        if isinstance(format_info, CultureInfo):
-            format_info = _PyodaFormatInfo._get_format_info(format_info)
         pattern = cast(_IPartialPattern[Offset], format_info._offset_pattern_parser._parse_pattern(pattern_text))
         return OffsetPattern(pattern_text, pattern)
 

@@ -18,8 +18,9 @@ from pyoda_time import (
     PeriodUnits,
     PyodaConstants,
 )
-from pyoda_time.calendars import Era, _BadiYearMonthDayCalculator
-from pyoda_time.utility import _Preconditions
+from pyoda_time.calendars import Era
+from pyoda_time.calendars._badi_year_month_day_calculator import _BadiYearMonthDayCalculator
+from pyoda_time.utility._preconditions import _Preconditions
 
 
 class TestBadiCalendarSystem:

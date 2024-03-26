@@ -11,7 +11,7 @@ from .._year_month_day_calendar import _YearMonthDayCalendar
 if typing.TYPE_CHECKING:
     from .._local_date import LocalDate
 
-from ..utility import _sealed, _towards_zero_division
+from ..utility._csharp_compatibility import _sealed, _towards_zero_division
 from ._i_date_period_field import _IDatePeriodField
 
 

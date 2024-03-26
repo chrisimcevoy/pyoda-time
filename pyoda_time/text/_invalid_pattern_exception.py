@@ -4,7 +4,7 @@
 
 from typing import Any, final
 
-from ..utility import _sealed
+from ..utility._csharp_compatibility import _sealed
 
 
 @final

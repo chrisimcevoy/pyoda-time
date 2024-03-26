@@ -8,7 +8,8 @@ import base64
 import typing
 
 from .._year_month_day import _YearMonthDay
-from ..utility import _Preconditions, _sealed, _towards_zero_division
+from ..utility._csharp_compatibility import _sealed, _towards_zero_division
+from ..utility._preconditions import _Preconditions
 from ._year_month_day_calculator import _YearMonthDayCalculator
 
 

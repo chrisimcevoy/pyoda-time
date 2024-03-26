@@ -7,7 +7,7 @@ from __future__ import annotations
 import functools
 import typing
 
-from ..utility import _private, _sealed
+from ..utility._csharp_compatibility import _private, _sealed
 
 
 class _EraMeta(type):

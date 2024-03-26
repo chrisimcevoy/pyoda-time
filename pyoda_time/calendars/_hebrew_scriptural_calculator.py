@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import typing
 
-from ..utility import _csharp_modulo, _Preconditions, _towards_zero_division
+from ..utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
+from ..utility._preconditions import _Preconditions
 from ._year_start_cache_entry import _YearStartCacheEntry
 
 if typing.TYPE_CHECKING:

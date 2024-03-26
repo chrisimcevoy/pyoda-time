@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 
-from pyoda_time.text import _TextCursor
+from pyoda_time.text._text_cursor import _TextCursor
 
 
 class TextCursorTestBase(ABC):

@@ -13,7 +13,7 @@ from .._duration import Duration
 from .._local_date_time import LocalDateTime
 from .._local_time import LocalTime
 from .._pyoda_constants import PyodaConstants
-from ..utility import _csharp_modulo, _towards_zero_division
+from ..utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
 
 
 class _TimePeriodFieldMeta(type):

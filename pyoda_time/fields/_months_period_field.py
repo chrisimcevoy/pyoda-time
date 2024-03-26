@@ -9,7 +9,7 @@ import typing
 if typing.TYPE_CHECKING:
     from .._local_date import LocalDate
 
-from ..utility import _sealed
+from ..utility._csharp_compatibility import _sealed
 from ._i_date_period_field import _IDatePeriodField
 
 

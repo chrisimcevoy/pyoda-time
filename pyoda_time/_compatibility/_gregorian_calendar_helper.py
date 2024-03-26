@@ -4,7 +4,7 @@
 from datetime import datetime
 from typing import final
 
-from pyoda_time.utility import _sealed
+from pyoda_time.utility._csharp_compatibility import _sealed
 
 
 @_sealed
@@ -27,7 +27,7 @@ class _EraInfo:
         self._year_offset = year_offset
         self._min_era_year = min_era_year
         self._max_era_year = max_era_year
-        from pyoda_time.utility import _to_ticks
+        from pyoda_time.utility._csharp_compatibility import _to_ticks
 
         self._ticks = _to_ticks(datetime(start_year, start_month, start_day))
         self._era_name = era_name
