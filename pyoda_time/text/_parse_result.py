@@ -312,7 +312,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
         return cls._for_invalid_value(cursor, TextErrorMessages.NO_MATCHING_FORMAT)
 
     @classmethod
-    def _value_out_of_range(cls, value_cursor: _ValueCursor, value: T) -> ParseResult[T]:
+    def _value_out_of_range(cls, value_cursor: _ValueCursor, value: object) -> ParseResult[T]:
         return cls._for_invalid_value(value_cursor, TextErrorMessages.VALUE_OUT_OF_RANGE, value, type(value))
 
     @classmethod

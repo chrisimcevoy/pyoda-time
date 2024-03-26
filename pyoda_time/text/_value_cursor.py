@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 import math
-from typing import Any, final
+from typing import final
 
 from ..utility._csharp_compatibility import _CsharpConstants, _sealed
 from ._parse_result import ParseResult
@@ -123,7 +123,7 @@ class _ValueCursor(_TextCursor):
             result = -result
         return None, result
 
-    def __build_number_out_of_range_result(self, start_index: int) -> ParseResult[Any]:
+    def __build_number_out_of_range_result(self, start_index: int) -> ParseResult[None]:
         self.move(start_index)
         if self.current == "-":
             self.move_next()

@@ -60,7 +60,8 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
         return _towards_zero_division(abs(offset.milliseconds), PyodaConstants.MILLISECONDS_PER_HOUR)
 
     @staticmethod
-    def __H_setter(bucket: _OffsetParseBucket, value: int) -> None:
+    def __H_setter(bucket: _ParseBucket[Offset], value: int) -> None:
+        assert isinstance(bucket, _OffsetParseBucket)
         bucket._hours = value
 
     @staticmethod
@@ -71,7 +72,8 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
         )
 
     @staticmethod
-    def __m_setter(bucket: _OffsetParseBucket, value: int) -> None:
+    def __m_setter(bucket: _ParseBucket[Offset], value: int) -> None:
+        assert isinstance(bucket, _OffsetParseBucket)
         bucket._minutes = value
 
     @staticmethod
@@ -82,24 +84,26 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
         )
 
     @staticmethod
-    def __s_setter(bucket: _OffsetParseBucket, value: int) -> None:
+    def __s_setter(bucket: _ParseBucket[Offset], value: int) -> None:
+        assert isinstance(bucket, _OffsetParseBucket)
         bucket._seconds = value
 
     @staticmethod
-    def __handle_colon(_: _PatternCursor, builder: _SteppedPatternBuilder[Offset, _OffsetParseBucket]) -> None:
+    def __handle_colon(_: _PatternCursor, builder: _SteppedPatternBuilder[Offset]) -> None:
         builder._add_literal(builder._format_info.time_separator, ParseResult[Offset]._time_separator_mismatch)
 
     @staticmethod
-    def __handle_h(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset, _OffsetParseBucket]) -> None:
+    def __handle_h(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset]) -> None:
         raise InvalidPatternError(TextErrorMessages.HOUR12_PATTERN_NOT_SUPPORTED, Offset.__name__)
 
     @staticmethod
-    def __handle_Z(_: _PatternCursor, __: _SteppedPatternBuilder[Offset, _OffsetParseBucket]) -> None:
+    def __handle_Z(_: _PatternCursor, __: _SteppedPatternBuilder[Offset]) -> None:
         raise InvalidPatternError(TextErrorMessages.ZPREFIX_NOT_AT_START_OF_PATTERN)
 
     @staticmethod
-    def __handle_plus(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset, _OffsetParseBucket]) -> None:
-        def sign_setter(bucket: _OffsetParseBucket, positive: bool) -> None:
+    def __handle_plus(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset]) -> None:
+        def sign_setter(bucket: _ParseBucket[Offset], positive: bool) -> None:
+            assert isinstance(bucket, _OffsetParseBucket)
             bucket._is_negative = not positive
 
         def non_negative_predicate(offset: Offset) -> bool:
@@ -109,8 +113,9 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
         builder.add_required_sign(sign_setter, non_negative_predicate)
 
     @staticmethod
-    def __handle_minus(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset, _OffsetParseBucket]) -> None:
-        def sign_setter(bucket: _OffsetParseBucket, positive: bool) -> None:
+    def __handle_minus(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset]) -> None:
+        def sign_setter(bucket: _ParseBucket[Offset], positive: bool) -> None:
+            assert isinstance(bucket, _OffsetParseBucket)
             bucket._is_negative = not positive
 
         def non_negative_predicate(offset: Offset) -> bool:
@@ -119,28 +124,25 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
         builder._add_field(_PatternFields.SIGN, pattern.current)
         builder.add_negative_only_sign(sign_setter, non_negative_predicate)
 
-    __PATTERN_CHARACTER_HANDLERS: Mapping[
-        str, Callable[[_PatternCursor, _SteppedPatternBuilder[Offset, _OffsetParseBucket]], None]
-    ] = {
-        "%": _SteppedPatternBuilder[Offset, _OffsetParseBucket]._handle_percent,
-        "'": _SteppedPatternBuilder[Offset, _OffsetParseBucket]._handle_quote,
-        '"': _SteppedPatternBuilder[Offset, _OffsetParseBucket]._handle_quote,
-        "\\": _SteppedPatternBuilder[Offset, _OffsetParseBucket]._handle_backslash,
+    __PATTERN_CHARACTER_HANDLERS: Mapping[str, Callable[[_PatternCursor, _SteppedPatternBuilder[Offset]], None]] = {
+        "%": _SteppedPatternBuilder[Offset]._handle_percent,
+        "'": _SteppedPatternBuilder[Offset]._handle_quote,
+        '"': _SteppedPatternBuilder[Offset]._handle_quote,
+        "\\": _SteppedPatternBuilder[Offset]._handle_backslash,
         ":": __handle_colon,
         "h": __handle_h,
-        "H": _SteppedPatternBuilder[Offset, _OffsetParseBucket]._handle_padded_field(
+        "H": _SteppedPatternBuilder[Offset]._handle_padded_field(
             2, _PatternFields.HOURS_24, 0, 23, __get_positive_hours, __H_setter, Offset
         ),
-        "m": _SteppedPatternBuilder[Offset, _OffsetParseBucket]._handle_padded_field(
+        "m": _SteppedPatternBuilder[Offset]._handle_padded_field(
             2, _PatternFields.MINUTES, 0, 59, __get_positive_minutes, __m_setter, Offset
         ),
-        "s": _SteppedPatternBuilder[Offset, _OffsetParseBucket]._handle_padded_field(
+        "s": _SteppedPatternBuilder[Offset]._handle_padded_field(
             2, _PatternFields.SECONDS, 0, 59, __get_positive_seconds, __s_setter, Offset
         ),
         "+": __handle_plus,
         "-": __handle_minus,
         "Z": __handle_Z,
-        # TODO: Add missing character handlers
     }
 
     def parse_pattern(self, pattern: str, format_info: _PyodaFormatInfo) -> IPattern[Offset]:
@@ -208,7 +210,7 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
         # (And assuming we don't add any standard => custom pattern expansions that result in an empty pattern.)
         z_prefix: bool = pattern_text[0] == "Z"
 
-        pattern_builder = _SteppedPatternBuilder[Offset, _OffsetParseBucket](format_info, _OffsetParseBucket)
+        pattern_builder = _SteppedPatternBuilder[Offset](format_info, _OffsetParseBucket)
         pattern_builder._parse_custom_pattern(
             pattern_text[1:] if z_prefix else pattern_text, self.__PATTERN_CHARACTER_HANDLERS
         )
