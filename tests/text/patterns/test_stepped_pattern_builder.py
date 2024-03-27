@@ -69,7 +69,7 @@ class TestSteppedPatternBuilder:
         def format_action(date: LocalDate, sb: StringBuilder) -> None:
             sb.append("Formatted")
 
-        builder = _SteppedPatternBuilder[LocalDate, SampleBucket](_PyodaFormatInfo.invariant_info, SampleBucket)
+        builder = _SteppedPatternBuilder[LocalDate](_PyodaFormatInfo.invariant_info, SampleBucket)
         builder._add_format_action(format_action)
         builder._set_format_only()
         pattern = builder._build(LocalDate.min_iso_value)
@@ -97,14 +97,14 @@ class TestSteppedPatternBuilder:
         ],
     )
     def test_unhandled_literal(self, text: str, valid: bool) -> None:
-        def handler(_: _PatternCursor, __: _SteppedPatternBuilder[LocalDate, SampleBucket]) -> None:
+        def handler(_: _PatternCursor, __: _SteppedPatternBuilder[LocalDate]) -> None:
             return None
 
         handlers = {
             "a": handler,
             "B": handler,
         }
-        builder = _SteppedPatternBuilder[LocalDate, SampleBucket](
+        builder = _SteppedPatternBuilder[LocalDate](
             _PyodaFormatInfo.invariant_info,
             SampleBucket,
         )

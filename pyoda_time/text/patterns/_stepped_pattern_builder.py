@@ -28,19 +28,38 @@ from .._text_error_messages import TextErrorMessages
 from ._pattern_cursor import _PatternCursor
 from ._pattern_fields import _PatternFields
 
-# TODO: Look at TResult and TBucket again...
-#  It doesn't seem possible to replicate the generic type constraints faithfully in Python.
-#  The type:ignore is there now because mypy doesn't like _ParseBucket with no generic type parameter.
-#  But if you add the generic type parameter, e.g. `bound="_ParseBucket[TResult]"`, it doesn't like
-#  that either because bounds cannot be generic types apparently.
+# TODO: In Noda Time, SteppedPatternBuilder has two generic type parameters:
+#  `SteppedPatternBuilder<TResult, TBucket> where TBucket : ParseBucket<TResult>`
+#  This seems to be impossible to replicate with TypeVar.
+#  If you do this:
+#  `TBucket = TypeVar(TResult, bound=_ParseBucket)`
+#  Then mypy complains that _ParseBucket is missing a type parameter, because it
+#  is itself a generic class.
+#  If you then do this:
+#  `TBucket = TypeVar(TResult, bound=_ParseBucket[TBucket])`
+#  Mypy complains that TResult is unbound, because in the context that TBucket is
+#  declared it really is unbound. Also, PyCharm gives a warning that TypeVar
+#  constraints may not have generic type parameters.
+#  I tried a bunch of different stuff to make it work, to no avail.
+#  In the end I decided to omit the TBucket type parameter from SteppedPatternBuilder
+#  altogether.
+#  This is fine for SteppedPatternBuilder, but it does mean that occasionally discrete
+#  inheritors (e.g. OffsetPatternParser) will have e.g. `_ParseBucket[Offset]` type
+#  annotations where Noda Time has `_OffsetParseBucket` types.
+#  This means that occasionally we have to convince mypy to accept that the actual type
+#  of those parameters is `_OffsetParseBucket` inside function bodies, to be able to
+#  set the required attributes which don't exist on the `ParseBucket` base class.
+#  Bit of a pain, but overall preferable to having any more `# type: ignore` than
+#  we have to.
+#  Maybe there is a refactor to be had here which is more sympathetic to Python's
+#  static typing limitations...?
 
 TResult = TypeVar("TResult")
-TBucket = TypeVar("TBucket", bound="_ParseBucket")  # type: ignore[type-arg]
 
 
 @_sealed
 @final
-class _SteppedPatternBuilder(Generic[TResult, TBucket]):
+class _SteppedPatternBuilder(Generic[TResult]):
     """Builder for a pattern which implements parsing and formatting as a sequence of steps applied in turn."""
 
     @property
@@ -51,15 +70,17 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
     def _used_fields(self) -> _PatternFields:
         return self.__used_fields
 
-    def __init__(self, format_info: _PyodaFormatInfo, bucket_provider: Callable[[], TBucket]) -> None:
+    def __init__(self, format_info: _PyodaFormatInfo, bucket_provider: Callable[[], _ParseBucket[TResult]]) -> None:
         self.__format_info: Final[_PyodaFormatInfo] = format_info
         self.__format_actions: Final[list[Callable[[TResult, StringBuilder], None]]] = []
-        self.__parse_actions: Final[list[Callable[[_ValueCursor, TBucket], ParseResult[TResult] | None]]] = []
-        self.__bucket_provider: Final[Callable[[], TBucket]] = bucket_provider
+        self.__parse_actions: Final[
+            list[Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]]
+        ] = []
+        self.__bucket_provider: Final[Callable[[], _ParseBucket[TResult]]] = bucket_provider
         self.__used_fields: _PatternFields = _PatternFields.NONE
         self.__format_only: bool = False
 
-    def _create_sample_bucket(self) -> TBucket:
+    def _create_sample_bucket(self) -> _ParseBucket[TResult]:
         """Calls the bucket provider and returns a sample bucket.
 
         This means that any values normally propagated via the bucket can also be used when building the pattern.
@@ -74,7 +95,7 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
     def _parse_custom_pattern(
         self,
         pattern_text: str,
-        character_handlers: Mapping[str, Callable[[_PatternCursor, _SteppedPatternBuilder[TResult, TBucket]], None]],
+        character_handlers: Mapping[str, Callable[[_PatternCursor, _SteppedPatternBuilder[TResult]], None]],
     ) -> None:
         """Performs common parsing operations: start with a parse action to move the
         value cursor onto the first character, then call a character handler for each
@@ -167,7 +188,9 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
             raise InvalidPatternError(TextErrorMessages.REPEATED_FIELD_IN_PATTERN, character_in_pattern)
         self.__used_fields = new_used_fields
 
-    def _add_parse_action(self, parse_action: Callable[[_ValueCursor, TBucket], ParseResult[TResult] | None]) -> None:
+    def _add_parse_action(
+        self, parse_action: Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]
+    ) -> None:
         self.__parse_actions.append(parse_action)
 
     def _add_format_action(self, format_action: Callable[[TResult, StringBuilder], None]) -> None:
@@ -180,10 +203,10 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         pattern_char: str,
         minimum_value: int,
         maximum_value: int,
-        value_setter: Callable[[TBucket, int], None],
+        value_setter: Callable[[_ParseBucket[TResult], int], None],
         type_: type[TResult],
     ) -> None:
-        def parse_value_action(cursor: _ValueCursor, bucket: TBucket) -> ParseResult[TResult] | None:
+        def parse_value_action(cursor: _ValueCursor, bucket: _ParseBucket[TResult]) -> ParseResult[TResult] | None:
             starting_index = cursor.index
             negative = cursor._match("-")
             if negative and minimum_value >= 0:
@@ -220,12 +243,12 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         return
 
     @classmethod
-    def _handle_quote(cls, pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult, TBucket]) -> None:
+    def _handle_quote(cls, pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult]) -> None:
         quoted: str = pattern.get_quoted_string(pattern.current)
         builder._add_literal(quoted, ParseResult[TResult]._quoted_string_mismatch)
 
     @classmethod
-    def _handle_backslash(cls, pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult, TBucket]) -> None:
+    def _handle_backslash(cls, pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult]) -> None:
         if not pattern.move_next():
             raise InvalidPatternError(TextErrorMessages.ESCAPE_AT_END_OF_STRING)
 
@@ -237,7 +260,7 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         builder._add_literal(pattern.current, failure)
 
     @classmethod
-    def _handle_percent(cls, pattern: _PatternCursor, _builder: _SteppedPatternBuilder[TResult, TBucket]) -> None:
+    def _handle_percent(cls, pattern: _PatternCursor, _builder: _SteppedPatternBuilder[TResult]) -> None:
         """Handle a leading "%" which acts as a pseudo-escape - it's mostly used to allow format strings such as '%H'
         to mean 'use a custom format string consisting of H instead of a standard pattern H'."""
         if pattern.has_more_characters:
@@ -255,10 +278,10 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         min_value: int,
         max_value: int,
         getter: Callable[[TResult], int],
-        setter: Callable[[TBucket, int], None],
+        setter: Callable[[_ParseBucket[TResult], int], None],
         type_: type[TResult],
-    ) -> Callable[[_PatternCursor, _SteppedPatternBuilder[TResult, TBucket]], None]:
-        def handler(pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult, TBucket]) -> None:
+    ) -> Callable[[_PatternCursor, _SteppedPatternBuilder[TResult]], None]:
+        def handler(pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult]) -> None:
             count = pattern.get_repeat_count(max_count)
             builder._add_field(field, pattern.current)
             builder._add_parse_value_action(count, max_count, pattern.current, min_value, max_value, setter, type_)
@@ -269,11 +292,13 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         return handler
 
     def add_required_sign(
-        self, sign_setter: Callable[[TBucket, bool], None], non_negative_predicate: Callable[[TResult], bool]
+        self,
+        sign_setter: Callable[[_ParseBucket[TResult], bool], None],
+        non_negative_predicate: Callable[[TResult], bool],
     ) -> None:
         """Adds parse and format actions for a mandatory positive/negative sign."""
 
-        def parse_action(string: _ValueCursor, bucket: TBucket) -> ParseResult[TResult] | None:
+        def parse_action(string: _ValueCursor, bucket: _ParseBucket[TResult]) -> ParseResult[TResult] | None:
             if string._match("-"):
                 sign_setter(bucket, False)
                 return None
@@ -291,11 +316,13 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         self._add_format_action(format_action)
 
     def add_negative_only_sign(
-        self, sign_setter: Callable[[TBucket, bool], None], non_negative_predicate: Callable[[TResult], bool]
+        self,
+        sign_setter: Callable[[_ParseBucket[TResult], bool], None],
+        non_negative_predicate: Callable[[TResult], bool],
     ) -> None:
         """Adds parse and format actions for an "negative only" sign."""
 
-        def parse_action(string: _ValueCursor, bucket: TBucket) -> ParseResult[TResult] | None:
+        def parse_action(string: _ValueCursor, bucket: _ParseBucket[TResult]) -> ParseResult[TResult] | None:
             if string._match("-"):
                 sign_setter(bucket, False)
                 return None
@@ -355,17 +382,17 @@ class _SteppedPatternBuilder(Generic[TResult, TBucket]):
         def __init__(
             self,
             format_actions: Callable[[TResult, StringBuilder], None],
-            parse_actions: list[Callable[[_ValueCursor, TBucket], ParseResult[TResult] | None]] | None,
-            bucket_provider: Callable[[], TBucket],
+            parse_actions: list[Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]] | None,
+            bucket_provider: Callable[[], _ParseBucket[TResult]],
             used_fields: _PatternFields,
             sample: TResult,
         ) -> None:
             self.__format_actions: Final[Callable[[TResult, StringBuilder], None]] = format_actions
             # This will be null if the pattern is only capable of formatting.
-            self.__parse_actions: Final[list[Callable[[_ValueCursor, TBucket], ParseResult[TResult] | None]] | None] = (
-                parse_actions
-            )
-            self.__bucket_provider: Final[Callable[[], TBucket]] = bucket_provider
+            self.__parse_actions: Final[
+                list[Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]] | None
+            ] = parse_actions
+            self.__bucket_provider: Final[Callable[[], _ParseBucket[TResult]]] = bucket_provider
             self.__used_fields: Final[_PatternFields] = used_fields
 
             # Format the sample value to work out the expected length, so we
