@@ -5,7 +5,7 @@ from collections import deque
 from threading import Lock
 from typing import Callable, Final, Generic, TypeVar, final
 
-from pyoda_time.utility import _sealed
+from pyoda_time.utility._csharp_compatibility import _sealed
 
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
@@ -25,7 +25,7 @@ class _Cache(Generic[TKey, TValue]):
         self.__size: Final[int] = size
         self.__value_factory: Final[Callable[[TKey], TValue]] = value_factory
         self.__lock: Final[Lock] = Lock()
-        self.__key_list: Final[deque] = deque()  # For eviction tracking
+        self.__key_list: Final[deque[TKey]] = deque()  # For eviction tracking
         self.__dictionary: Final[dict[TKey, TValue]] = {}  # Main storage
 
     def get_or_add(self, key: TKey) -> TValue:

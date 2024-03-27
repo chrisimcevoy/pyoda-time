@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 
-from ..utility import _csharp_modulo, _sealed, _towards_zero_division
+from ..utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
 from ._hebrew_month_converter import _HebrewMonthConverter
 from ._hebrew_month_numbering import HebrewMonthNumbering
 from ._hebrew_scriptural_calculator import _HebrewScripturalCalculator

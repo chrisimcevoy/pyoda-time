@@ -17,7 +17,9 @@ if typing.TYPE_CHECKING:
         _LocalInstant,
     )
 
-from pyoda_time.utility import _hash_code_helper, _Preconditions, _sealed
+from pyoda_time.utility._csharp_compatibility import _sealed
+from pyoda_time.utility._hash_code_helper import _hash_code_helper
+from pyoda_time.utility._preconditions import _Preconditions
 
 __all__ = ["ZoneInterval"]
 

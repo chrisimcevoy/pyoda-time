@@ -8,9 +8,10 @@ import pytest
 
 from pyoda_time._compatibility._culture_info import CultureInfo
 from pyoda_time._compatibility._string_builder import StringBuilder
-from pyoda_time.text import InvalidPatternError, UnparsableValueError, _ValueCursor
+from pyoda_time.text import InvalidPatternError, UnparsableValueError
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
+from pyoda_time.text._value_cursor import _ValueCursor
 
 T = TypeVar("T")
 
@@ -32,7 +33,7 @@ class PatternTestData(Generic[T]):
         template: T | None = None,
         description: str | None = None,
         message: str | None = None,
-        parameters: list | None = None,
+        parameters: list[Any] | None = None,
     ) -> None:
         self.value: Final[T] = value
         self.culture: CultureInfo = culture

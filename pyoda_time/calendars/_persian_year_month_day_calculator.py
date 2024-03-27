@@ -8,7 +8,7 @@ import abc
 import base64
 import typing
 
-from ..utility import _csharp_modulo, _towards_zero_division
+from ..utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
 if typing.TYPE_CHECKING:

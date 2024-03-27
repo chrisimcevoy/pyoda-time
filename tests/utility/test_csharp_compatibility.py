@@ -8,7 +8,7 @@ from typing import Annotated
 
 import pytest
 
-from pyoda_time.utility import _private, _sealed
+from pyoda_time.utility._csharp_compatibility import _private, _sealed
 
 
 def test_foo() -> None:

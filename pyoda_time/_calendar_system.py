@@ -6,12 +6,18 @@ from __future__ import annotations
 
 import typing
 
-from .calendars import (
-    _CopticYearMonthDayCalculator,
-    _JulianYearMonthDayCalculator,
-    _PersianYearMonthDayCalculator,
-    _UmAlQuraYearMonthDayCalculator,
-)
+from .calendars._badi_year_month_day_calculator import _BadiYearMonthDayCalculator
+from .calendars._coptic_year_month_day_calculator import _CopticYearMonthDayCalculator
+from .calendars._era_calculator import _EraCalculator
+from .calendars._g_j_era_calculator import _GJEraCalculator
+from .calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
+from .calendars._hebrew_year_month_day_calculator import _HebrewYearMonthDayCalculator
+from .calendars._islamic_year_month_day_calculator import _IslamicYearMonthDayCalculator
+from .calendars._julian_year_month_day_calculator import _JulianYearMonthDayCalculator
+from .calendars._persian_year_month_day_calculator import _PersianYearMonthDayCalculator
+from .calendars._single_era_calculator import _SingleEraCalculator
+from .calendars._um_al_qura_year_month_day_calculator import _UmAlQuraYearMonthDayCalculator
+from .calendars._year_month_day_calculator import _YearMonthDayCalculator
 
 if typing.TYPE_CHECKING:
     from ._year_month_day import _YearMonthDay
@@ -19,7 +25,8 @@ if typing.TYPE_CHECKING:
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._iso_day_of_week import IsoDayOfWeek
-from .utility import _csharp_modulo, _Preconditions, _private, _sealed
+from .utility._csharp_compatibility import _csharp_modulo, _private, _sealed
+from .utility._preconditions import _Preconditions
 
 __all__ = ["CalendarSystem"]
 from .calendars import (
@@ -27,14 +34,6 @@ from .calendars import (
     HebrewMonthNumbering,
     IslamicEpoch,
     IslamicLeapYearPattern,
-    _BadiYearMonthDayCalculator,
-    _EraCalculator,
-    _GJEraCalculator,
-    _GregorianYearMonthDayCalculator,
-    _HebrewYearMonthDayCalculator,
-    _IslamicYearMonthDayCalculator,
-    _SingleEraCalculator,
-    _YearMonthDayCalculator,
 )
 
 

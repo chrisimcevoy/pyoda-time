@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
         OffsetDateTime,
     )
 
-from .utility import _Preconditions
+from .utility._preconditions import _Preconditions
 
 __all__ = ["ZonedDateTime"]
 

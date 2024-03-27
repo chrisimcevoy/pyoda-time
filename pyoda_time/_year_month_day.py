@@ -8,7 +8,7 @@ import typing
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._year_month_day_calendar import _YearMonthDayCalendar
-from .utility import _sealed
+from .utility._csharp_compatibility import _sealed
 
 if typing.TYPE_CHECKING:
     from . import CalendarSystem
@@ -93,19 +93,19 @@ class _YearMonthDay:
     def __lt__(self, other: _YearMonthDay) -> bool:
         if isinstance(other, _YearMonthDay):
             return self.__value < other.__value
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __le__(self, other: _YearMonthDay) -> bool:
         if isinstance(other, _YearMonthDay):
             return self.__value <= other.__value
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __gt__(self, other: _YearMonthDay) -> bool:
         if isinstance(other, _YearMonthDay):
             return self.__value > other.__value
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __ge__(self, other: _YearMonthDay) -> bool:
         if isinstance(other, _YearMonthDay):
             return self.__value >= other.__value
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]

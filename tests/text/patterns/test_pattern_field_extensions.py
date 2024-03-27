@@ -3,7 +3,7 @@
 # as found in the LICENSE.txt file.
 
 
-from pyoda_time.text.patterns import _PatternFields
+from pyoda_time.text.patterns._pattern_fields import _PatternFields
 
 
 class TestPatternFieldExtensions:

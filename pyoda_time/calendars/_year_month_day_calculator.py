@@ -9,7 +9,8 @@ import typing
 
 if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
-from ..utility import _Preconditions, _towards_zero_division
+from ..utility._csharp_compatibility import _towards_zero_division
+from ..utility._preconditions import _Preconditions
 from ._year_start_cache_entry import _YearStartCacheEntry
 
 

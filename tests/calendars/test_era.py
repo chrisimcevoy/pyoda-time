@@ -6,7 +6,8 @@ import inspect
 
 import pytest
 
-from pyoda_time.calendars import Era, _EraMeta
+from pyoda_time.calendars import Era
+from pyoda_time.calendars._era import _EraMeta
 
 ALL_ERAS = [getattr(Era, name) for name, member in inspect.getmembers(_EraMeta) if isinstance(member, property)]
 

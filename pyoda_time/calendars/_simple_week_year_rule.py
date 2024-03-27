@@ -10,9 +10,10 @@ if typing.TYPE_CHECKING:
     from .._calendar_system import CalendarSystem
     from .._local_date import LocalDate
 from .._iso_day_of_week import IsoDayOfWeek
-from ..utility import _Preconditions, _sealed, _towards_zero_division
-from ._hebrew_year_month_day_calculator import _YearMonthDayCalculator
+from ..utility._csharp_compatibility import _sealed, _towards_zero_division
+from ..utility._preconditions import _Preconditions
 from ._i_week_year_rule import IWeekYearRule
+from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @_sealed

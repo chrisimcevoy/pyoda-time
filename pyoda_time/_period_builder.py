@@ -7,7 +7,8 @@ from __future__ import annotations
 import typing
 
 from ._period_units import PeriodUnits
-from .utility import _Preconditions, _sealed
+from .utility._csharp_compatibility import _sealed
+from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
     from ._period import Period

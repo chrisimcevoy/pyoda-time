@@ -9,7 +9,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
-from ..utility import _towards_zero_division
+from ..utility._csharp_compatibility import _towards_zero_division
 from ._year_month_day_calculator import _YearMonthDayCalculator
 
 

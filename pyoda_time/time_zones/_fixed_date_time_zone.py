@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
     from . import ZoneInterval
 
 from .._date_time_zone import DateTimeZone
-from ..utility import _sealed
+from ..utility._csharp_compatibility import _sealed
 
 
 @_sealed

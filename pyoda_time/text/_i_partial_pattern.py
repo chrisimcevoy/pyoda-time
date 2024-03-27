@@ -3,8 +3,9 @@
 # as found in the LICENSE.txt file.
 from abc import abstractmethod
 
-from pyoda_time.text import ParseResult, _ValueCursor
+from pyoda_time.text import ParseResult
 from pyoda_time.text._i_pattern import IPattern, T
+from pyoda_time.text._value_cursor import _ValueCursor
 
 
 class _IPartialPattern(IPattern[T]):

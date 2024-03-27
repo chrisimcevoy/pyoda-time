@@ -5,7 +5,8 @@
 import pytest
 
 from pyoda_time import CalendarSystem, IsoDayOfWeek, LocalDate, LocalDateTime
-from pyoda_time.calendars import Era, IslamicEpoch, IslamicLeapYearPattern, _IslamicYearMonthDayCalculator
+from pyoda_time.calendars import Era, IslamicEpoch, IslamicLeapYearPattern
+from pyoda_time.calendars._islamic_year_month_day_calculator import _IslamicYearMonthDayCalculator
 
 
 class TestIslamicCalendarSystem:
@@ -273,7 +274,7 @@ class TestIslamicCalendarSystem:
     def test_get_instance_caching(self) -> None:
         from collections import deque
 
-        queue: deque = deque()
+        queue: deque[CalendarSystem] = deque()
         set_: set[CalendarSystem] = set()
         ids: set[str] = set()
         for leap_year_pattern in IslamicLeapYearPattern:

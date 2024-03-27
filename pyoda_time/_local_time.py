@@ -8,7 +8,8 @@ import functools
 import typing
 
 from ._pyoda_constants import PyodaConstants
-from .utility import _csharp_modulo, _int32_overflow, _Preconditions, _sealed, _towards_zero_division
+from .utility._csharp_compatibility import _csharp_modulo, _int32_overflow, _sealed, _towards_zero_division
+from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
     from . import LocalDateTime

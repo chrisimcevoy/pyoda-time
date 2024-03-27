@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 
-from ..utility import _csharp_modulo, _sealed, _towards_zero_division
+from ..utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
 from ._islamic_epoch import IslamicEpoch
 from ._islamic_leap_year_pattern import IslamicLeapYearPattern
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator

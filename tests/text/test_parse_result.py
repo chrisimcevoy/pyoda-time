@@ -4,7 +4,8 @@
 
 import pytest
 
-from pyoda_time.text import ParseResult, UnparsableValueError, _ValueCursor
+from pyoda_time.text import ParseResult, UnparsableValueError
+from pyoda_time.text._value_cursor import _ValueCursor
 
 
 class TestParseResult:

@@ -10,7 +10,7 @@ from typing import Callable, Final, TypeVar
 import pytest
 
 from pyoda_time import Duration, PyodaConstants
-from pyoda_time.utility import _CsharpConstants, _towards_zero_division
+from pyoda_time.utility._csharp_compatibility import _CsharpConstants, _towards_zero_division
 from tests import helpers
 
 T = TypeVar("T")

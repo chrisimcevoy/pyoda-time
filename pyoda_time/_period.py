@@ -9,8 +9,9 @@ import typing
 
 from ._period_units import PeriodUnits
 from ._pyoda_constants import PyodaConstants
-from .fields import _TimePeriodField
-from .utility import _csharp_modulo, _Preconditions, _private, _sealed, _towards_zero_division
+from .fields._time_period_field import _TimePeriodField
+from .utility._csharp_compatibility import _csharp_modulo, _private, _sealed, _towards_zero_division
+from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
     from . import Duration, LocalDate, LocalDateTime, LocalTime, PeriodBuilder, YearMonth
@@ -228,7 +229,7 @@ class Period(metaclass=_PeriodMeta):
                 ticks=self.ticks + other.ticks,
                 nanoseconds=self.nanoseconds + other.nanoseconds,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def add(self, other: Period) -> Period:
         """Return the sum of the two periods.
@@ -253,7 +254,7 @@ class Period(metaclass=_PeriodMeta):
                 ticks=self.ticks - other.ticks,
                 nanoseconds=self.nanoseconds - other.nanoseconds,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def subtract(self, other: Period) -> Period:
         """Subtracts one period from another, by simply subtracting each property value.
@@ -324,7 +325,7 @@ class Period(metaclass=_PeriodMeta):
         from ._local_date import LocalDate
         from ._local_date_time import LocalDateTime
         from ._local_time import LocalTime
-        from .fields import _DatePeriodFields
+        from .fields._date_period_fields import _DatePeriodFields
 
         # public static Period Between(LocalDateTime start, LocalDateTime end, PeriodUnits units)
         if isinstance(start, LocalDateTime) and isinstance(end, LocalDateTime):
@@ -494,7 +495,7 @@ class Period(metaclass=_PeriodMeta):
             match units:
                 case PeriodUnits.HOURS:
                     return cls.from_hours(_towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_HOUR))
-                case PeriodUnits.HOURS:
+                case PeriodUnits.MINUTES:
                     return cls.from_minutes(_towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_MINUTE))
                 case PeriodUnits.SECONDS:
                     return cls.from_seconds(_towards_zero_division(remaining_, PyodaConstants.NANOSECONDS_PER_SECOND))
@@ -551,7 +552,7 @@ class Period(metaclass=_PeriodMeta):
             end_date_: LocalDate = end._start_date
 
             # Optimization for single field
-            from .fields import _DatePeriodFields
+            from .fields._date_period_fields import _DatePeriodFields
 
             match units:
                 case PeriodUnits.YEARS:
@@ -570,7 +571,8 @@ class Period(metaclass=_PeriodMeta):
     def __date_components_between(
         cls, start: LocalDate, end: LocalDate, units: PeriodUnits
     ) -> tuple[LocalDate, int, int, int, int]:
-        from .fields import _DatePeriodFields, _IDatePeriodField
+        from .fields._date_period_fields import _DatePeriodFields
+        from .fields._i_date_period_field import _IDatePeriodField
 
         def units_between(
             masked_units: PeriodUnits, start_date: LocalDate, end_date: LocalDate, date_field: _IDatePeriodField
@@ -777,6 +779,11 @@ class Period(metaclass=_PeriodMeta):
         )
 
     def equals(self, other: Period) -> bool:
+        return self == other
+
+    def __eq__(self, other: object) -> bool:
+        if self is other:
+            return True
         if isinstance(other, Period):
             return (
                 self.years == other.years
@@ -790,13 +797,6 @@ class Period(metaclass=_PeriodMeta):
                 and self.ticks == other.ticks
                 and self.nanoseconds == other.nanoseconds
             )
-        return NotImplemented
-
-    def __eq__(self, other: object) -> bool:
-        if self is other:
-            return True
-        if isinstance(other, Period):
-            return self.equals(other)
         return NotImplemented
 
     def __ne__(self, other: object) -> bool:

@@ -14,7 +14,7 @@ from pyoda_time import (
     PyodaConstants,
 )
 from pyoda_time._local_instant import _LocalInstant
-from pyoda_time.utility import _CsharpConstants, _towards_zero_division
+from pyoda_time.utility._csharp_compatibility import _CsharpConstants, _towards_zero_division
 from tests import helpers
 
 

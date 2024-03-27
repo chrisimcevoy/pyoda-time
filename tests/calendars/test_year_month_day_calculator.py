@@ -11,15 +11,15 @@ from pyoda_time.calendars import (
     HebrewMonthNumbering,
     IslamicEpoch,
     IslamicLeapYearPattern,
-    _CopticYearMonthDayCalculator,
-    _GregorianYearMonthDayCalculator,
-    _HebrewYearMonthDayCalculator,
-    _IslamicYearMonthDayCalculator,
-    _JulianYearMonthDayCalculator,
-    _PersianYearMonthDayCalculator,
-    _UmAlQuraYearMonthDayCalculator,
-    _YearMonthDayCalculator,
 )
+from pyoda_time.calendars._coptic_year_month_day_calculator import _CopticYearMonthDayCalculator
+from pyoda_time.calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
+from pyoda_time.calendars._hebrew_year_month_day_calculator import _HebrewYearMonthDayCalculator
+from pyoda_time.calendars._islamic_year_month_day_calculator import _IslamicYearMonthDayCalculator
+from pyoda_time.calendars._julian_year_month_day_calculator import _JulianYearMonthDayCalculator
+from pyoda_time.calendars._persian_year_month_day_calculator import _PersianYearMonthDayCalculator
+from pyoda_time.calendars._um_al_qura_year_month_day_calculator import _UmAlQuraYearMonthDayCalculator
+from pyoda_time.calendars._year_month_day_calculator import _YearMonthDayCalculator
 
 NON_ISLAMIC_CALCULATORS: Final[list[_YearMonthDayCalculator]] = [
     _GregorianYearMonthDayCalculator(),

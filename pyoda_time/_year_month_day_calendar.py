@@ -7,7 +7,7 @@ from __future__ import annotations
 import typing
 
 from ._calendar_ordinal import _CalendarOrdinal
-from .utility import _int32_overflow, _sealed
+from .utility._csharp_compatibility import _int32_overflow, _sealed
 
 if typing.TYPE_CHECKING:
     from ._year_month_day import _YearMonthDay

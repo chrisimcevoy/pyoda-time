@@ -4,8 +4,10 @@
 
 import pytest
 
-from pyoda_time.text import UnparsableValueError, _TextCursor, _ValueCursor
-from pyoda_time.utility import _CsharpConstants
+from pyoda_time.text import UnparsableValueError
+from pyoda_time.text._text_cursor import _TextCursor
+from pyoda_time.text._value_cursor import _ValueCursor
+from pyoda_time.utility._csharp_compatibility import _CsharpConstants
 
 from .text_cursor_test_base import TextCursorTestBase
 

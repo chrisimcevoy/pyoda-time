@@ -3,8 +3,9 @@
 # as found in the LICENSE.txt file.
 import pytest
 
-from pyoda_time.text import InvalidPatternError, _TextCursor
-from pyoda_time.text.patterns import _PatternCursor
+from pyoda_time.text import InvalidPatternError
+from pyoda_time.text._text_cursor import _TextCursor
+from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 
 from ..text_cursor_test_base import TextCursorTestBase
 

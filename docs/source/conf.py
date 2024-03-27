@@ -91,7 +91,9 @@ def skip_default_special_methods(app: Sphinx, what: str, name: str, obj: Any, sk
     return skip
 
 
-def process_metaclass_properties(app: Sphinx, what: str, name: str, obj: Any, options: dict, lines: list[str]) -> None:
+def process_metaclass_properties(
+    app: Sphinx, what: str, name: str, obj: Any, options: dict[str, Any], lines: list[str]
+) -> None:
     """Custom handler for autodoc-process-docstring event to process 'class properties' defined in a metaclass."""
 
     if what == "class" and hasattr(obj, "__class__"):

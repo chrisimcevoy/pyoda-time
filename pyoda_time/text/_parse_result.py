@@ -9,12 +9,13 @@ from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, final, overlo
 
 from .._calendar_system import CalendarSystem
 from ..calendars._era import Era
-from ..utility import _Preconditions, _private, _sealed
+from ..utility._csharp_compatibility import _private, _sealed
+from ..utility._preconditions import _Preconditions
 from ._text_error_messages import TextErrorMessages
 from ._unparsable_value_error import UnparsableValueError
 
 if TYPE_CHECKING:
-    from . import _ValueCursor
+    from ._value_cursor import _ValueCursor
 
 
 T = TypeVar("T")
@@ -24,7 +25,7 @@ TTarget = TypeVar("TTarget")
 class _ParseResultMeta(type):
     @property
     @functools.cache
-    def _format_only_pattern(cls) -> ParseResult:
+    def _format_only_pattern(cls) -> ParseResult[Any]:
         """This isn't really an issue with the value so much as the pattern...
 
         but the result is the same.
@@ -218,7 +219,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
     def _for_invalid_value(
         cls, cursor_or_exception_provider: _ValueCursor | Callable[[], Exception], *args: Any
     ) -> ParseResult[T]:
-        from . import _ValueCursor
+        from ._value_cursor import _ValueCursor
 
         exception_provider: Callable[[], Exception]
 

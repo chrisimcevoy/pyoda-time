@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import typing
 
-from ..utility import _sealed
+from ..utility._csharp_compatibility import _sealed
 from ._g_j_year_month_day_calculator import _GJYearMonthDayCalculator
 
 

@@ -15,7 +15,7 @@ from typing import Any, Callable, Iterable, Protocol, Self, TypeVar
 import pytest
 
 from pyoda_time import Offset, PyodaConstants
-from pyoda_time.utility import _Preconditions
+from pyoda_time.utility._preconditions import _Preconditions
 
 
 class IEquatable(Protocol):
@@ -237,25 +237,25 @@ def assert_valid(func: Callable[..., TOut], *args: TArg) -> TOut:
     return func(*args)
 
 
-def assert_out_of_range(func: Callable[..., TOut], *args: TArg) -> TOut:
+def assert_out_of_range(func: Callable[..., TOut], *args: TArg) -> None:
     """Asserts that calling func with the specified value(s) raises ValueError."""
     # TODO: In Noda Time ArgumentOutOfRangeException is thrown
     with pytest.raises(ValueError):
-        return func(*args)
+        func(*args)
 
 
-def assert_invalid(func: Callable[..., TOut], *args: Any) -> TOut:
+def assert_invalid(func: Callable[..., TOut], *args: Any) -> None:
     """Asserts that calling func with the specified value(s) raises ValueError."""
     # TODO: In Noda Time ArgumentException is thrown
     with pytest.raises(ValueError):
-        return func(*args)
+        func(*args)
 
 
-def assert_argument_null(func: Callable[..., TOut], *args: Any) -> TOut:
+def assert_argument_null(func: Callable[..., TOut], *args: Any) -> None:
     """Asserts that calling func with the specified value(s) raises TypeError."""
     # TODO: In Noda Time ArgumentNullException is thrown
     with pytest.raises(TypeError):
-        return func(*args)
+        func(*args)
 
 
 def assert_overflow(func: Callable[[TArg], TOut], param: TArg) -> None:

@@ -3,8 +3,12 @@
 # as found in the LICENSE.txt file.
 
 __all__: list[str] = [
-    # Do not include sub-packages like calendars in this list.
-    # They should not be imported automatically via `import *`.
+    "calendars",
+    "fields",
+    "globalization",
+    "text",
+    "time_zones",
+    "utility",
     "CalendarSystem",
     "DateAdjusters",
     "DateInterval",
@@ -28,12 +32,12 @@ __all__: list[str] = [
 
 
 from . import (
-    calendars,  # noqa: F401
-    fields,  # noqa: F401
-    globalization,  # noqa: F401
-    text,  # noqa: F401
-    time_zones,  # noqa: F401
-    utility,  # noqa: F401
+    calendars,
+    fields,
+    globalization,
+    text,
+    time_zones,
+    utility,
 )
 from ._calendar_system import CalendarSystem
 from ._date_adjusters import DateAdjusters

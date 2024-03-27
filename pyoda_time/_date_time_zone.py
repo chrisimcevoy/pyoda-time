@@ -8,7 +8,7 @@ import abc
 import functools
 import typing
 
-from .utility import _Preconditions
+from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
     from . import Instant, Offset
@@ -31,7 +31,7 @@ class _DateTimeZoneMeta(abc.ABCMeta):
         :return: The UTC ``DateTimeZone``.
         """
         from . import Offset
-        from .time_zones import _FixedDateTimeZone
+        from .time_zones._fixed_date_time_zone import _FixedDateTimeZone
 
         return _FixedDateTimeZone(Offset.zero)
 

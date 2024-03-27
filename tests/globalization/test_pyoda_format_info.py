@@ -8,7 +8,7 @@ import pytest
 from pyoda_time._compatibility._culture_info import CultureInfo
 from pyoda_time._compatibility._date_time_format_info import DateTimeFormatInfo
 from pyoda_time.calendars import Era
-from pyoda_time.globalization import _PyodaFormatInfo
+from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 
 from ..culture_saver import CultureSaver
 from ..globalization.failing_culture_info import FailingCultureInfo
@@ -20,7 +20,7 @@ EN_GB: Final[CultureInfo] = CultureInfo.get_culture_info("en-GB")
 
 class TestPyodaFormatInfo:
     @pytest.mark.parametrize(
-        "culture", sorted(Cultures.all_cultures, key=lambda c: c._name), ids=lambda culture: f"{culture=}"
+        "culture", sorted(Cultures.all_cultures, key=lambda c: str(c)), ids=lambda culture: f"{culture=}"
     )
     def test_convert_culture(self, culture: CultureInfo) -> None:
         """Just check we can actually build a NodaFormatInfo for every culture, outside text-specific tests."""

@@ -18,7 +18,7 @@ from pyoda_time import (
     PyodaConstants,
     YearMonth,
 )
-from pyoda_time.utility import _CsharpConstants
+from pyoda_time.utility._csharp_compatibility import _CsharpConstants
 
 # June 19th 2010, 2:30:15am
 TEST_DATE_TIME_1: Final[LocalDateTime] = LocalDateTime(2010, 6, 19, 2, 30, 15)
@@ -295,8 +295,8 @@ class TestPeriod:
         assert not Period.from_minutes(15).equals(Period.from_seconds(15))
         assert not Period.from_hours(1).equals(Period.from_minutes(60))
         # TODO: In Pyoda Time these return False
-        assert Period.from_hours(1).equals(object()) is NotImplemented  # type: ignore
-        assert Period.from_hours(1).equals(None) is NotImplemented  # type: ignore
+        assert not Period.from_hours(1).equals(object())  # type: ignore
+        assert not Period.from_hours(1).equals(None)  # type: ignore
 
     def test_equality_operators(self) -> None:
         val1 = Period.from_hours(1)
