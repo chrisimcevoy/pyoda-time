@@ -8,7 +8,7 @@ from ..._compatibility._string_builder import StringBuilder
 from ...utility._csharp_compatibility import _sealed
 from .._invalid_pattern_exception import InvalidPatternError
 from .._text_cursor import _TextCursor
-from .._text_error_messages import TextErrorMessages
+from .._text_error_messages import _TextErrorMessages
 
 
 @final
@@ -38,10 +38,10 @@ class _PatternCursor(_TextCursor):
                 break
             if self.current == "\\":
                 if not self.move_next():
-                    raise InvalidPatternError(TextErrorMessages.ESCAPE_AT_END_OF_STRING)
+                    raise InvalidPatternError(_TextErrorMessages.ESCAPE_AT_END_OF_STRING)
             builder.append(self.current)
         if not end_quote_found:
-            raise InvalidPatternError(TextErrorMessages.MISSING_END_QUOTE, close_quote)
+            raise InvalidPatternError(_TextErrorMessages.MISSING_END_QUOTE, close_quote)
         self.move_previous()
         return builder.to_string()
 
@@ -61,7 +61,7 @@ class _PatternCursor(_TextCursor):
         # Move the cursor back to the last character of the repeated pattern
         self.move_previous()
         if repeat_length > maximum_count:
-            raise InvalidPatternError(TextErrorMessages.REPEAT_COUNT_EXCEEDED, pattern_character, maximum_count)
+            raise InvalidPatternError(_TextErrorMessages.REPEAT_COUNT_EXCEEDED, pattern_character, maximum_count)
         return repeat_length
 
     def get_embedded_pattern(self) -> str:
@@ -80,7 +80,7 @@ class _PatternCursor(_TextCursor):
         :return: The embedded pattern, not including the start/end pattern characters.
         """
         if (not self.move_next()) or (self.current != self._EMBEDDED_PATTERN_START):
-            raise InvalidPatternError(TextErrorMessages.MISSING_EMBEDDED_PATTERN_START, self._EMBEDDED_PATTERN_START)
+            raise InvalidPatternError(_TextErrorMessages.MISSING_EMBEDDED_PATTERN_START, self._EMBEDDED_PATTERN_START)
         start_index = self.index + 1
         depth = 1  # For nesting
         while self.move_next():
@@ -93,10 +93,10 @@ class _PatternCursor(_TextCursor):
                 depth += 1
             elif current == "\\":
                 if not self.move_next():
-                    raise InvalidPatternError(TextErrorMessages.ESCAPE_AT_END_OF_STRING)
+                    raise InvalidPatternError(_TextErrorMessages.ESCAPE_AT_END_OF_STRING)
             elif current == "'" or current == '"':
                 # We really don't care about the value here. It's slightly inefficient to
                 # create the substring and then ignore it, but it's unlikely to be significant.
                 _ = self.get_quoted_string(current)
         # We've reached the end of the enclosing pattern without reaching the end of the embedded pattern. Oops.
-        raise InvalidPatternError(TextErrorMessages.MISSING_EMBEDDED_PATTERN_END, self._EMBEDDED_PATTERN_END)
+        raise InvalidPatternError(_TextErrorMessages.MISSING_EMBEDDED_PATTERN_END, self._EMBEDDED_PATTERN_END)

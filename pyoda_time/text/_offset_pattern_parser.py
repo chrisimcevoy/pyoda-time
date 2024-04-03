@@ -15,7 +15,7 @@ from pyoda_time.text._composite_pattern_builder import CompositePatternBuilder
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._parse_bucket import _ParseBucket
-from pyoda_time.text._text_error_messages import TextErrorMessages
+from pyoda_time.text._text_error_messages import _TextErrorMessages
 from pyoda_time.text._value_cursor import _ValueCursor
 from pyoda_time.text.patterns._i_pattern_parser import _IPatternParser
 from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
@@ -90,15 +90,17 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
 
     @staticmethod
     def __handle_colon(_: _PatternCursor, builder: _SteppedPatternBuilder[Offset]) -> None:
-        builder._add_literal(builder._format_info.time_separator, ParseResult[Offset]._time_separator_mismatch)
+        builder._add_literal(
+            expected_text=builder._format_info.time_separator, failure=ParseResult[Offset]._time_separator_mismatch
+        )
 
     @staticmethod
     def __handle_h(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset]) -> None:
-        raise InvalidPatternError(TextErrorMessages.HOUR12_PATTERN_NOT_SUPPORTED, Offset.__name__)
+        raise InvalidPatternError(_TextErrorMessages.HOUR12_PATTERN_NOT_SUPPORTED, Offset.__name__)
 
     @staticmethod
     def __handle_Z(_: _PatternCursor, __: _SteppedPatternBuilder[Offset]) -> None:
-        raise InvalidPatternError(TextErrorMessages.ZPREFIX_NOT_AT_START_OF_PATTERN)
+        raise InvalidPatternError(_TextErrorMessages.ZPREFIX_NOT_AT_START_OF_PATTERN)
 
     @staticmethod
     def __handle_plus(pattern: _PatternCursor, builder: _SteppedPatternBuilder[Offset]) -> None:
@@ -151,7 +153,7 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
     def __parse_partial_pattern(self, pattern_text: str, format_info: _PyodaFormatInfo) -> _IPartialPattern[Offset]:
         # Nullity check is performed in OffsetPattern.
         if len(pattern_text) == 0:
-            raise InvalidPatternError(TextErrorMessages.FORMAT_STRING_EMPTY)
+            raise InvalidPatternError(_TextErrorMessages.FORMAT_STRING_EMPTY)
 
         if len(pattern_text) == 1:
             match pattern_text[0]:
@@ -198,11 +200,11 @@ class _OffsetPatternParser(_IPatternParser[Offset]):
                 case "S":
                     pattern_text = format_info.offset_pattern_short_no_punctuation
                 case _:
-                    raise InvalidPatternError(TextErrorMessages.UNKNOWN_STANDARD_FORMAT, pattern_text, Offset.__name__)
+                    raise InvalidPatternError(_TextErrorMessages.UNKNOWN_STANDARD_FORMAT, pattern_text, Offset.__name__)
 
         # This is the only way we'd normally end up in custom parsing land for Z on its own.
         if pattern_text == "%Z":
-            raise InvalidPatternError(TextErrorMessages.EMPTY_ZPREFIXED_OFFSET_PATTERN)
+            raise InvalidPatternError(_TextErrorMessages.EMPTY_ZPREFIXED_OFFSET_PATTERN)
 
         # Handle Z-prefix by stripping it, parsing the rest as a normal pattern, then building a special pattern
         # which decides whether or not to delegate.

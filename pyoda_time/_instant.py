@@ -8,18 +8,20 @@ import datetime
 import functools
 import typing
 
+from ._duration import Duration
 from ._pyoda_constants import PyodaConstants
 
 if typing.TYPE_CHECKING:
     from . import (
         CalendarSystem,
         DateTimeZone,
-        Duration,
         Offset,
         ZonedDateTime,
     )
     from ._local_instant import _LocalInstant
 
+from ._local_date import LocalDate
+from ._local_time import LocalTime
 from .utility._csharp_compatibility import _sealed, _to_ticks, _towards_zero_division
 from .utility._preconditions import _Preconditions
 from .utility._tick_arithmetic import _TickArithmetic
@@ -82,8 +84,6 @@ class Instant(metaclass=_InstantMeta):
 
         This must never be exposed.
         """
-        from . import Duration
-
         return cls.__ctor(days=Duration._MIN_DAYS, deliberately_invalid=True)
 
     @classmethod
@@ -92,19 +92,13 @@ class Instant(metaclass=_InstantMeta):
 
         This must never be exposed.
         """
-        from . import Duration
-
         return cls.__ctor(days=Duration._MAX_DAYS, deliberately_invalid=True)
 
     def __init__(self) -> None:
-        from . import Duration
-
         self.__duration = Duration.zero
 
     @classmethod
     def _ctor(cls, *, days: int, nano_of_day: int) -> Instant:
-        from . import Duration
-
         self = super().__new__(cls)
         self.__duration = Duration._ctor(days=days, nano_of_day=nano_of_day)
         return self
@@ -129,8 +123,6 @@ class Instant(metaclass=_InstantMeta):
         cls, duration: Duration | None = None, days: int | None = None, deliberately_invalid: bool | None = None
     ) -> Instant:
         """Private constructors implementation."""
-        from . import Duration
-
         self = super().__new__(cls)
         if duration is not None and days is None and deliberately_invalid is None:
             self.__duration = duration
@@ -156,8 +148,6 @@ class Instant(metaclass=_InstantMeta):
         return NotImplemented  # type: ignore[unreachable]
 
     def __add__(self, other: Duration) -> Instant:
-        from . import Duration
-
         if isinstance(other, Duration):
             return self._from_untrusted_duration(self.__duration + other)
         return NotImplemented  # type: ignore[unreachable]
@@ -169,8 +159,6 @@ class Instant(metaclass=_InstantMeta):
     def __sub__(self, other: Duration) -> Instant: ...
 
     def __sub__(self, other: Instant | Duration) -> Instant | Duration:
-        from . import Duration
-
         if isinstance(other, Instant):
             return self.__duration - other.__duration
         if isinstance(other, Duration):
@@ -185,8 +173,6 @@ class Instant(metaclass=_InstantMeta):
     @classmethod
     def from_unix_time_ticks(cls, ticks: int) -> Instant:
         """Initializes a new Instant based on a number of ticks since the Unix epoch."""
-        from . import Duration
-
         _Preconditions._check_argument_range("ticks", ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
         return Instant._from_trusted_duration(Duration.from_ticks(ticks))
 
@@ -225,8 +211,6 @@ class Instant(metaclass=_InstantMeta):
     def from_unix_time_milliseconds(cls, milliseconds: int) -> Instant:
         """Initializes a new Instant struct based on a number of milliseconds since the Unix epoch of (ISO) January 1st
         1970, midnight, UTC."""
-        from . import Duration
-
         _Preconditions._check_argument_range(
             "milliseconds", milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS
         )
@@ -236,8 +220,6 @@ class Instant(metaclass=_InstantMeta):
     def from_unix_time_seconds(cls, seconds: int) -> Instant:
         """Initializes a new Instant based on a number of seconds since the Unix epoch of (ISO) January 1st 1970,
         midnight, UTC."""
-        from . import Duration
-
         _Preconditions._check_argument_range("seconds", seconds, cls.__MIN_SECONDS, cls.__MAX_SECONDS)
         return cls._from_trusted_duration(Duration.from_seconds(seconds))
 
@@ -308,7 +290,6 @@ class Instant(metaclass=_InstantMeta):
         In most cases applications should use ZonedDateTime to represent a date and time, but this method is useful in
         some situations where an Instant is required, such as time zone testing.
         """
-        from . import LocalDate, LocalTime
 
         days = LocalDate(year=year, month=month_of_year, day=day_of_month)._days_since_epoch
         nano_of_day = LocalTime(hour=hour_of_day, minute=minute_of_hour, second=second_of_minute).nanosecond_of_day
@@ -319,13 +300,9 @@ class Instant(metaclass=_InstantMeta):
 
     def plus_ticks(self, ticks: int) -> Instant:
         """Returns a new value of this instant with the given number of ticks added to it."""
-        from . import Duration
-
         return self._from_untrusted_duration(self.__duration + Duration.from_ticks(ticks))
 
     def plus_nanoseconds(self, nanoseconds: int) -> Instant:
-        from . import Duration
-
         return self._from_untrusted_duration(self.__duration + Duration.from_nanoseconds(nanoseconds))
 
     @property

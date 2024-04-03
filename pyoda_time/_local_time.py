@@ -130,6 +130,23 @@ class LocalTime(metaclass=_LocalTimeMeta):
         return LocalTime._ctor(nanoseconds=nanoseconds)
 
     @classmethod
+    def _from_hour_minute_second_nanosecond_trusted(
+        cls,
+        hour: int,
+        minute: int,
+        second: int,
+        nanosecond_within_second: int,
+    ) -> LocalTime:
+        """Factory method for creating a local time from the hour of day, minute of hour, second of minute, and
+        nanosecond of second where the values have already been validated."""
+        return cls._ctor(
+            nanoseconds=hour * PyodaConstants.NANOSECONDS_PER_HOUR
+            + minute * PyodaConstants.NANOSECONDS_PER_MINUTE
+            + second * PyodaConstants.NANOSECONDS_PER_SECOND
+            + nanosecond_within_second
+        )
+
+    @classmethod
     def from_nanoseconds_since_midnight(cls, nanoseconds: int) -> LocalTime:
         """Factory method for creating a local time from the number of nanoseconds which have elapsed since midnight.
 

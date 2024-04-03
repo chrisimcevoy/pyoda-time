@@ -89,14 +89,17 @@ class PatternTestData(Generic[T]):
         pattern: IPattern[T] = self.create_pattern()
         builder = StringBuilder("x")
         pattern.append_format(self.value, builder)
-        assert builder.to_string() == f"x{self.text}"
+        actual = builder.to_string()
+        expected = f"x{self.text}"
+        assert actual == expected, f"'{actual}' == '{expected}'"
 
     def test_invalid_pattern(self) -> None:
         assert self.message is not None, "Expected `message` to be provided."
         expected_message: str = self.format_message(self.message, self.parameters)
         with pytest.raises(InvalidPatternError) as e:
             self.create_pattern()
-        assert str(e.value) == expected_message
+        actual_message: str = str(e.value)
+        assert actual_message == expected_message, f"'{actual_message}' == '{expected_message}'"
 
     def test_parse_failure(self) -> None:
         assert self.message is not None, "Expected `message` to be provided."

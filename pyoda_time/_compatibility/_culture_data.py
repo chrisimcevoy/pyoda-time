@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import copy
 import typing
+from enum import IntEnum
 from typing import Iterable
 
 import icu
@@ -105,7 +106,23 @@ class _CultureData(metaclass=_CultureDataMeta):
         self.__locale: icu.Locale = icu.Locale(icu_compatible_name)
 
         self.__calendars: dict[int, _CalendarData] = {}
+        self.__sAM1159: str | None = None  # (user can override) AM designator
+        self.__sPM1159: str | None = None  # // (user can override) PM designator
         self.__sTimeSeparator: str | None = None
+
+    # TODO: IcuGetLocaleInfo overrides should be fun, if we need them...
+    def __icu_get_locale_info(self, type_: LocaleStringData, ui_culture_name: str | None = None) -> str:
+        assert not _GlobalizationMode._invariant
+        assert not _GlobalizationMode._use_nls
+        assert self.__sWindowsName is not None
+
+        match type_:
+            case LocaleStringData.NegativeInfinitySymbol:
+                # Noped out of this for now, until its needed
+                raise NotImplementedError
+        from pyoda_time._compatibility._interop import _Interop
+
+        return _Interop._Globalization._get_locale_info_string(self.__sWindowsName, type_) or ""
 
     @classmethod
     def _get_cultures(cls, types: CultureTypes) -> typing.Sequence[CultureInfo]:
@@ -128,6 +145,18 @@ class _CultureData(metaclass=_CultureDataMeta):
     def name(self) -> str:
         """Locale name (ie: de-DE, NO sort information)"""
         return self.__sName  # Wrapped in str() for mypy reasons
+
+    @property
+    def _am_designator(self) -> str:
+        if self.__sAM1159 is None:
+            self.__sAM1159 = self.__get_locale_info_core_user_override(LocaleStringData.AMDesignator)
+        return self.__sAM1159
+
+    @property
+    def _pm_designator(self) -> str:
+        if self.__sPM1159 is None:
+            self.__sPM1159 = self.__get_locale_info_core_user_override(LocaleStringData.PMDesignator)
+        return self.__sPM1159
 
     def _day_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
         # Cast required as mypy thinks this might be None.
@@ -351,6 +380,12 @@ class _CultureData(metaclass=_CultureDataMeta):
         number_format: icu.DecimalFormatSymbols = icu.DecimalFormatSymbols(self.__locale)
         nfi.positive_sign = number_format.getSymbol(icu.DecimalFormatSymbols.kPlusSignSymbol)
 
+    def __get_locale_info_core_user_override(self, type_: LocaleStringData) -> str:
+        # Omitting a couple of things which aren't relevant to this port:
+        # - Check for invariant globalization mode which is never reached
+        # - Check for use of NLS (as opposed to ICU) data
+        return self.__icu_get_locale_info(type_)
+
     @classmethod
     def __icu_enum_cultures(cls, types: CultureTypes) -> typing.Sequence[CultureInfo]:
         from ._culture_info import CultureInfo
@@ -485,3 +520,79 @@ class _CultureData(metaclass=_CultureDataMeta):
         if changed:
             return "".join(normalized_name), is_neutral_name
         return name, is_neutral_name
+
+
+class LocaleStringData(IntEnum):
+    # localized name of locale, eg "German (Germany)" in UI language (corresponds to LOCALE_SLOCALIZEDDISPLAYNAME)
+    LocalizedDisplayName = (0x00000002,)
+    # Display name (language + country usually) in English, eg "German (Germany)"
+    # (corresponds to LOCALE_SENGLISHDISPLAYNAME)
+    EnglishDisplayName = (0x00000072,)
+    # Display name in native locale language, eg "Deutsch (Deutschland) (corresponds to LOCALE_SNATIVEDISPLAYNAME)
+    NativeDisplayName = (0x00000073,)
+    # Language Display Name for a language, eg "German" in UI language (corresponds to LOCALE_SLOCALIZEDLANGUAGENAME)
+    LocalizedLanguageName = (0x0000006F,)
+    # English name of language, eg "German" (corresponds to LOCALE_SENGLISHLANGUAGENAME)
+    EnglishLanguageName = (0x00001001,)
+    # native name of language, eg "Deutsch" (corresponds to LOCALE_SNATIVELANGUAGENAME)
+    NativeLanguageName = (0x00000004,)
+    # localized name of country, eg "Germany" in UI language (corresponds to LOCALE_SLOCALIZEDCOUNTRYNAME)
+    LocalizedCountryName = (0x00000006,)
+    # English name of country, eg "Germany" (corresponds to LOCALE_SENGLISHCOUNTRYNAME)
+    EnglishCountryName = (0x00001002,)
+    # native name of country, eg "Deutschland" (corresponds to LOCALE_SNATIVECOUNTRYNAME)
+    NativeCountryName = (0x00000008,)
+    # abbreviated language name (corresponds to LOCALE_SABBREVLANGNAME)
+    AbbreviatedWindowsLanguageName = (0x00000003,)
+    # list item separator (corresponds to LOCALE_SLIST)
+    ListSeparator = (0x0000000C,)
+    # decimal separator (corresponds to LOCALE_SDECIMAL)
+    DecimalSeparator = (0x0000000E,)
+    # thousand separator (corresponds to LOCALE_STHOUSAND)
+    ThousandSeparator = (0x0000000F,)
+    # native digits for 0-9, eg "0123456789" (corresponds to LOCALE_SNATIVEDIGITS)
+    Digits = (0x00000013,)
+    # local monetary symbol (corresponds to LOCALE_SCURRENCY)
+    MonetarySymbol = (0x00000014,)
+    # English currency name (corresponds to LOCALE_SENGCURRNAME)
+    CurrencyEnglishName = (0x00001007,)
+    # Native currency name (corresponds to LOCALE_SNATIVECURRNAME)
+    CurrencyNativeName = (0x00001008,)
+    # uintl monetary symbol (corresponds to LOCALE_SINTLSYMBOL)
+    Iso4217MonetarySymbol = (0x00000015,)
+    # monetary decimal separator (corresponds to LOCALE_SMONDECIMALSEP)
+    MonetaryDecimalSeparator = (0x00000016,)
+    # monetary thousand separator (corresponds to LOCALE_SMONTHOUSANDSEP)
+    MonetaryThousandSeparator = (0x00000017,)
+    # AM designator (corresponds to LOCALE_S1159)
+    AMDesignator = (0x00000028,)
+    # PM designator (corresponds to LOCALE_S2359)
+    PMDesignator = (0x00000029,)
+    # positive sign (corresponds to LOCALE_SPOSITIVESIGN)
+    PositiveSign = (0x00000050,)
+    # negative sign (corresponds to LOCALE_SNEGATIVESIGN)
+    NegativeSign = (0x00000051,)
+    # ISO abbreviated language name (corresponds to LOCALE_SISO639LANGNAME)
+    Iso639LanguageTwoLetterName = (0x00000059,)
+    # ISO abbreviated country name (corresponds to LOCALE_SISO639LANGNAME2)
+    Iso639LanguageThreeLetterName = (0x00000067,)
+    # ISO abbreviated language name (corresponds to LOCALE_SISO639LANGNAME)
+    Iso639LanguageName = (0x00000059,)
+    # ISO abbreviated country name (corresponds to LOCALE_SISO3166CTRYNAME)
+    Iso3166CountryName = (0x0000005A,)
+    # 3 letter ISO country code (corresponds to LOCALE_SISO3166CTRYNAME2)
+    Iso3166CountryName2 = (0x00000068,)  # 3 character ISO country name
+    # Not a Number (corresponds to LOCALE_SNAN)
+    NaNSymbol = (0x00000069,)
+    # + Infinity (corresponds to LOCALE_SPOSINFINITY)
+    PositiveInfinitySymbol = (0x0000006A,)
+    # - Infinity (corresponds to LOCALE_SNEGINFINITY)
+    NegativeInfinitySymbol = (0x0000006B,)
+    # Fallback name for resources (corresponds to LOCALE_SPARENT)
+    ParentName = (0x0000006D,)
+    # Fallback name for within the console (corresponds to LOCALE_SCONSOLEFALLBACKNAME)
+    ConsoleFallbackName = (0x0000006E,)
+    # Returns the percent symbol (corresponds to LOCALE_SPERCENT)
+    PercentSymbol = (0x00000076,)
+    # Returns the permille (U+2030) symbol (corresponds to LOCALE_SPERMILLE)
+    PerMilleSymbol = 0x00000077

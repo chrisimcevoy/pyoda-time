@@ -47,8 +47,7 @@ class _FixedDateTimeZone(DateTimeZone):
             return None
         if id_ == cls._UTC_ID:
             return cls.utc
-        from pyoda_time.text import ParseResult
-        from pyoda_time.text._offset_pattern import OffsetPattern
+        from pyoda_time.text import OffsetPattern, ParseResult
 
         parse_result: ParseResult[Offset] = OffsetPattern.general_invariant.parse(id_[len(cls._UTC_ID) :])
         return cls.for_offset(parse_result.value) if parse_result.success else None

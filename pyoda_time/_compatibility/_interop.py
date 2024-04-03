@@ -7,10 +7,37 @@ import icu
 
 from pyoda_time._compatibility._calendar_data import _CalendarDataType, _IcuEnumCalendarsData
 from pyoda_time._compatibility._calendar_id import _CalendarId
+from pyoda_time._compatibility._culture_data import LocaleStringData
 
 
 class _Interop:
     class _Globalization:
+        @classmethod
+        def _get_locale_info_string(cls, locale_name: str, locale_string_data: LocaleStringData) -> str:
+            """Roughly equivalent to:
+
+            https://github.com/dotnet/runtime/blob/a027afb198c787fbfbca0b1d272ce41d9ab7d27a/src/native/libs/System.Globalization.Native/pal_localeStringData.c#L214
+            """
+            locale = icu.Locale(locale_name)
+
+            match locale_string_data:
+                case LocaleStringData.AMDesignator:
+                    return cls.__get_locale_info_am_pm(locale, False)
+                case LocaleStringData.PMDesignator:
+                    return cls.__get_locale_info_am_pm(locale, True)
+                case _:
+                    raise NotImplementedError(locale_string_data)
+
+        @classmethod
+        def __get_locale_info_am_pm(cls, locale: icu.Locale, pm: bool) -> str:
+            """Roughly equivalent to (but nothing like):
+
+            https://github.com/dotnet/runtime/blob/a027afb198c787fbfbca0b1d272ce41d9ab7d27a/src/native/libs/System.Globalization.Native/pal_localeStringData.c#L65
+            """
+            date_format: icu.SimpleDateFormat = icu.SimpleDateFormat("a", locale)
+            date_format_symbols: icu.DateFormatSymbols = date_format.getDateFormatSymbols()
+            return str(date_format_symbols.getAmPmStrings()[int(pm)])
+
         @classmethod
         def _enum_calendar_info(
             cls,

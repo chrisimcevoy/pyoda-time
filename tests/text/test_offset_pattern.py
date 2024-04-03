@@ -7,10 +7,10 @@ from _pytest.fixtures import FixtureRequest
 
 from pyoda_time import Offset
 from pyoda_time._compatibility._culture_info import CultureInfo
+from pyoda_time.text import OffsetPattern
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
-from pyoda_time.text._offset_pattern import OffsetPattern
-from pyoda_time.text._text_error_messages import TextErrorMessages
+from pyoda_time.text._text_error_messages import _TextErrorMessages
 
 from ..culture_saver import CultureSaver
 from ..helpers import create_negative_offset, create_positive_offset
@@ -73,64 +73,66 @@ PARSE_ONLY_DATA = [
 
 
 INVALID_PATTERN_DATA = [
-    Data(value=Offset.zero, pattern="", message=TextErrorMessages.FORMAT_STRING_EMPTY),
-    Data(value=Offset.zero, pattern="%Z", message=TextErrorMessages.EMPTY_ZPREFIXED_OFFSET_PATTERN),
-    Data(value=Offset.zero, pattern="HH:mmZ", message=TextErrorMessages.ZPREFIX_NOT_AT_START_OF_PATTERN),
-    Data(value=Offset.zero, pattern="%%H", message=TextErrorMessages.PERCENT_DOUBLED),
-    Data(value=Offset.zero, pattern="HH:HH", message=TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["H"]),
-    Data(value=Offset.zero, pattern="mm:mm", message=TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["m"]),
-    Data(value=Offset.zero, pattern="ss:ss", message=TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["s"]),
-    Data(value=Offset.zero, pattern="+HH:-mm", message=TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["-"]),
-    Data(value=Offset.zero, pattern="-HH:+mm", message=TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["+"]),
+    Data(value=Offset.zero, pattern="", message=_TextErrorMessages.FORMAT_STRING_EMPTY),
+    Data(value=Offset.zero, pattern="%Z", message=_TextErrorMessages.EMPTY_ZPREFIXED_OFFSET_PATTERN),
+    Data(value=Offset.zero, pattern="HH:mmZ", message=_TextErrorMessages.ZPREFIX_NOT_AT_START_OF_PATTERN),
+    Data(value=Offset.zero, pattern="%%H", message=_TextErrorMessages.PERCENT_DOUBLED),
+    Data(value=Offset.zero, pattern="HH:HH", message=_TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["H"]),
+    Data(value=Offset.zero, pattern="mm:mm", message=_TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["m"]),
+    Data(value=Offset.zero, pattern="ss:ss", message=_TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["s"]),
+    Data(value=Offset.zero, pattern="+HH:-mm", message=_TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["-"]),
+    Data(value=Offset.zero, pattern="-HH:+mm", message=_TextErrorMessages.REPEATED_FIELD_IN_PATTERN, parameters=["+"]),
     Data(
         value=Offset.zero,
         pattern="!",
-        message=TextErrorMessages.UNKNOWN_STANDARD_FORMAT,
+        message=_TextErrorMessages.UNKNOWN_STANDARD_FORMAT,
         parameters=["!", Offset.__name__],
     ),
     Data(
         value=Offset.zero,
         pattern="%",
-        message=TextErrorMessages.UNKNOWN_STANDARD_FORMAT,
+        message=_TextErrorMessages.UNKNOWN_STANDARD_FORMAT,
         parameters=["%", Offset.__name__],
     ),
-    Data(value=Offset.zero, pattern="%%", message=TextErrorMessages.PERCENT_DOUBLED),
-    Data(value=Offset.zero, pattern="%\\", message=TextErrorMessages.ESCAPE_AT_END_OF_STRING),
+    Data(value=Offset.zero, pattern="%%", message=_TextErrorMessages.PERCENT_DOUBLED),
+    Data(value=Offset.zero, pattern="%\\", message=_TextErrorMessages.ESCAPE_AT_END_OF_STRING),
     Data(
         value=Offset.zero,
         pattern="\\",
-        message=TextErrorMessages.UNKNOWN_STANDARD_FORMAT,
+        message=_TextErrorMessages.UNKNOWN_STANDARD_FORMAT,
         parameters=["\\", Offset.__name__],
     ),
-    Data(value=Offset.zero, pattern="H%", message=TextErrorMessages.PERCENT_AT_END_OF_STRING),
+    Data(value=Offset.zero, pattern="H%", message=_TextErrorMessages.PERCENT_AT_END_OF_STRING),
     Data(
         value=Offset.zero,
         pattern="hh",
-        message=TextErrorMessages.HOUR12_PATTERN_NOT_SUPPORTED,
+        message=_TextErrorMessages.HOUR12_PATTERN_NOT_SUPPORTED,
         parameters=[Offset.__name__],
     ),
-    Data(value=Offset.zero, pattern="HHH", message=TextErrorMessages.REPEAT_COUNT_EXCEEDED, parameters=["H", 2]),
-    Data(value=Offset.zero, pattern="mmm", message=TextErrorMessages.REPEAT_COUNT_EXCEEDED, parameters=["m", 2]),
+    Data(value=Offset.zero, pattern="HHH", message=_TextErrorMessages.REPEAT_COUNT_EXCEEDED, parameters=["H", 2]),
+    Data(value=Offset.zero, pattern="mmm", message=_TextErrorMessages.REPEAT_COUNT_EXCEEDED, parameters=["m", 2]),
     Data(
         value=Offset.zero,
         pattern="mmmmmmmmmmmmmmmmmmm",
-        message=TextErrorMessages.REPEAT_COUNT_EXCEEDED,
+        message=_TextErrorMessages.REPEAT_COUNT_EXCEEDED,
         parameters=["m", 2],
     ),
-    Data(value=Offset.zero, pattern="'qwe", message=TextErrorMessages.MISSING_END_QUOTE, parameters=["'"]),
-    Data(value=Offset.zero, pattern="'qwe\\", message=TextErrorMessages.ESCAPE_AT_END_OF_STRING),
-    Data(value=Offset.zero, pattern="'qwe\\'", message=TextErrorMessages.MISSING_END_QUOTE, parameters=["'"]),
-    Data(value=Offset.zero, pattern="sss", message=TextErrorMessages.REPEAT_COUNT_EXCEEDED, parameters=["s", 2]),
+    Data(value=Offset.zero, pattern="'qwe", message=_TextErrorMessages.MISSING_END_QUOTE, parameters=["'"]),
+    Data(value=Offset.zero, pattern="'qwe\\", message=_TextErrorMessages.ESCAPE_AT_END_OF_STRING),
+    Data(value=Offset.zero, pattern="'qwe\\'", message=_TextErrorMessages.MISSING_END_QUOTE, parameters=["'"]),
+    Data(value=Offset.zero, pattern="sss", message=_TextErrorMessages.REPEAT_COUNT_EXCEEDED, parameters=["s", 2]),
 ]
 
 PARSE_FAILURE_DATA = [
-    Data(value=Offset.zero, culture=Cultures.en_us, text="", pattern="g", message=TextErrorMessages.VALUE_STRING_EMPTY),
+    Data(
+        value=Offset.zero, culture=Cultures.en_us, text="", pattern="g", message=_TextErrorMessages.VALUE_STRING_EMPTY
+    ),
     Data(
         value=Offset.zero,
         culture=Cultures.en_us,
         text="1",
         pattern="HH",
-        message=TextErrorMessages.MISMATCHED_NUMBER,
+        message=_TextErrorMessages.MISMATCHED_NUMBER,
         parameters=["HH"],
     ),
     Data(
@@ -138,7 +140,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="1",
         pattern="mm",
-        message=TextErrorMessages.MISMATCHED_NUMBER,
+        message=_TextErrorMessages.MISMATCHED_NUMBER,
         parameters=["mm"],
     ),
     Data(
@@ -146,7 +148,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="1",
         pattern="ss",
-        message=TextErrorMessages.MISMATCHED_NUMBER,
+        message=_TextErrorMessages.MISMATCHED_NUMBER,
         parameters=["ss"],
     ),
     Data(
@@ -154,7 +156,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="12:34 ",
         pattern="HH:mm",
-        message=TextErrorMessages.EXTRA_VALUE_CHARACTERS,
+        message=_TextErrorMessages.EXTRA_VALUE_CHARACTERS,
         parameters=[" "],
     ),
     Data(
@@ -162,7 +164,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="1a",
         pattern="H ",
-        message=TextErrorMessages.MISMATCHED_CHARACTER,
+        message=_TextErrorMessages.MISMATCHED_CHARACTER,
         parameters=[" "],
     ),
     Data(
@@ -170,7 +172,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="2:",
         pattern="%H",
-        message=TextErrorMessages.EXTRA_VALUE_CHARACTERS,
+        message=_TextErrorMessages.EXTRA_VALUE_CHARACTERS,
         parameters=[":"],
     ),
     Data(
@@ -178,7 +180,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="a",
         pattern="%.",
-        message=TextErrorMessages.MISMATCHED_CHARACTER,
+        message=_TextErrorMessages.MISMATCHED_CHARACTER,
         parameters=["."],
     ),
     Data(
@@ -186,14 +188,14 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="a",
         pattern="%:",
-        message=TextErrorMessages.TIME_SEPARATOR_MISMATCH,
+        message=_TextErrorMessages.TIME_SEPARATOR_MISMATCH,
     ),
     Data(
         value=Offset.zero,
         culture=Cultures.en_us,
         text="a",
         pattern="%H",
-        message=TextErrorMessages.MISMATCHED_NUMBER,
+        message=_TextErrorMessages.MISMATCHED_NUMBER,
         parameters=["H"],
     ),
     Data(
@@ -201,7 +203,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="a",
         pattern="%m",
-        message=TextErrorMessages.MISMATCHED_NUMBER,
+        message=_TextErrorMessages.MISMATCHED_NUMBER,
         parameters=["m"],
     ),
     Data(
@@ -209,7 +211,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="a",
         pattern="%s",
-        message=TextErrorMessages.MISMATCHED_NUMBER,
+        message=_TextErrorMessages.MISMATCHED_NUMBER,
         parameters=["s"],
     ),
     Data(
@@ -217,7 +219,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="a",
         pattern=".H",
-        message=TextErrorMessages.MISMATCHED_CHARACTER,
+        message=_TextErrorMessages.MISMATCHED_CHARACTER,
         parameters=["."],
     ),
     Data(
@@ -225,7 +227,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="a",
         pattern="\\'",
-        message=TextErrorMessages.ESCAPED_CHARACTER_MISMATCH,
+        message=_TextErrorMessages.ESCAPED_CHARACTER_MISMATCH,
         parameters=["'"],
     ),
     Data(
@@ -233,14 +235,14 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="axc",
         pattern="'abc'",
-        message=TextErrorMessages.QUOTED_STRING_MISMATCH,
+        message=_TextErrorMessages.QUOTED_STRING_MISMATCH,
     ),
     Data(
         value=Offset.zero,
         culture=Cultures.en_us,
         text="z",
         pattern="%*",
-        message=TextErrorMessages.MISMATCHED_CHARACTER,
+        message=_TextErrorMessages.MISMATCHED_CHARACTER,
         parameters=["*"],
     ),
     Data(
@@ -248,7 +250,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="24",
         pattern="HH",
-        message=TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE,
+        message=_TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE,
         parameters=[24, "H", Offset.__name__],
     ),
     Data(
@@ -256,7 +258,7 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="60",
         pattern="mm",
-        message=TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE,
+        message=_TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE,
         parameters=[60, "m", Offset.__name__],
     ),
     Data(
@@ -264,10 +266,10 @@ PARSE_FAILURE_DATA = [
         culture=Cultures.en_us,
         text="60",
         pattern="ss",
-        message=TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE,
+        message=_TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE,
         parameters=[60, "s", Offset.__name__],
     ),
-    Data(value=Offset.zero, text="+12", pattern="-HH", message=TextErrorMessages.POSITIVE_SIGN_INVALID),
+    Data(value=Offset.zero, text="+12", pattern="-HH", message=_TextErrorMessages.POSITIVE_SIGN_INVALID),
 ]
 
 FORMAT_AND_PARSE_DATA = [

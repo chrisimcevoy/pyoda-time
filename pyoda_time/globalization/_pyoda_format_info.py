@@ -30,6 +30,8 @@ from ..utility._csharp_compatibility import _sealed
 from ..utility._preconditions import _Preconditions
 from ._pattern_resources import _PatternResources
 
+T = typing.TypeVar("T")
+
 
 class _PyodaFormatInfoMeta(type):
     @property
@@ -176,28 +178,57 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
 
     # TODO: public CompareInfo CompareInfo => CultureInfo.CompareInfo;
 
-    @property
-    def _offset_pattern_parser(self) -> _FixedFormatInfoPatternParser[Offset]:
-        from ..text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
-        from ..text._offset_pattern_parser import _OffsetPatternParser
-
-        return _FixedFormatInfoPatternParser(_OffsetPatternParser(), self)
-
     # TODO:
     #  internal FixedFormatInfoPatternParser<Duration> DurationPatternParser
-    #  internal FixedFormatInfoPatternParser<Instant> InstantPatternParser
-    #  internal FixedFormatInfoPatternParser<LocalTime> LocalTimePatternParser
-    #  internal FixedFormatInfoPatternParser<LocalDate> LocalDatePatternParser
-    #  internal FixedFormatInfoPatternParser<LocalDateTime> LocalDateTimePatternParser
+
+    @property
+    def _offset_pattern_parser(self) -> _FixedFormatInfoPatternParser[Offset]:
+        if self.__offset_pattern_parser is None:
+            with self.__FIELD_LOCK:
+                if self.__offset_pattern_parser is None:
+                    from ..text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+                    from ..text._offset_pattern_parser import _OffsetPatternParser
+
+                    self.__offset_pattern_parser = _FixedFormatInfoPatternParser(_OffsetPatternParser(), self)
+        return self.__offset_pattern_parser
+
+    @property
+    def _instant_pattern_parser(self) -> _FixedFormatInfoPatternParser[Instant]:
+        raise NotImplementedError
+
+    @property
+    def _local_time_pattern_parser(self) -> _FixedFormatInfoPatternParser[LocalTime]:
+        raise NotImplementedError
+
+    @property
+    def _local_date_pattern_parser(self) -> _FixedFormatInfoPatternParser[LocalDate]:
+        raise NotImplementedError
+
+    @property
+    def _local_date_time_pattern_parser(self) -> _FixedFormatInfoPatternParser[LocalDateTime]:
+        if self.__local_date_time_pattern_parser is None:
+            with self.__FIELD_LOCK:
+                if self.__local_date_time_pattern_parser is None:
+                    from pyoda_time.text import LocalDatePattern, LocalDateTimePattern
+                    from pyoda_time.text._local_date_time_pattern_parser import _LocalDateTimePatternParser
+
+                    from ..text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+
+                    self.__local_date_time_pattern_parser = _FixedFormatInfoPatternParser(
+                        _LocalDateTimePatternParser._ctor(
+                            LocalDateTimePattern._DEFAULT_TEMPLATE_VALUE, LocalDatePattern._DEFAULT_TWO_DIGIT_YEAR_MAX
+                        ),
+                        self,
+                    )
+        return self.__local_date_time_pattern_parser
+
+    # TODO:
     #  internal FixedFormatInfoPatternParser<OffsetDateTime> OffsetDateTimePatternParser
     #  internal FixedFormatInfoPatternParser<OffsetDate> OffsetDatePatternParser
     #  internal FixedFormatInfoPatternParser<OffsetTime> OffsetTimePatternParser
     #  internal FixedFormatInfoPatternParser<ZonedDateTime> ZonedDateTimePatternParser
     #  internal FixedFormatInfoPatternParser<AnnualDate> AnnualDatePatternParser
     #  internal FixedFormatInfoPatternParser<YearMonth> YearMonthPatternParser
-
-    # TODO: private FixedFormatInfoPatternParser<T> EnsureFixedFormatInitialized<T>
-    #  (ref FixedFormatInfoPatternParser<T>? field, Func<IPatternParser<T>> patternParserFactory)
 
     @property
     def long_month_names(self) -> typing.Sequence[str]:
@@ -290,9 +321,15 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
         """Gets the date separator."""
         return self.__date_time_format.date_separator
 
-    # TODO:
-    #  public string AMDesignator => DateTimeFormat.AMDesignator;
-    #  public string PMDesignator => DateTimeFormat.PMDesignator;
+    @property
+    def am_designator(self) -> str:
+        """Gets the AM designator."""
+        return self.date_time_format.am_designator
+
+    @property
+    def pm_designator(self) -> str:
+        """Gets the PM designator."""
+        return self.date_time_format.pm_designator
 
     def get_era_names(self, era: Era) -> list[str]:
         """Returns the names for the given era in this culture.

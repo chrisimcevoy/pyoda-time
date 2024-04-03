@@ -76,3 +76,13 @@ class ZonedDateTime:
     @property
     def local_date_time(self) -> LocalDateTime:
         return self.__offset_date_time.local_date_time
+
+    @property
+    def year(self) -> int:
+        """Gets the year of this zoned date and time.
+
+        This returns the "absolute year", so, for the ISO calendar, a value of 0 means 1 BC, for example.
+
+        :return: The year of this zoned date and time.
+        """
+        return self.__offset_date_time.year

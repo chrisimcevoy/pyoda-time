@@ -7,16 +7,16 @@ from __future__ import annotations
 from functools import cache
 from typing import Final, _ProtocolMeta, cast, final
 
-from pyoda_time import Offset
 from pyoda_time._compatibility._culture_info import CultureInfo
 from pyoda_time._compatibility._string_builder import StringBuilder
+from pyoda_time._offset import Offset
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
-from pyoda_time.text import ParseResult
 from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
+from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text.patterns._pattern_bcl_support import _PatternBclSupport
-from pyoda_time.utility._csharp_compatibility import _sealed
+from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions
 
 
@@ -52,14 +52,21 @@ class _CombinedMeta(_ProtocolMeta, _OffsetPatternMeta):
 
 @_sealed
 @final
+@_private
 class OffsetPattern(IPattern[Offset], metaclass=_CombinedMeta):
     """Represents a pattern for parsing and formatting ``Offset`` values."""
 
     _DEFAULT_FORMAT_PATTERN: Final[str] = "g"
 
-    def __init__(self, pattern_text: str, pattern: _IPartialPattern[Offset]):
-        self.__pattern_text: Final[str] = pattern_text
-        self.__underlying_pattern: Final[_IPartialPattern[Offset]] = pattern
+    __pattern_text: str
+    __underlying_pattern: _IPartialPattern[Offset]
+
+    @classmethod
+    def __ctor(cls, pattern_text: str, pattern: _IPartialPattern[Offset]) -> OffsetPattern:
+        self = super().__new__(cls)
+        self.__pattern_text = pattern_text
+        self.__underlying_pattern = pattern
+        return self
 
     @property
     def pattern_text(self) -> str:
@@ -115,7 +122,7 @@ class OffsetPattern(IPattern[Offset], metaclass=_CombinedMeta):
         _Preconditions._check_not_null(pattern_text, "pattern_text")
         _Preconditions._check_not_null(format_info, "format_info")
         pattern = cast(_IPartialPattern[Offset], format_info._offset_pattern_parser._parse_pattern(pattern_text))
-        return OffsetPattern(pattern_text, pattern)
+        return OffsetPattern.__ctor(pattern_text, pattern)
 
     @classmethod
     def create(cls, pattern_text: str, culture_info: CultureInfo) -> OffsetPattern:
