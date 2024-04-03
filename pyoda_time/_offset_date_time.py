@@ -73,6 +73,16 @@ class OffsetDateTime:
         raise TypeError
 
     @property
+    def year(self) -> int:
+        """Gets the year of this offset date and time.
+
+        This returns the "absolute year", so, for the ISO calendar, a value of 0 means 1 BC, for example.
+
+        :return: The year of this offset date and time.
+        """
+        return self.__local_date.year
+
+    @property
     def nanosecond_of_day(self) -> int:
         return self.__offset_time.nanosecond_of_day
 

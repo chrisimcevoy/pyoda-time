@@ -10,7 +10,7 @@ from ..utility._csharp_compatibility import _private, _sealed
 @final
 @_sealed
 @_private
-class TextErrorMessages:
+class _TextErrorMessages:
     """Centralized location for error messages around text handling."""
 
     AMBIGUOUS_LOCAL_TIME: Final[str] = "The local date/time is ambiguous in the target time zone."

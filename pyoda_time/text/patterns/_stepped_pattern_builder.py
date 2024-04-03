@@ -3,12 +3,15 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
+import typing
 from typing import (
+    TYPE_CHECKING,
     Callable,
     Final,
     Generic,
     Mapping,
     Protocol,
+    Sequence,
     TypeVar,
     final,
     runtime_checkable,
@@ -17,16 +20,21 @@ from typing import (
 from pyoda_time.text._parse_bucket import _ParseBucket
 from pyoda_time.text._value_cursor import _ValueCursor
 
+from ... import LocalDate, LocalDateTime, LocalTime
 from ..._compatibility._string_builder import StringBuilder
 from ...globalization._pyoda_format_info import _PyodaFormatInfo
 from ...utility._csharp_compatibility import _sealed
 from ...utility._preconditions import _Preconditions
-from .. import InvalidPatternError, ParseResult
+from .. import InvalidPatternError, LocalDateTimePattern, ParseResult
 from .._format_helper import FormatHelper
 from .._i_partial_pattern import _IPartialPattern
-from .._text_error_messages import TextErrorMessages
+from .._text_error_messages import _TextErrorMessages
 from ._pattern_cursor import _PatternCursor
 from ._pattern_fields import _PatternFields
+
+if TYPE_CHECKING:
+    from .._local_date_pattern_parser import _LocalDatePatternParser
+    from .._local_time_pattern_parser import _LocalTimePatternParser
 
 # TODO: In Noda Time, SteppedPatternBuilder has two generic type parameters:
 #  `SteppedPatternBuilder<TResult, TBucket> where TBucket : ParseBucket<TResult>`
@@ -55,6 +63,7 @@ from ._pattern_fields import _PatternFields
 #  static typing limitations...?
 
 TResult = TypeVar("TResult")
+TEmbedded = TypeVar("TEmbedded")
 
 
 @_sealed
@@ -115,12 +124,11 @@ class _SteppedPatternBuilder(Generic[TResult]):
                     or current == _PatternCursor._EMBEDDED_PATTERN_START
                     or current == _PatternCursor._EMBEDDED_PATTERN_END
                 ):
-                    raise InvalidPatternError(TextErrorMessages.UNQUOTED_LITERAL, current)
+                    raise InvalidPatternError(_TextErrorMessages.UNQUOTED_LITERAL, current)
 
-                def failure(cursor: _ValueCursor) -> ParseResult[TResult]:
-                    return ParseResult._mismatched_character(cursor, current)
-
-                self._add_literal(current, failure)
+                self._add_literal(
+                    expected_char=pattern_cursor.current, failure_selector=ParseResult._mismatched_character
+                )
 
     def _validate_used_fields(self) -> None:
         """Validates the combination of fields used."""
@@ -130,10 +138,10 @@ class _SteppedPatternBuilder(Generic[TResult]):
         # (e.g. time fields within a date pattern).
 
         if (self.__used_fields & (_PatternFields.ERA | _PatternFields.YEAR_OF_ERA)) == _PatternFields.ERA:
-            raise InvalidPatternError(TextErrorMessages.ERA_WITHOUT_YEAR_OF_ERA)
+            raise InvalidPatternError(_TextErrorMessages.ERA_WITHOUT_YEAR_OF_ERA)
         calendar_and_era: Final[_PatternFields] = _PatternFields.ERA | _PatternFields.CALENDAR
         if (self.__used_fields & calendar_and_era) == calendar_and_era:
-            raise InvalidPatternError(TextErrorMessages.CALENDAR_AND_ERA)
+            raise InvalidPatternError(_TextErrorMessages.CALENDAR_AND_ERA)
 
     def _build(self, sample: TResult) -> _IPartialPattern[TResult]:
         """Returns a built pattern.
@@ -146,25 +154,23 @@ class _SteppedPatternBuilder(Generic[TResult]):
         if self.__used_fields.has_any(_PatternFields.EMBEDDED_DATE) and self._used_fields.has_any(
             _PatternFields.ALL_DATE_FIELDS & ~_PatternFields.EMBEDDED_DATE
         ):
-            raise InvalidPatternError(TextErrorMessages.DATE_FIELD_AND_EMBEDDED_DATE)
+            raise InvalidPatternError(_TextErrorMessages.DATE_FIELD_AND_EMBEDDED_DATE)
         # Ditto for time
         if self.__used_fields.has_any(_PatternFields.EMBEDDED_TIME) and self._used_fields.has_any(
             _PatternFields.ALL_TIME_FIELDS & ~_PatternFields.EMBEDDED_TIME
         ):
-            raise InvalidPatternError(TextErrorMessages.TIME_FIELD_AND_EMBEDDED_TIME)
+            raise InvalidPatternError(_TextErrorMessages.TIME_FIELD_AND_EMBEDDED_TIME)
 
-        delegates = []
+        delegates: list[Callable[[TResult, StringBuilder], None]] = []
 
         for format_action in self.__format_actions:
-            # TODO: Figure out how to port multicast delegate
-            # TODO: Consider using hasattr() instead of isinstance().
-            #  The python docs say isinstance() is markedly slower with runtime_checkable Protocols.
-            if isinstance(format_action, self._IPostPatternParseFormatAction):
-                # TODO: had to type:ignore this as mypy says it is unreachable.
-                #  That is True, but only because we haven't ported DatePatternHelper
-                #  yet, which is the only file where IPostPatternParseFormatAction
-                #  is actually used.
-                delegates.append(format_action.build_format_action(self.__used_fields))  # type: ignore[unreachable]
+            # In Noda Time, this section of code checks whether the .Target of the formatAction delegate
+            # implements this interface. A close approximation in Python is to check the __self__ attribute
+            # of a bound method (if it exists) is an instance of a runtime-checkable Protocol.
+            if hasattr(format_action, "__self__") and isinstance(
+                format_action.__self__, self._IPostPatternParseFormatAction
+            ):
+                delegates.append(format_action.__self__.build_format_action(self.__used_fields))
             else:
                 delegates.append(format_action)
 
@@ -185,7 +191,7 @@ class _SteppedPatternBuilder(Generic[TResult]):
         already been used."""
         new_used_fields = self.__used_fields | field
         if new_used_fields == self.__used_fields:
-            raise InvalidPatternError(TextErrorMessages.REPEATED_FIELD_IN_PATTERN, character_in_pattern)
+            raise InvalidPatternError(_TextErrorMessages.REPEATED_FIELD_IN_PATTERN, character_in_pattern)
         self.__used_fields = new_used_fields
 
     def _add_parse_action(
@@ -227,37 +233,114 @@ class _SteppedPatternBuilder(Generic[TResult]):
 
         self._add_parse_action(parse_value_action)
 
-    def _add_literal(self, expected_text: str, failure: Callable[[_ValueCursor], ParseResult[TResult]], /) -> None:
+    @typing.overload
+    def _add_literal(self, *, expected_text: str, failure: Callable[[_ValueCursor], ParseResult[TResult]]) -> None: ...
+
+    @typing.overload
+    def _add_literal(
+        self, *, expected_char: str, failure_selector: Callable[[_ValueCursor, str], ParseResult[TResult]]
+    ) -> None: ...
+
+    def _add_literal(
+        self,
+        *,
+        expected_text: str | None = None,
+        failure: Callable[[_ValueCursor], ParseResult[TResult]] | None = None,
+        expected_char: str | None = None,
+        failure_selector: Callable[[_ValueCursor, str], ParseResult[TResult]] | None = None,
+    ) -> None:
         """Adds text which must be matched exactly when parsing, and appended directly when formatting."""
 
-        def parse_action(cursor: _ValueCursor, bucket: _ParseBucket[TResult]) -> ParseResult[TResult] | None:
-            if cursor._match(expected_text):
-                return None
-            return failure(cursor)
+        # Overload 1
+        if expected_text is not None and failure is not None:
 
-        def format_action(value: TResult, builder: StringBuilder) -> None:
-            builder.append(expected_text)
+            def overload_1_parse_action(
+                cursor: _ValueCursor, bucket: _ParseBucket[TResult]
+            ) -> ParseResult[TResult] | None:
+                if cursor._match(expected_text):
+                    return None
+                return failure(cursor)
+
+            def overload_1_format_action(value: TResult, builder: StringBuilder) -> None:
+                builder.append(expected_text)
+
+            self._add_parse_action(overload_1_parse_action)
+            self._add_format_action(overload_1_format_action)
+            return
+
+        # Overload 2
+        if expected_char is not None and failure_selector is not None:
+
+            def overload_2_parse_action(
+                cursor: _ValueCursor, bucket: _ParseBucket[TResult]
+            ) -> ParseResult[TResult] | None:
+                if cursor._match(expected_char):
+                    return None
+                return failure_selector(cursor, expected_char)
+
+            def overload_2_format_action(value: TResult, builder: StringBuilder) -> None:
+                builder.append(expected_char)
+
+            self._add_parse_action(overload_2_parse_action)
+            self._add_format_action(overload_2_format_action)
+            return
+
+        raise RuntimeError("_SteppedPatternBuilder._add_literal called with incorrect arguments")
+
+    def _add_parse_longest_text_action(
+        self,
+        field: str,
+        setter: Callable[[_ParseBucket[TResult], int], None],
+        # TODO: compare_info: CompareInfo,
+        text_values_1: Sequence[str],
+        text_values_2: Sequence[str] | None = None,
+    ) -> None:
+        """Adds parse actions for up to two list of strings, such as non-genitive and genitive month names.
+
+        The parsing is performed case-insensitively. All candidates are tested, and only the longest match is used.
+        """
+
+        def parse_action(cursor: _ValueCursor, bucket: _ParseBucket[TResult]) -> ParseResult[TResult] | None:
+            best_index = -1
+            longest_match = 0
+            best_index, longest_match = self.__find_longest_match(cursor, text_values_1, best_index, longest_match)
+            if text_values_2:
+                best_index, longest_match = self.__find_longest_match(cursor, text_values_2, best_index, longest_match)
+            if best_index != -1:
+                setter(bucket, best_index)
+                cursor.move(cursor.index + longest_match)
+                return None
+            return ParseResult._mismatched_text(cursor, field)
 
         self._add_parse_action(parse_action)
-        self._add_format_action(format_action)
-        return
+
+    @staticmethod
+    def __find_longest_match(
+        cursor: _ValueCursor, values: Sequence[str], best_index: int, longest_match: int
+    ) -> tuple[int, int]:
+        """Find the longest match from a given set of candidate strings, updating the index/length of the best value
+        accordingly."""
+        for i, candidate in enumerate(values):
+            if candidate is None or len(candidate) <= longest_match:
+                continue
+            if cursor._match_case_insensitive(candidate, False):
+                best_index = i
+                longest_match = len(candidate)
+        return best_index, longest_match
 
     @classmethod
     def _handle_quote(cls, pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult]) -> None:
         quoted: str = pattern.get_quoted_string(pattern.current)
-        builder._add_literal(quoted, ParseResult[TResult]._quoted_string_mismatch)
+        builder._add_literal(expected_text=quoted, failure=ParseResult[TResult]._quoted_string_mismatch)
 
     @classmethod
     def _handle_backslash(cls, pattern: _PatternCursor, builder: _SteppedPatternBuilder[TResult]) -> None:
         if not pattern.move_next():
-            raise InvalidPatternError(TextErrorMessages.ESCAPE_AT_END_OF_STRING)
+            raise InvalidPatternError(_TextErrorMessages.ESCAPE_AT_END_OF_STRING)
 
-        current = pattern.current
-
-        def failure(cursor: _ValueCursor) -> ParseResult[TResult]:
-            return ParseResult[TResult]._escaped_character_missmatch(cursor, current)
-
-        builder._add_literal(pattern.current, failure)
+        builder._add_literal(
+            expected_char=pattern.current, failure_selector=ParseResult[TResult]._escaped_character_missmatch
+        )
 
     @classmethod
     def _handle_percent(cls, pattern: _PatternCursor, _builder: _SteppedPatternBuilder[TResult]) -> None:
@@ -267,8 +350,8 @@ class _SteppedPatternBuilder(Generic[TResult]):
             if pattern.peek_next() != "%":
                 # Handle the next character as normal
                 return
-            raise InvalidPatternError(TextErrorMessages.PERCENT_DOUBLED)
-        raise InvalidPatternError(TextErrorMessages.PERCENT_AT_END_OF_STRING)
+            raise InvalidPatternError(_TextErrorMessages.PERCENT_DOUBLED)
+        raise InvalidPatternError(_TextErrorMessages.PERCENT_AT_END_OF_STRING)
 
     @classmethod
     def _handle_padded_field(
@@ -368,6 +451,101 @@ class _SteppedPatternBuilder(Generic[TResult]):
                 FormatHelper.left_pad(selector(value), count, sb)
 
         self._add_format_action(format_action)
+
+    def _add_format_fraction(self, width: int, scale: int, selector: Callable[[TResult], int]) -> None:
+        def format_action(value: TResult, sb: StringBuilder) -> None:
+            FormatHelper._append_fraction(selector(value), width, scale, sb)
+
+        self._add_format_action(format_action)
+
+    def _add_format_fraction_truncate(self, width: int, scale: int, selector: Callable[[TResult], int]) -> None:
+        def format_action(value: TResult, sb: StringBuilder) -> None:
+            FormatHelper._append_fraction_truncate(selector(value), width, scale, sb)
+
+        self._add_format_action(format_action)
+
+    def _add_embedded_local_partial(
+        self,
+        pattern: _PatternCursor,
+        date_bucket_extractor: Callable[[_ParseBucket[TResult]], _LocalDatePatternParser._LocalDateParseBucket],
+        time_bucket_extractor: Callable[[_ParseBucket[TResult]], _LocalTimePatternParser._LocalTimeParseBucket],
+        date_extractor: Callable[[TResult], LocalDate],
+        time_extractor: Callable[[TResult], LocalTime],
+        # null if date/time embedded patterns are invalid
+        date_time_extractor: Callable[[TResult], LocalDateTime] | None,
+        type_: type[TResult],
+    ) -> None:
+        """Handles date, time and date/time embedded patterns."""
+        # This will be d (date-only), t (time-only), or < (date and time)
+        # If it's anything else, we'll see the problem when we try to get the pattern.
+        pattern_type: str = pattern.peek_next()
+        if pattern_type == "d" or pattern_type == "t":
+            pattern.move_next()
+
+        embedded_pattern_text = pattern.get_embedded_pattern()
+
+        match pattern_type:
+            case "<":
+                sample_bucket = self._create_sample_bucket()
+                two_digit_year_max = date_bucket_extractor(sample_bucket)._two_digit_year_max
+                template_time = time_bucket_extractor(sample_bucket)._template_value
+                template_date = date_bucket_extractor(sample_bucket)._template_value
+                if date_time_extractor is None:
+                    raise InvalidPatternError(_TextErrorMessages.INVALID_EMBEDDED_PATTERN_TYPE)
+                self._add_field(_PatternFields.EMBEDDED_DATE, "l")
+                self._add_field(_PatternFields.EMBEDDED_TIME, "l")
+
+                def parse_action(bucket: _ParseBucket[TResult], value: LocalDateTime) -> None:
+                    date_bucket = date_bucket_extractor(bucket)
+                    time_bucket = time_bucket_extractor(bucket)
+                    date_bucket._calendar = value.calendar
+                    date_bucket._year = value.year
+                    date_bucket._month_of_year_numeric = value.month
+                    date_bucket._day_of_month = value.day
+                    time_bucket._hours_24 = value.hour
+                    time_bucket._minutes = value.minute
+                    time_bucket._seconds = value.second
+                    time_bucket._fractional_seconds = value.nanosecond_of_second
+
+                self._add_embedded_pattern(
+                    LocalDateTimePattern._create(
+                        embedded_pattern_text,
+                        self.__format_info,
+                        template_date + template_time,
+                        two_digit_year_max,
+                    )._underlying_pattern,
+                    parse_action,
+                    date_time_extractor,
+                    type_,
+                )
+            case "d":
+                raise NotImplementedError
+            case "t":
+                raise NotImplementedError
+            case _:
+                raise RuntimeError("Bug in Pyoda Time: embedded pattern type wasn't date, time, or date+time")
+
+    def _add_embedded_pattern(
+        self,
+        embedded_pattern: _IPartialPattern[TEmbedded],
+        parse_action: Callable[[_ParseBucket[TResult], TEmbedded], None],
+        value_extractor: Callable[[TResult], TEmbedded],
+        type_: type[TResult],
+    ) -> None:
+        """Adds parsing/formatting of an embedded pattern, e.g. an offset within a ZonedDateTime/OffsetDateTime."""
+
+        def parse_action_to_add(value: _ValueCursor, bucket: _ParseBucket[TResult]) -> ParseResult[TResult] | None:
+            result = embedded_pattern.parse_partial(value)
+            if not result.success:
+                return result.convert_error(type_)
+            parse_action(bucket, result.value)
+            return None
+
+        def format_action_to_add(value: TResult, sb: StringBuilder) -> None:
+            embedded_pattern.append_format(value_extractor(value), sb)
+
+        self._add_parse_action(parse_action_to_add)
+        self._add_format_action(format_action_to_add)
 
     @runtime_checkable
     class _IPostPatternParseFormatAction(Protocol):

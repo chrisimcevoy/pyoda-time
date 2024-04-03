@@ -49,6 +49,8 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         # Cached values exposed via lazy-initialising properties
         self.__date_separator: str | None = None
         self.__time_separator: str | None = None
+        self.__am_designator: str | None = None
+        self.__pm_designator: str | None = None
         self.__day_names: Sequence[str] | None = None
         self.__abbreviated_day_names: Sequence[str] | None = None
         self.__m_era_names: list[str] | None = None
@@ -68,6 +70,8 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         # Cached values exposed via lazy-initialising properties
         self.__date_separator = None
         self.__time_separator = None
+        self.__am_designator = None
+        self.__pm_designator = None
         self.__day_names = None
         self.__abbreviated_day_names = None
         self.__m_era_names = None
@@ -121,6 +125,26 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         return self.__date_separator
 
     @property
+    def full_date_time_pattern(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def long_date_pattern(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def long_time_pattern(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def short_date_pattern(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def short_time_pattern(self) -> str:
+        raise NotImplementedError
+
+    @property
     def time_separator(self) -> str:
         """Gets or sets the string that separates the components of time, that is, the hour, minutes, and seconds."""
         if self.__time_separator is None:
@@ -145,6 +169,20 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
 
     def get_format(self, format_type: type) -> Any | None:
         raise NotImplementedError
+
+    @property
+    def am_designator(self) -> str:
+        if self.__am_designator is None:
+            self.__am_designator = self._culture_data._am_designator
+        assert self.__am_designator is not None
+        return self.__am_designator
+
+    @property
+    def pm_designator(self) -> str:
+        if self.__pm_designator is None:
+            self.__pm_designator = self._culture_data._pm_designator
+        assert self.__pm_designator is not None
+        return self.__pm_designator
 
     @property
     def calendar(self) -> Calendar:

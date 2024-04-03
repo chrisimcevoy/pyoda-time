@@ -2,6 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from pyoda_time._compatibility._string_builder import StringBuilder
+from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
 
 
 class FormatHelper:
@@ -74,3 +75,71 @@ class FormatHelper:
         formatted_value = f"{value:0>{length}}"
 
         output_buffer.append(formatted_value)
+
+    @classmethod
+    def _append_fraction(cls, value: int, length: int, scale: int, output_buffer: StringBuilder) -> None:
+        """Formats the given value, which is an integer representation of a fraction.
+
+        Note: current usage means this never has to cope with negative numbers.
+
+        ``AppendFraction(1200, 4, 5, builder`` will result in "0120" being
+        appended to the builder. The value is treated as effectively 0.01200 because
+        the scale is 5, but only 4 digits are formatted.
+
+        :param value: The value to format.
+        :param length: The length to fill. Must be at most ``scale``.
+        :param scale: The scale of the value i.e. the number of significant digits is the range of the value. Must be
+            in the range [1, 7].
+        :param output_buffer: The output buffer to add the digits to.
+        """
+        relevant_digits = value
+
+        while scale > length:
+            relevant_digits = _towards_zero_division(relevant_digits, 10)
+            scale -= 1
+
+        # Create the formatted string with leading zeros.
+        # This is very different to the Noda Time implementation.
+        formatted_string = f"{relevant_digits:0{length}d}"
+
+        output_buffer.append(formatted_string)
+
+    @classmethod
+    def _append_fraction_truncate(cls, value: int, length: int, scale: int, output_buffer: StringBuilder) -> None:
+        """Formats the given value, which is an integer representation of a fraction, truncating any right-most zero
+        digits.
+
+        If the entire value is truncated then the preceding decimal separator is also removed.
+
+        Note: current usage means this never has to cope with negative numbers.
+
+        ``_append_fraction_truncate(1200, 4, 5, builder)`` will result in "001" being
+        appended to the builder. The value is treated as effectively 0.01200 because
+        the scale is 5; only 4 digits are formatted (leaving "0120") and then the rightmost
+        0 digit is truncated.
+
+        :param value: The value to format.
+        :param length: The length to fill. Must be at most ``scale``.
+        :param scale: The scale of the value i.e. the number of significant digits is the range of the value. Must be
+            in the range [1, 7].
+        :param output_buffer: The output buffer to add the digits to.
+        """
+        relevant_digits = value
+
+        while scale > length:
+            relevant_digits = _towards_zero_division(relevant_digits, 10)
+            scale -= 1
+
+        relevant_length = length
+        while relevant_length > 0:
+            if _csharp_modulo(relevant_digits, 10) != 0:
+                break
+            relevant_digits = _towards_zero_division(relevant_digits, 10)
+            relevant_length -= 1
+
+        if relevant_length > 0:
+            formatted_string = f"{relevant_digits:0{relevant_length}d}"
+            output_buffer.append(formatted_string)
+        # Check and remove a preceding decimal point if necessary
+        elif output_buffer.length > 0 and output_buffer[output_buffer.length - 1] == ".":
+            output_buffer.length -= 1

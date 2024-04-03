@@ -11,7 +11,7 @@ from .._calendar_system import CalendarSystem
 from ..calendars._era import Era
 from ..utility._csharp_compatibility import _private, _sealed
 from ..utility._preconditions import _Preconditions
-from ._text_error_messages import TextErrorMessages
+from ._text_error_messages import _TextErrorMessages
 from ._unparsable_value_error import UnparsableValueError
 
 if TYPE_CHECKING:
@@ -41,7 +41,7 @@ class _ParseResultMeta(type):
         # operator is not implemented for ParseResult, and equality
         # checks fall back to default object.__eq__() behaviour.
         return ParseResult._ctor(
-            exception_provider=functools.partial(UnparsableValueError, TextErrorMessages.FORMAT_ONLY_PATTERN),
+            exception_provider=functools.partial(UnparsableValueError, _TextErrorMessages.FORMAT_ONLY_PATTERN),
             continue_with_multiple=True,
         )
 
@@ -202,7 +202,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
     def _for_invalid_value_post_parse(cls, text: str, format_string: str, *args: Any) -> ParseResult[T]:
         def expection_provider() -> Exception:
             detail_message = format_string.format(*args)
-            overall_message = TextErrorMessages.UNPARSABLE_VALUE_POST_PARSE.format(detail_message, text)
+            overall_message = _TextErrorMessages.UNPARSABLE_VALUE_POST_PARSE.format(detail_message, text)
             return UnparsableValueError(overall_message)
 
         return cls._for_invalid_value(expection_provider)
@@ -228,7 +228,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
             format_string: str = args[0]
             parameters = args[1:]
             detail_message = format_string.format(*parameters)
-            overall_message = TextErrorMessages.UNPARSABLE_VALUE.format(detail_message, cursor)
+            overall_message = _TextErrorMessages.UNPARSABLE_VALUE.format(detail_message, cursor)
 
             def exception_provider() -> Exception:
                 return UnparsableValueError(overall_message)
@@ -250,7 +250,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
 
     @classmethod
     def _positive_sign_invalid(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.POSITIVE_SIGN_INVALID)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.POSITIVE_SIGN_INVALID)
 
     @classmethod
     def _value_string_empty(cls) -> ParseResult[T]:
@@ -259,102 +259,102 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
         """
 
         def exception_provider() -> Exception:
-            return UnparsableValueError(TextErrorMessages.VALUE_STRING_EMPTY)
+            return UnparsableValueError(_TextErrorMessages.VALUE_STRING_EMPTY)
 
         return cls._ctor(exception_provider=exception_provider, continue_with_multiple=False)
 
     @classmethod
     def _extra_value_characters(cls, cursor: _ValueCursor, remainder: str) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.EXTRA_VALUE_CHARACTERS, remainder)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.EXTRA_VALUE_CHARACTERS, remainder)
 
     @classmethod
     def _quoted_string_mismatch(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.QUOTED_STRING_MISMATCH)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.QUOTED_STRING_MISMATCH)
 
     @classmethod
     def _escaped_character_missmatch(cls, cursor: _ValueCursor, pattern_character: str) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.ESCAPED_CHARACTER_MISMATCH, pattern_character)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.ESCAPED_CHARACTER_MISMATCH, pattern_character)
 
     @classmethod
     def _end_of_string(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.END_OF_STRING)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.END_OF_STRING)
 
     @classmethod
     def _time_separator_mismatch(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.TIME_SEPARATOR_MISMATCH)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.TIME_SEPARATOR_MISMATCH)
 
     @classmethod
     def _date_separator_mismatch(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.DATE_SEPARATOR_MISMATCH)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.DATE_SEPARATOR_MISMATCH)
 
     @classmethod
     def _missing_number(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.MISSING_NUMBER)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.MISSING_NUMBER)
 
     @classmethod
     def _unexpected_negative(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.UNEXPECTED_NEGATIVE)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.UNEXPECTED_NEGATIVE)
 
     @classmethod
     def _mismatched_number(cls, cursor: _ValueCursor, pattern: str) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.MISMATCHED_NUMBER, pattern)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.MISMATCHED_NUMBER, pattern)
 
     @classmethod
     def _mismatched_character(cls, cursor: _ValueCursor, pattern_character: str) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.MISMATCHED_CHARACTER, pattern_character)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.MISMATCHED_CHARACTER, pattern_character)
 
     @classmethod
     def _mismatched_text(cls, cursor: _ValueCursor, field: str) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.MISMATCHED_TEXT, field)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.MISMATCHED_TEXT, field)
 
     @classmethod
     def _no_matching_format(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.NO_MATCHING_FORMAT)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.NO_MATCHING_FORMAT)
 
     @classmethod
     def _value_out_of_range(cls, value_cursor: _ValueCursor, value: object) -> ParseResult[T]:
-        return cls._for_invalid_value(value_cursor, TextErrorMessages.VALUE_OUT_OF_RANGE, value, type(value))
+        return cls._for_invalid_value(value_cursor, _TextErrorMessages.VALUE_OUT_OF_RANGE, value, type(value))
 
     @classmethod
     def _missing_sign(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.MISSING_SIGN)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.MISSING_SIGN)
 
     @classmethod
     def _missing_am_pm_designator(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.MISSING_AM_PM_DESIGNATOR)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.MISSING_AM_PM_DESIGNATOR)
 
     @classmethod
     def _no_matching_calendar_system(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.NO_MATCHING_CALENDAR_SYSTEM)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.NO_MATCHING_CALENDAR_SYSTEM)
 
     @classmethod
     def _no_matching_zone_id(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.NO_MATCHING_ZONE_ID)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.NO_MATCHING_ZONE_ID)
 
     @classmethod
-    def _invalid_hour_24(cls, cursor: _ValueCursor) -> ParseResult[T]:
-        return cls._for_invalid_value(cursor, TextErrorMessages.INVALID_HOUR_24)
+    def _invalid_hour_24(cls, text: str) -> ParseResult[T]:
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.INVALID_HOUR_24)
 
     @classmethod
     def _field_value_out_of_range(cls, cursor: _ValueCursor, value: int, field: str, type_: type[T]) -> ParseResult[T]:
         # TODO: This differs from Noda Time insofar as we can't do `typeof(T)` for the
         #  final argument. This means that we've had to pass the actual type at runtime
         #  which required several method signature changes. (Wherever this method is used.)
-        return cls._for_invalid_value(cursor, TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE, value, field, type_.__name__)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE, value, field, type_.__name__)
 
     @classmethod
     def _field_value_out_of_range_post_parse(
         cls, text: str, value: int, field: str, eventual_result_type: type
     ) -> ParseResult[T]:
         return cls._for_invalid_value_post_parse(
-            text, TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE, value, field, eventual_result_type
+            text, _TextErrorMessages.FIELD_VALUE_OUT_OF_RANGE, value, field, eventual_result_type.__name__
         )
 
     @classmethod
     def _inconsistent_values(cls, text: str, field_1: str, field_2: str, eventual_result_type: type) -> ParseResult[T]:
         """Two fields (e.g. "hour of day" and "hour of half day") were mutually inconsistent."""
         return cls._for_invalid_value_post_parse(
-            text, TextErrorMessages.INCONSISTENT_VALUES_2, field_1, field_2, eventual_result_type
+            text, _TextErrorMessages.INCONSISTENT_VALUES_2, field_1, field_2, eventual_result_type.__name__
         )
 
     @classmethod
@@ -363,7 +363,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
 
         We can't use InconsistentValues for this as the pattern character is the same in both cases.
         """
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.INCONSISTENT_MONTH_TEXT_VALUE)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.INCONSISTENT_MONTH_TEXT_VALUE)
 
     @classmethod
     def _inconsistent_day_of_week_text_value(cls, text: str) -> ParseResult[T]:
@@ -371,45 +371,45 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
 
         We can't use InconsistentValues for this as the pattern character is the same in both cases.
         """
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.INCONSISTENT_DAY_OF_WEEK_TEXT_VALUE)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.INCONSISTENT_DAY_OF_WEEK_TEXT_VALUE)
 
     @classmethod
     def _expected_end_of_string(cls, cursor: _ValueCursor) -> ParseResult[T]:
         """We'd expected to get to the end of the string now, but we haven't."""
-        return cls._for_invalid_value(cursor, TextErrorMessages.EXPECTED_END_OF_STRING)
+        return cls._for_invalid_value(cursor, _TextErrorMessages.EXPECTED_END_OF_STRING)
 
     @classmethod
     def _year_era_out_of_range(cls, text: str, value: int, era: Era, calendar: CalendarSystem) -> ParseResult[T]:
         return cls._for_invalid_value_post_parse(
-            text, TextErrorMessages.YEAR_OF_ERA_OUT_OF_RANGE, value, era.name, calendar.name
+            text, _TextErrorMessages.YEAR_OF_ERA_OUT_OF_RANGE, value, era.name, calendar.name
         )
 
     @classmethod
     def _month_out_of_range(cls, text: str, month: int, year: int) -> ParseResult[T]:
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.MONTH_OUT_OF_RANGE, month, year)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.MONTH_OUT_OF_RANGE, month, year)
 
     @classmethod
     def _iso_month_out_of_range(cls, text: str, month: int) -> ParseResult[T]:
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.ISO_MONTH_OUT_OF_RANGE, month)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.ISO_MONTH_OUT_OF_RANGE, month)
 
     @classmethod
     def _day_of_month_out_of_range(cls, text: str, day: int, month: int, year: int) -> ParseResult[T]:
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.DAY_OF_MONTH_OUT_OF_RANGE, day, month, year)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.DAY_OF_MONTH_OUT_OF_RANGE, day, month, year)
 
     @classmethod
     def _day_of_month_out_of_range_no_year(cls, text: str, day: int, month: int) -> ParseResult[T]:
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.DAY_OF_MONTH_OUT_OF_RANGE_NO_YEAR, day, month)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.DAY_OF_MONTH_OUT_OF_RANGE_NO_YEAR, day, month)
 
     @classmethod
     def _invalid_offset(cls, text: str) -> ParseResult[T]:
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.INVALID_OFFSET)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.INVALID_OFFSET)
 
     @classmethod
     def _skipped_local_time(cls, text: str) -> ParseResult[T]:
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.SKIPPED_LOCAL_TIME)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.SKIPPED_LOCAL_TIME)
 
     @classmethod
     def _ambiguous_local_time(cls, text: str) -> ParseResult[T]:
-        return cls._for_invalid_value_post_parse(text, TextErrorMessages.AMBIGUOUS_LOCAL_TIME)
+        return cls._for_invalid_value_post_parse(text, _TextErrorMessages.AMBIGUOUS_LOCAL_TIME)
 
     # endregion

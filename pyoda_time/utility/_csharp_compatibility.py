@@ -88,8 +88,10 @@ def _private(klass: _Ttype) -> _Ttype:
 
 
 class _CsharpConstants:
-    LONG_MAX_VALUE: typing.Final[int] = 9223372036854775807
+    INT_MIN_VALUE: typing.Final[int] = -2147483648
+    INT_MAX_VALUE: typing.Final[int] = 2147483647
     LONG_MIN_VALUE: typing.Final[int] = -9223372036854775808
+    LONG_MAX_VALUE: typing.Final[int] = 9223372036854775807
 
 
 def _int32_overflow(value: int) -> int:

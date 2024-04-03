@@ -1,13 +1,16 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
+from __future__ import annotations
 
-from typing import Final, Generic, TypeVar, final
+from typing import TYPE_CHECKING, Final, Generic, TypeVar, final
 
-from ..globalization._pyoda_format_info import _PyodaFormatInfo
 from ..utility._csharp_compatibility import _sealed
 from ._i_pattern import IPattern
 from .patterns._i_pattern_parser import _IPatternParser
+
+if TYPE_CHECKING:
+    from ..globalization._pyoda_format_info import _PyodaFormatInfo
 
 T = TypeVar("T")
 

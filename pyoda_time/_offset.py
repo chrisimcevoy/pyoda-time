@@ -430,6 +430,6 @@ class Offset(metaclass=_OffsetMeta):
     # endregion
 
     def __str__(self) -> str:
-        from .text._offset_pattern import OffsetPattern
+        from .text import OffsetPattern
 
         return OffsetPattern._bcl_support.format(self, None, CultureInfo.current_culture)

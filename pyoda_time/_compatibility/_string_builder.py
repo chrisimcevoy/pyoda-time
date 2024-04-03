@@ -22,9 +22,17 @@ class StringBuilder:
     ) -> None:
         self.__string = string
 
+    def __getitem__(self, item: int) -> str:
+        return self.__string.__getitem__(item)
+
     @property
     def length(self) -> int:
         return len(self.__string)
+
+    @length.setter
+    def length(self, value: int) -> None:
+        assert 0 < value <= self.length
+        self.__string = self.__string[:value]
 
     def append(self, string: str) -> Self:
         self.__string += string
