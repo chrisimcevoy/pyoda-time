@@ -19,3 +19,7 @@ class UmAlQuraCalendar(Calendar):
     @property
     def _id(self) -> _CalendarId:
         return _CalendarId.UMALQURA
+
+    @property
+    def _base_calendar_id(self) -> _CalendarId:
+        return _CalendarId.HIJRI

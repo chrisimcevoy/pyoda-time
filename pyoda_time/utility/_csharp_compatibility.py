@@ -14,6 +14,19 @@ _T = typing.TypeVar("_T")
 _Ttype = typing.TypeVar("_Ttype", bound=type)
 
 
+def _as_span(text: str | None, start: int) -> str:
+    """Roughly equivalent to:
+    public static ReadOnlySpan<char> AsSpan(this string? text, int start)
+    """
+    if text is None:
+        if start != 0:
+            raise IndexError("start index out of range")
+        return ""
+    if not (0 <= start <= len(text)):
+        raise IndexError("start index out of range")
+    return text[start:]
+
+
 def _towards_zero_division(x: int | float | decimal.Decimal, y: int | float | decimal.Decimal) -> int:
     """Divide two numbers using "towards zero" rounding.
 

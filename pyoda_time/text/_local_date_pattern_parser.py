@@ -5,20 +5,80 @@ from __future__ import annotations
 
 from typing import Any, Callable, Final, final
 
-from pyoda_time import CalendarSystem, LocalDate
 from pyoda_time._calendar_ordinal import _CalendarOrdinal
+from pyoda_time._calendar_system import CalendarSystem
+from pyoda_time._local_date import LocalDate
 from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
-from pyoda_time.calendars import Era
+from pyoda_time.calendars._era import Era
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
-from pyoda_time.text import ParseResult
 from pyoda_time.text._i_pattern import IPattern
+from pyoda_time.text._invalid_pattern_exception import InvalidPatternError
 from pyoda_time.text._parse_bucket import _ParseBucket
+from pyoda_time.text._parse_result import ParseResult
+from pyoda_time.text._text_error_messages import _TextErrorMessages
 from pyoda_time.text._value_cursor import _ValueCursor
+from pyoda_time.text.patterns._date_pattern_helper import _DatePatternHelper
 from pyoda_time.text.patterns._i_pattern_parser import _IPatternParser
 from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _private, _sealed, _towards_zero_division
+
+
+def year_getter(value: LocalDate) -> int:
+    return value.year
+
+
+def year_setter(bucket: _ParseBucket[LocalDate], value: int) -> None:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    bucket._year = value
+
+
+def month_getter(value: LocalDate) -> int:
+    return value.month
+
+
+def month_text_setter(bucket: _ParseBucket[LocalDate], value: int) -> None:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    bucket._month_of_year_text = value
+
+
+def month_setter(bucket: _ParseBucket[LocalDate], value: int) -> None:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    bucket._month_of_year_numeric = value
+
+
+def day_of_month_getter(value: LocalDate) -> int:
+    return value.day
+
+
+def day_of_week_getter(value: LocalDate) -> int:
+    return value.day_of_week.value
+
+
+def year_of_era_getter(value: LocalDate) -> int:
+    return value.year_of_era
+
+
+def day_of_month_setter(bucket: _ParseBucket[LocalDate], value: int) -> None:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    bucket._day_of_month = value
+
+
+def day_of_week_setter(bucket: _ParseBucket[LocalDate], value: int) -> None:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    bucket._day_of_week = value
+
+
+def year_of_era_setter(bucket: _ParseBucket[LocalDate], value: int) -> None:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    bucket._year_of_era = value
+
+
+def handle_forward_slash(pattern: _PatternCursor, builder: _SteppedPatternBuilder[LocalDate]) -> None:
+    builder._add_literal(
+        expected_text=builder._format_info.date_separator, failure=ParseResult._date_separator_mismatch
+    )
 
 
 @_sealed
@@ -30,17 +90,70 @@ class _LocalDatePatternParser(_IPatternParser[LocalDate]):
     __template_value: LocalDate
     __two_digit_year_max: int
 
-    __character_handlers: Final[dict[str, Callable[[_PatternCursor, _SteppedPatternBuilder[LocalDate]], None]]] = {}
+    __character_handlers: Final[dict[str, Callable[[_PatternCursor, _SteppedPatternBuilder[LocalDate]], None]]] = {
+        "%": lambda _, __: exec("raise NotImplementedError"),
+        "'": lambda _, __: exec("raise NotImplementedError"),
+        '"': lambda _, __: exec("raise NotImplementedError"),
+        "\\": lambda _, __: exec("raise NotImplementedError"),
+        "/": handle_forward_slash,
+        "y": _DatePatternHelper._create_year_of_era_handler(year_of_era_getter, year_of_era_setter, LocalDate),
+        "u": _SteppedPatternBuilder._handle_padded_field(
+            4, _PatternFields.YEAR, -9999, 9999, year_getter, year_setter, LocalDate
+        ),
+        "M": _DatePatternHelper._create_month_of_year_handler(month_getter, month_text_setter, month_setter, LocalDate),
+        "d": _DatePatternHelper._create_day_handler(
+            day_of_month_getter, day_of_week_getter, day_of_month_setter, day_of_week_setter, LocalDate
+        ),
+        "c": lambda _, __: exec("raise NotImplementedError"),
+        "g": lambda _, __: exec("raise NotImplementedError"),
+    }
 
     @classmethod
-    def __ctor(cls, template_value: LocalDate, two_digit_year_max: int) -> _LocalDatePatternParser:
+    def _ctor(cls, template_value: LocalDate, two_digit_year_max: int) -> _LocalDatePatternParser:
         self = super().__new__(cls)
         self.__template_value = template_value
         self.__two_digit_year_max = two_digit_year_max
         return self
 
+    # Note: public to implement the interface. It does no harm, and it's simpler than using explicit
+    # interface implementation.
     def parse_pattern(self, pattern: str, format_info: _PyodaFormatInfo) -> IPattern[LocalDate]:
-        raise NotImplementedError
+        # Nullity check is performed in LocalDatePattern.
+        if len(pattern) == 0:
+            raise InvalidPatternError(_TextErrorMessages.FORMAT_STRING_EMPTY)
+
+        def bucket_provider() -> _ParseBucket[LocalDate]:
+            return _LocalDatePatternParser._LocalDateParseBucket._ctor(
+                template_value=self.__template_value, two_digit_year_max=self.__two_digit_year_max
+            )
+
+        def parse_no_standard_expansion(pattern_text_local: str) -> IPattern[LocalDate]:
+            pattern_builder = _SteppedPatternBuilder(format_info, bucket_provider)
+            pattern_builder._parse_custom_pattern(pattern_text_local, self.__character_handlers)
+            pattern_builder._validate_used_fields()
+            return pattern_builder._build(self.__template_value)
+
+        if len(pattern) == 1:
+            match pattern:
+                # Invariant standard patterns return cached implementations.
+                case "R":
+                    raise NotImplementedError
+                case "r":
+                    raise NotImplementedError
+                # Other standard patterns expand the pattern text to the appropriate custom pattern.
+                # Note: we don't just recurse, as otherwise a ShortDatePattern of 'd' (for example)
+                # would cause a stack overflow.
+                case "d":
+                    return parse_no_standard_expansion(format_info.date_time_format.short_date_pattern)
+                case "D":
+                    return parse_no_standard_expansion(format_info.date_time_format.long_date_pattern)
+                case "M":
+                    return parse_no_standard_expansion(format_info.date_time_format.month_day_pattern)
+                # Unknown standard patterns fail.
+                case _:
+                    raise InvalidPatternError(_TextErrorMessages.UNKNOWN_STANDARD_FORMAT, pattern, LocalDate.__name__)
+
+        return parse_no_standard_expansion(pattern)
 
     @final
     @_private
@@ -156,7 +269,7 @@ class _LocalDatePatternParser(_IPatternParser[LocalDate]):
             month: int = self._month_of_year_numeric
             # Note: year is always valid, as it's already validated to be in the range -9999 to 9999.
 
-            if month > 22:
+            if month > 12:
                 return ParseResult._month_out_of_range(text, month, self._year)
             # If we've been asked for day 1-28, we're definitely okay regardless of month.
             # If it's 29-31, we need to check.
@@ -244,18 +357,18 @@ class _LocalDatePatternParser(_IPatternParser[LocalDate]):
             return None
 
         def __determine_month(self, used_fields: _PatternFields, text: str) -> ParseResult[LocalDate] | None:
-            match used_fields & (_PatternFields.MONTH_OF_YEAR_NUMERIC | _PatternFields.MONTH_OF_YEAR_TEXT):
-                case _PatternFields.MONTH_OF_YEAR_NUMERIC:
-                    # No-op
-                    pass
-                case _PatternFields.MONTH_OF_YEAR_TEXT:
-                    self._month_of_year_numeric = self._month_of_year_text
-                case _PatternFields.MONTH_OF_YEAR_NUMERIC | _PatternFields.MONTH_OF_YEAR_TEXT:
-                    if self._month_of_year_numeric != self._month_of_year_text:
-                        return ParseResult._inconsistent_month_values(text)
-                    # No need to change MonthOfYearNumeric - this was just a check
-                case _PatternFields.NONE:
-                    self._month_of_year_numeric = self._template_value.month
+            predicate = used_fields & (_PatternFields.MONTH_OF_YEAR_NUMERIC | _PatternFields.MONTH_OF_YEAR_TEXT)
+            if predicate == _PatternFields.MONTH_OF_YEAR_NUMERIC:
+                # No-op
+                pass
+            elif predicate == _PatternFields.MONTH_OF_YEAR_TEXT:
+                self._month_of_year_numeric = self._month_of_year_text
+            elif predicate == _PatternFields.MONTH_OF_YEAR_NUMERIC | _PatternFields.MONTH_OF_YEAR_TEXT:
+                if self._month_of_year_numeric != self._month_of_year_text:
+                    return ParseResult._inconsistent_month_values(text)
+                # No need to change MonthOfYearNumeric - this was just a check
+            elif predicate == _PatternFields.NONE:
+                self._month_of_year_numeric = self._template_value.month
 
             if self._month_of_year_numeric > self._calendar.get_months_in_year(self._year):
                 return ParseResult._month_out_of_range(text, self._month_of_year_numeric, self._year)

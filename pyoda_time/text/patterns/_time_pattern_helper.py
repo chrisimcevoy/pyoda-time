@@ -121,7 +121,7 @@ class _TimePatternHelper:
             else:
 
                 def parse_action(value_cursor: _ValueCursor, bucket: _ParseBucket[T]) -> ParseResult[T] | None:
-                    if not value_cursor._match(".") and not value_cursor._match(","):
+                    if value_cursor._match(".") or value_cursor._match(","):
                         return None
                     return ParseResult._mismatched_character(value_cursor, ";")
 

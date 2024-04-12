@@ -5,14 +5,18 @@
 from __future__ import annotations
 
 import copy
+import itertools
+import string
 import threading
 from typing import Any, Final, Sequence, _ProtocolMeta
 
 import icu
 
+from ._argument_exception import ArgumentError
 from ._calendar import Calendar
 from ._calendar_id import _CalendarId
 from ._culture_data import _CultureData
+from ._culture_not_found_exception import CultureNotFoundError
 from ._culture_types import CultureTypes
 from ._date_time_format_info import DateTimeFormatInfo
 from ._globalization_mode import _GlobalizationMode
@@ -35,6 +39,7 @@ class __CultureInfoMeta(type):
 
     __CURRENT_CULTURE_ATTR_NAME: Final[str] = "s_currentThreadCulture"
     __CURRENT_UI_CULTURE_ATTR_NAME: Final[str] = "s_currentThreadUICulture"
+    _LOCALE_CUSTOM_UNSPECIFIED: Final[int] = 0x1000
     __THREAD_LOCAL_STORAGE: Final[threading.local] = threading.local()
 
     __s_InvariantCultureInfo: CultureInfo | None = None
@@ -47,7 +52,7 @@ class __CultureInfoMeta(type):
     def invariant_culture(cls) -> CultureInfo:
         """An instance of ``CultureInfo`` which is independent of system/user settings."""
         if not cls.__s_InvariantCultureInfo:
-            cls.__s_InvariantCultureInfo = CultureInfo._ctor(_CultureData.invariant, is_read_only=True)
+            cls.__s_InvariantCultureInfo = CultureInfo._ctor(_CultureData._invariant, is_read_only=True)
         return cls.__s_InvariantCultureInfo
 
     @property
@@ -146,9 +151,21 @@ class CultureInfo(IFormatProvider, metaclass=__CombinedMeta):  # TODO: ICloneabl
 
     __CACHED_CULTURES_BY_NAME: Final[dict[str, CultureInfo]] = dict()
     __GET_CULTURE_LOCK: Final[threading.Lock] = threading.Lock()
+    _LOCALE_INVARIANT: Final[int] = 0x007F
 
     def __init__(self, name: str, use_user_override: bool = True) -> None:
-        self._culture_data: _CultureData = _CultureData(name)
+        # TODO: ArgumentNullException.ThrowIfNull(name);
+
+        culture_data: _CultureData | None = _CultureData._get_culture_data(name, use_user_override)
+
+        if culture_data is None:
+            raise CultureNotFoundError(
+                param_name="name",
+                invalid_culture_name=name,
+                message=self.__get_culture_not_supported_exception_message(),
+            )
+
+        self._culture_data = culture_data
         self._name = self._culture_data._culture_name
         self._is_inherited = isinstance(self, CultureInfo)  # TODO: issubclass?
         self.__is_read_only = False
@@ -158,7 +175,6 @@ class CultureInfo(IFormatProvider, metaclass=__CombinedMeta):  # TODO: ICloneabl
         self._num_info: NumberFormatInfo | None = None
         self.__text_info: TextInfo | None = None
         self.__calendar: Calendar | None = None
-
         self.__non_sort_name: str | None = None
 
     def __repr__(self) -> str:
@@ -178,8 +194,31 @@ class CultureInfo(IFormatProvider, metaclass=__CombinedMeta):  # TODO: ICloneabl
         # Cached attributes exposed via lazy-initialisation properties
         self._date_time_info = None
         self._num_info = None
+        self._date_time_info = None
+        self._num_info = None
+        self.__text_info = None
+        self.__calendar = None
+        self.__non_sort_name = None
 
         return self
+
+    @classmethod
+    def _verify_culture_name(cls, culture: CultureInfo | str, throw_exception: bool) -> bool:
+        if isinstance(culture, CultureInfo):
+            if not culture._is_inherited:
+                return True
+            culture = culture.name
+        for char in culture:
+            if char in itertools.chain(string.ascii_letters, string.digits, ("-", "_")):
+                continue
+            if throw_exception:
+                msg = (
+                    f"The given culture name '{culture}' cannot be used to locate a resource file. "
+                    f"Resource filenames must consist of only letters, numbers, hyphens or underscores."
+                )
+                raise ArgumentError(message=msg)
+            return False
+        return True
 
     @property
     def calendar(self) -> Calendar:
@@ -268,10 +307,29 @@ class CultureInfo(IFormatProvider, metaclass=__CombinedMeta):  # TODO: ICloneabl
         """Creates a copy of this ``CultureInfo``."""
         # TODO: This might be good enough for our purposes, but
         #  it isn't anything like the behaviour in .NET.
-        # Refer to CultureData.__deepcopy__() implementation
-        culture_info = copy.deepcopy(self)
-        culture_info.__is_read_only = False
-        return culture_info
+        return copy.deepcopy(self)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> CultureInfo:
+        """Implements copy functionality.
+
+        In C# this class has no public constructor, so in Python we mimic that by monkeypatching __init__ and __new__ to
+        raise an Exception.
+
+        To get around that when copying such objects, we have to manage the instance creation on behalf of the copy
+        module.
+        """
+        # Create a new instance of the class
+        new_obj = super().__new__(self.__class__)
+
+        # Copy the attributes to the new instance.
+        for k, v in self.__dict__.items():
+            setattr(new_obj, k, copy.deepcopy(v, memo))
+
+        new_obj.__is_read_only = False
+
+        memo[id(self)] = new_obj
+
+        return new_obj
 
     @staticmethod
     def read_only(ci: CultureInfo) -> CultureInfo:
@@ -351,9 +409,42 @@ class CultureInfo(IFormatProvider, metaclass=__CombinedMeta):  # TODO: ICloneabl
         if name is None:
             raise TypeError("name cannot be None.")
 
-        name = name.lower()
+        name = _CultureData._ansi_to_lower(name)
+        name_table: dict[str, CultureInfo] = cls.__CACHED_CULTURES_BY_NAME
+        result: CultureInfo | None
 
         with cls.__GET_CULTURE_LOCK:
-            if (culture_info := cls.__CACHED_CULTURES_BY_NAME.get(name)) is None:
-                culture_info = cls.__CACHED_CULTURES_BY_NAME[name] = CultureInfo.read_only(CultureInfo(name))
-            return culture_info
+            if (result := name_table.get(name)) is not None:
+                return result
+
+        result = cls.__create_culture_info_no_throw(name, use_user_override=False)
+
+        if result is None:
+            raise CultureNotFoundError(
+                param_name="name",
+                invalid_culture_name=name,
+                message=cls.__get_culture_not_supported_exception_message(),
+            )
+
+        result.__is_read_only = True
+
+        name = _CultureData._ansi_to_lower(result._name)
+
+        with cls.__GET_CULTURE_LOCK:
+            name_table[name] = result
+
+        return result
+
+    @staticmethod
+    def __get_culture_not_supported_exception_message() -> str:
+        if _GlobalizationMode._invariant:
+            return "Only the invariant culture is supported in globalization-invariant mode."
+        return "Culture is not supported."
+
+    @classmethod
+    def __create_culture_info_no_throw(cls, name: str, use_user_override: bool = False) -> CultureInfo | None:
+        assert name is not None
+        culture_data: _CultureData | None = _CultureData._get_culture_data(name, use_user_override)
+        if culture_data is None:
+            return None
+        return CultureInfo._ctor(culture_data)

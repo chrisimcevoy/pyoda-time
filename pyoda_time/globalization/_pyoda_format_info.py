@@ -198,11 +198,36 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
 
     @property
     def _local_time_pattern_parser(self) -> _FixedFormatInfoPatternParser[LocalTime]:
-        raise NotImplementedError
+        if self.__local_time_pattern_parser is None:
+            with self.__FIELD_LOCK:
+                if self.__local_time_pattern_parser is None:
+                    from pyoda_time import LocalTime
+                    from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+                    from pyoda_time.text._local_time_pattern_parser import _LocalTimePatternParser
+
+                    self.__local_time_pattern_parser = _FixedFormatInfoPatternParser(
+                        _LocalTimePatternParser._ctor(LocalTime.midnight), self
+                    )
+
+        return self.__local_time_pattern_parser
 
     @property
     def _local_date_pattern_parser(self) -> _FixedFormatInfoPatternParser[LocalDate]:
-        raise NotImplementedError
+        if self.__local_date_pattern_parser is None:
+            with self.__FIELD_LOCK:
+                if self.__local_date_pattern_parser is None:
+                    from pyoda_time.text import LocalDatePattern
+                    from pyoda_time.text._local_date_pattern_parser import _LocalDatePatternParser
+
+                    from ..text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+
+                    self.__local_date_pattern_parser = _FixedFormatInfoPatternParser(
+                        _LocalDatePatternParser._ctor(
+                            LocalDatePattern._DEFAULT_TEMPLATE_VALUE, LocalDatePattern._DEFAULT_TWO_DIGIT_YEAR_MAX
+                        ),
+                        self,
+                    )
+        return self.__local_date_pattern_parser
 
     @property
     def _local_date_time_pattern_parser(self) -> _FixedFormatInfoPatternParser[LocalDateTime]:
@@ -477,6 +502,5 @@ class _EraDescription:
         )
 
         if get_era_from_calendar:
-            # TODO: implement DateTimeFormat.GetEraName()
-            raise NotImplementedError("DateTimeFormat.GetEraName() not implemented")
+            return culture.date_time_format.get_era_name(1)
         return None

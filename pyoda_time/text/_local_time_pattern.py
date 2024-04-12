@@ -6,15 +6,15 @@ from __future__ import annotations
 import threading
 from typing import Final, _ProtocolMeta, cast, final
 
-from pyoda_time import LocalTime
 from pyoda_time._compatibility._culture_info import CultureInfo
 from pyoda_time._compatibility._string_builder import StringBuilder
+from pyoda_time._local_time import LocalTime
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
-from pyoda_time.text import ParseResult
 from pyoda_time.text._composite_pattern_builder import CompositePatternBuilder
 from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
+from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text.patterns._pattern_bcl_support import _PatternBclSupport
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions
@@ -282,7 +282,7 @@ class LocalTimePattern(IPattern[LocalTime], metaclass=_CombinedMeta):
         else:
             from ._local_time_pattern_parser import _LocalTimePatternParser
 
-            pattern = _LocalTimePatternParser(template_value).parse_pattern(pattern_text, format_info)
+            pattern = _LocalTimePatternParser._ctor(template_value).parse_pattern(pattern_text, format_info)
         # If ParsePattern returns a standard pattern instance, we need to get the underlying partial pattern.
         # (Alternatively, we could just return it directly, instead of creating a new object.)
         if isinstance(pattern, LocalTimePattern):

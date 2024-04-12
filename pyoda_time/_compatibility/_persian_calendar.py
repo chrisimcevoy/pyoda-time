@@ -23,3 +23,7 @@ class PersianCalendar(Calendar):
     @property
     def _id(self) -> _CalendarId:
         return _CalendarId.PERSIAN
+
+    @property
+    def _base_calendar_id(self) -> _CalendarId:
+        return _CalendarId.GREGORIAN

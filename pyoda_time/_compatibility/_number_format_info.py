@@ -10,7 +10,7 @@ from pyoda_time._compatibility._culture_data import _CultureData
 from pyoda_time._compatibility._i_format_provider import IFormatProvider
 
 
-class NumberFormatInfo(IFormatProvider):
+class NumberFormatInfo(IFormatProvider):  # TODO: ICloneable
     """Provides culture-specific information for formatting and parsing numeric values."""
 
     def __init__(self) -> None:
@@ -70,3 +70,20 @@ class NumberFormatInfo(IFormatProvider):
 
     def get_format(self, format_type: type) -> Any | None:
         raise NotImplementedError
+
+    def clone(self) -> NumberFormatInfo:
+        return copy.deepcopy(self)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> NumberFormatInfo:
+        # Create a new instance of the class
+        new_obj = super().__new__(self.__class__)
+
+        # Copy the attributes to the new instance.
+        for k, v in self.__dict__.items():
+            setattr(new_obj, k, copy.deepcopy(v, memo))
+
+        new_obj._is_read_only = False
+
+        memo[id(self)] = new_obj
+
+        return new_obj
