@@ -23,6 +23,7 @@ from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _private, _sealed, _towards_zero_division
+from pyoda_time.utility._preconditions import _Preconditions
 
 
 def year_getter(value: LocalDate) -> int:
@@ -81,6 +82,16 @@ def handle_forward_slash(pattern: _PatternCursor, builder: _SteppedPatternBuilde
     )
 
 
+def calendar_setter(bucket: _ParseBucket[LocalDate], value: CalendarSystem) -> None:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    bucket._calendar = value
+
+
+def date_bucket_from_bucket(bucket: _ParseBucket[LocalDate]) -> _LocalDatePatternParser._LocalDateParseBucket:
+    assert isinstance(bucket, _LocalDatePatternParser._LocalDateParseBucket)
+    return bucket
+
+
 @_sealed
 @final
 @_private
@@ -91,10 +102,10 @@ class _LocalDatePatternParser(_IPatternParser[LocalDate]):
     __two_digit_year_max: int
 
     __character_handlers: Final[dict[str, Callable[[_PatternCursor, _SteppedPatternBuilder[LocalDate]], None]]] = {
-        "%": lambda _, __: exec("raise NotImplementedError"),
-        "'": lambda _, __: exec("raise NotImplementedError"),
+        "%": _SteppedPatternBuilder._handle_percent,
+        "'": _SteppedPatternBuilder._handle_quote,
         '"': lambda _, __: exec("raise NotImplementedError"),
-        "\\": lambda _, __: exec("raise NotImplementedError"),
+        "\\": _SteppedPatternBuilder._handle_backslash,
         "/": handle_forward_slash,
         "y": _DatePatternHelper._create_year_of_era_handler(year_of_era_getter, year_of_era_setter, LocalDate),
         "u": _SteppedPatternBuilder._handle_padded_field(
@@ -104,12 +115,13 @@ class _LocalDatePatternParser(_IPatternParser[LocalDate]):
         "d": _DatePatternHelper._create_day_handler(
             day_of_month_getter, day_of_week_getter, day_of_month_setter, day_of_week_setter, LocalDate
         ),
-        "c": lambda _, __: exec("raise NotImplementedError"),
-        "g": lambda _, __: exec("raise NotImplementedError"),
+        "c": _DatePatternHelper._create_calendar_handler(lambda value: value.calendar, calendar_setter),
+        "g": _DatePatternHelper._create_era_handler(lambda date: date.era, date_bucket_from_bucket),
     }
 
     @classmethod
     def _ctor(cls, template_value: LocalDate, two_digit_year_max: int) -> _LocalDatePatternParser:
+        _Preconditions._check_argument_range("two_digit_year_max", two_digit_year_max, 0, 99)
         self = super().__new__(cls)
         self.__template_value = template_value
         self.__two_digit_year_max = two_digit_year_max
@@ -137,9 +149,13 @@ class _LocalDatePatternParser(_IPatternParser[LocalDate]):
             match pattern:
                 # Invariant standard patterns return cached implementations.
                 case "R":
-                    raise NotImplementedError
+                    from pyoda_time.text import LocalDatePattern
+
+                    return LocalDatePattern._Patterns._iso_pattern_impl
                 case "r":
-                    raise NotImplementedError
+                    from pyoda_time.text import LocalDatePattern
+
+                    return LocalDatePattern._Patterns._full_roundtrip_pattern_impl
                 # Other standard patterns expand the pattern text to the appropriate custom pattern.
                 # Note: we don't just recurse, as otherwise a ShortDatePattern of 'd' (for example)
                 # would cause a stack overflow.

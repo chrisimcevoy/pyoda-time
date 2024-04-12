@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from pyoda_time._compatibility._string_builder import StringBuilder
-from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
+from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _CsharpConstants, _towards_zero_division
 
 
 class FormatHelper:
@@ -35,8 +35,8 @@ class FormatHelper:
             output_buffer.append("-")
         output_buffer.append(f"{value:04}")
 
-    @staticmethod
-    def left_pad(value: int, length: int, output_buffer: StringBuilder) -> None:
+    @classmethod
+    def left_pad(cls, value: int, length: int, output_buffer: StringBuilder) -> None:
         """Formats the given value left padded with zeros.
 
         Left pads with zeros the value into a field of ``length`` characters. If the value
@@ -48,7 +48,19 @@ class FormatHelper:
         :param output_buffer: The output buffer to add the digits to.
         :return:
         """
-        raise NotImplementedError
+        # TODO: Preconditions.DebugCheckArgumentRange(nameof(length), length, 1, MaximumPaddingLength);
+        # TODO: unchecked
+        if value >= 0:
+            cls.left_pad_non_negative(value, length, output_buffer)
+            return
+        output_buffer.append("-")
+        # Special case, as we can't use Math.Abs.
+        if value == _CsharpConstants.INT_MIN_VALUE:
+            if length > 10:
+                output_buffer.append("000000"[16 - length :])
+            output_buffer.append("2147483648")
+            return
+        cls.left_pad_non_negative(-value, length, output_buffer)
 
     @staticmethod
     def left_pad_non_negative(value: int, length: int, output_buffer: StringBuilder) -> None:

@@ -54,7 +54,7 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         self.__day_names: Sequence[str] | None = None
         self.__abbreviated_day_names: Sequence[str] | None = None
         self.__m_era_names: list[str] | None = None
-        self.__month_names: list[str] | None = None
+        self.__month_names: Sequence[str] | None = None
         self.__abbreviated_month_names: Sequence[str] | None = None
         self.__genitive_month_names: Sequence[str] | None = None
         self.__m_genitive_abbreviated_month_names: Sequence[str] | None = None
@@ -70,6 +70,7 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         self.__general_short_time_pattern: str | None = None
         self.__full_date_time_pattern: str | None = None
         self.__date_time_offset_pattern: str | None = None
+        self.__month_day_pattern: str | None = None
 
     @classmethod
     def _ctor(cls, culture_data: _CultureData, cal: Calendar) -> DateTimeFormatInfo:
@@ -103,6 +104,7 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         self.__general_short_time_pattern = None
         self.__full_date_time_pattern = None
         self.__date_time_offset_pattern = None
+        self.__month_day_pattern = None
 
         return self
 
@@ -290,7 +292,10 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
 
     @property
     def month_day_pattern(self) -> str:
-        raise NotImplementedError
+        if self.__month_day_pattern is None:
+            self.__month_day_pattern = self._culture_data._month_day(self.calendar._id)
+        assert self.__month_day_pattern is not None
+        return self.__month_day_pattern
 
     @property
     def time_separator(self) -> str:
@@ -425,15 +430,15 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         self.__day_names = value
 
     @property
-    def abbreviated_month_names(self) -> list[str]:
+    def abbreviated_month_names(self) -> Sequence[str]:
         """Gets or sets the culture-specific abbreviated names of the months.
 
         :return:
         """
-        return list(self.__internal_get_abbreviated_month_names())
+        return self.__internal_get_abbreviated_month_names()
 
     @abbreviated_month_names.setter
-    def abbreviated_month_names(self, value: list[str]) -> None:
+    def abbreviated_month_names(self, value: Sequence[str]) -> None:
         self.__verify_writable()
         if value is None:
             raise TypeError("value cannot be None")
@@ -445,7 +450,7 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         self.__abbreviated_month_names = value
 
     @property
-    def month_names(self) -> list[str]:
+    def month_names(self) -> Sequence[str]:
         """Gets or sets the culture-specific full names of the months.
 
         In a 12-month calendar, the 13th element of the array is an empty string.
@@ -454,12 +459,12 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
         "February", "March", "April", "May", "June", "July", "August", "September",
         "October", "November", "December", and "".
 
-        :return: A list containing the culture-specific full names of the months.
+        :return: The culture-specific full names of the months.
         """
-        return list(self.__internal_get_month_names())
+        return self.__internal_get_month_names()
 
     @month_names.setter
-    def month_names(self, value: list[str]) -> None:
+    def month_names(self, value: Sequence[str]) -> None:
         self.__verify_writable()
         if value is None:
             raise TypeError("value cannot be None")

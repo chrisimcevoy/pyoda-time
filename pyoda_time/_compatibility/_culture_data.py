@@ -1152,6 +1152,11 @@ class _CultureData(metaclass=_CultureDataMeta):
 
         return "".join(buffer) if changed else name, collation_start
 
+    def _month_day(self, calendar_id: _CalendarId) -> str:
+        month_day = self._get_calendar(calendar_id)._sMonthDay
+        assert month_day is not None
+        return month_day
+
 
 class LocaleStringData(IntEnum):
     # localized name of locale, eg "German (Germany)" in UI language (corresponds to LOCALE_SLOCALIZEDDISPLAYNAME)
