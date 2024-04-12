@@ -6,7 +6,6 @@ from typing import Any, Final, Iterable, Sequence
 
 import pytest
 from _pytest.fixtures import FixtureRequest
-from culture_saver import CultureSaver
 
 from pyoda_time import CalendarSystem, LocalDateTime
 from pyoda_time._compatibility._culture_info import CultureInfo
@@ -15,6 +14,7 @@ from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._text_error_messages import _TextErrorMessages
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants
 
+from ..culture_saver import CultureSaver
 from ..text.pattern_test_base import PatternTestBase
 from .cultures import Cultures
 from .pattern_test_data import PatternTestData
