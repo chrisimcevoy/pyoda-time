@@ -54,8 +54,8 @@ class PatternTestData(Generic[T]):
         pattern: IPattern[T] = self.create_pattern()
         assert self.text is not None, "Must provide `text` for this test!"
         result = pattern.parse(self.text)
-        actual_value: T = result.value
-        assert self.value == actual_value
+        actual: T = result.value
+        assert actual == self.value, f"expected `{actual}` to equal `{self.value}"
 
         if self.standard_pattern is not None:
             assert self.value == self.standard_pattern.parse(self.text).value
@@ -63,7 +63,8 @@ class PatternTestData(Generic[T]):
     def test_format(self) -> None:
         assert self.message is None
         pattern: IPattern[T] = self.create_pattern()
-        assert self.text == pattern.format(self.value), f"expected `{self.text}` to be `{self.value}"
+        actual = pattern.format(self.value)
+        assert actual == self.text
 
         if self.standard_pattern is not None:
             assert self.text == self.standard_pattern.format(self.value)

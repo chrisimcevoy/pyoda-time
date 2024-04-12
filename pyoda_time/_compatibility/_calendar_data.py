@@ -6,10 +6,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Sequence, cast, final
+from typing import Final, Sequence, cast, final
 
-from icu import DateFormat, DateFormatSymbols, DateTimePatternGenerator, Locale
+from icu import DateFormatSymbols, DateTimePatternGenerator, Locale
 
+from pyoda_time._compatibility._calendar import Calendar
 from pyoda_time._compatibility._calendar_id import _CalendarId
 from pyoda_time._compatibility._globalization_mode import _GlobalizationMode
 from pyoda_time._compatibility._string_builder import StringBuilder
@@ -41,14 +42,102 @@ class _IcuEnumCalendarsData:
 
 
 class _CalendarDataMeta(type):
+    __invariant: _CalendarData | None = None
+
     @property
     def _invariant(self) -> _CalendarData:
-        raise NotImplementedError
+        """Static invariant for the invariant locale."""
+        if self.__invariant is None:
+            self.__invariant = self.__create_invariant()
+        return self.__invariant
+
+    @classmethod
+    def __create_invariant(cls) -> _CalendarData:
+        """Invariant Factory."""
+
+        #  Set our default/gregorian US calendar data
+        # Calendar IDs are 1-based, arrays are 0 based.
+        invariant = _CalendarData.__new__(_CalendarData)
+
+        # Set default data for calendar
+        # Note that we don't load resources since this IS NOT supposed to change (by definition)
+        invariant._sNativeName = "Gregorian Calendar"  # Calendar Name
+
+        # Year
+        invariant._iTwoDigitYearMax = 2049  # Max 2 digit year
+        invariant._iCurrentEra = 1  # Current era #
+
+        # Formats
+        invariant._saShortDates = ["MM/dd/yyyy", "yyyy-MM-dd"]  # short date format
+        invariant._saLongDates = ["dddd, dd MMMM yyyy"]  # long date format
+        invariant._saYearMonths = ["yyyy MMMM"]  # year month format
+        invariant._sMonthDay = "MMMM dd"  # Month day pattern
+
+        # Calendar Parts Names
+        invariant._saEraNames = ["A.D."]  # Era names
+        invariant._saAbbrevEraNames = ["A.D."]  # Abbreviated Era names
+        invariant._saAbbrevEnglishEraNames = ["A.D."]  # Abbreviated era names in English
+        invariant._saDayNames = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+        ]  # day names
+        invariant._saAbbrevDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]  # abbreviated day names
+        invariant._saSuperShortDayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]  # The super short day names
+        invariant._saMonthNames = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+            "",
+        ]  # month names
+        invariant._saAbbrevMonthNames = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+            "",
+        ]  # abbreviated month names
+        invariant._saMonthGenitiveNames = (
+            invariant._saMonthNames
+        )  # Genitive month names (same as month names for invariant)
+        invariant._saAbbrevMonthGenitiveNames = (
+            invariant._saAbbrevMonthNames
+        )  # Abbreviated genitive month names (same as abbrev month names for invariant)
+        invariant._saLeapYearMonthNames = (
+            invariant._saMonthNames
+        )  # leap year month names are unused in Gregorian English (invariant)
+
+        invariant._bUseUserOverrides = False
+
+        return invariant
 
 
 @_sealed
 @final
 class _CalendarData(metaclass=_CalendarDataMeta):
+    _MAX_CALENDARS: Final[int] = 23
+
     def __init__(self, locale_name: str, calendar_id: _CalendarId, bUseUserOverrides: bool) -> None:
         self._bUseUserOverrides = bUseUserOverrides
 
@@ -71,7 +160,6 @@ class _CalendarData(metaclass=_CalendarDataMeta):
         self._saAbbrevMonthGenitiveNames: Sequence[str] | None = None
         self._saLeapYearMonthNames: Sequence[str] | None = None
         self._iTwoDigitYearMax: int = 2029
-        self.__iCurrentEra: int = 0
         self._iCurrentEra: int = 0
 
         if not self.__load_calendar_data_from_system_core(locale_name, calendar_id):
@@ -96,26 +184,12 @@ class _CalendarData(metaclass=_CalendarDataMeta):
         if self._sMonthDay:
             self._sMonthDay = self.__normalize_date_pattern(self._sMonthDay)
 
-        # .NET builds up a string array of three short date patterns:
-        #
-        # - ICU's "kShort" pattern
-        # - ICU's "kMedium" pattern
-        # - A specific skeleton ("yMd"), which closely matches what is used on Windows.
-        #
-        # Source at:
-        # https://github.com/dotnet/runtime/blob/b181ed507c07bdcfb84e2a2b4786d3c2c763db8c/src/native/libs/System.Globalization.Native/pal_calendarData.c#L494-L499
-        #
-        # See also (specifically, how it disallows duplicates):
-        # https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Globalization/CalendarData.Icu.cs,99c4abaab8c2bae5,references
-        patterns = []
-        for pattern in [
-            DateFormat.createDateInstance(DateFormat.kShort, locale).toPattern(),
-            DateFormat.createDateInstance(DateFormat.kMedium, locale).toPattern(),
-            datetime_pattern_generator.getBestPattern("yMd"),
-        ]:
-            if pattern not in patterns:
-                patterns.append(pattern)
-        self._saShortDates = patterns
+        short_dates_result, self._saShortDates = self.__enum_date_patterns(
+            locale_name, calendar_id, _CalendarDataType.SHORT_DATES
+        )
+        long_dates_result, self._saLongDates = self.__enum_date_patterns(
+            locale_name, calendar_id, _CalendarDataType.LONG_DATES
+        )
 
         # The first item in the collection which getWeekdays() returns is an empty string.
         # Interestingly, .NET removes that empty string.
@@ -176,6 +250,8 @@ class _CalendarData(metaclass=_CalendarDataMeta):
         return all(
             (
                 # TODO: Add other bools here
+                short_dates_result,
+                long_dates_result,
                 abbrev_day_names_result,
                 month_names_result,
                 abbreviated_month_names_result,
@@ -186,6 +262,10 @@ class _CalendarData(metaclass=_CalendarDataMeta):
 
     def __load_calendar_data_from_system_core(self, locale_name: str, calendar_id: _CalendarId) -> bool:
         return self.__icu_load_calendar_data_from_system(locale_name, calendar_id)
+
+    @classmethod
+    def _get_calendars_core(cls, locale_name: str, b_use_user_override: bool, calendars: list[_CalendarId]) -> int:
+        return cls.__icu_get_calendars(locale_name, calendars)
 
     def __initialize_era_names(self, locale_name: str, calendar_id: _CalendarId) -> None:
         def are_era_names_empty() -> bool:
@@ -389,6 +469,24 @@ class _CalendarData(metaclass=_CalendarDataMeta):
         context.results.append(calendar_string)
 
     @classmethod
+    def __icu_get_calendars(cls, locale_name: str, calendars: list[_CalendarId]) -> int:
+        """Call native side to figure out which calendars are allowed."""
+        assert not _GlobalizationMode._invariant
+        assert not _GlobalizationMode._use_nls
+
+        # TODO: "There are no user overrides on Linux"
+        from ._interop import _Interop
+
+        count = _Interop._Globalization._get_calendars(locale_name, calendars, len(calendars))
+
+        # ensure there is at least 1 calendar returned
+        if count == 0 and len(calendars) > 0:
+            calendars[0] = _CalendarId.GREGORIAN
+            count = 1
+
+        return count
+
+    @classmethod
     def __system_supports_taiwanese_calendar(cls) -> bool:
         if _GlobalizationMode._use_nls:
             raise NotImplementedError
@@ -398,3 +496,112 @@ class _CalendarData(metaclass=_CalendarDataMeta):
     def __icu_system_supports_taiwanese_calendar() -> bool:
         assert not _GlobalizationMode._use_nls
         return True
+
+    @classmethod
+    def __enum_date_patterns(
+        cls, locale_name: str, calendar_id: _CalendarId, data_type: _CalendarDataType
+    ) -> tuple[bool, Sequence[str] | None]:
+        date_patterns: list[str] | None = None
+        callback_context = _IcuEnumCalendarsData(disallow_duplicates=True)
+        result = cls.__enum_calendar_info(locale_name, calendar_id, data_type, callback_context)
+        if result:
+            date_patterns = [cls.__normalize_date_pattern(date_pattern) for date_pattern in callback_context.results]
+            if data_type == _CalendarDataType.SHORT_DATES:
+                cls.__fix_default_short_date_pattern(date_patterns)
+        return result, date_patterns
+
+    @classmethod
+    def __fix_default_short_date_pattern(cls, short_date_patterns: list[str]) -> None:
+        """FixDefaultShortDatePattern will convert the default short date pattern from using 'yy' to using 'yyyy' And
+        will ensure the original pattern still exist in the list.
+
+        doing that will have the short date pattern format the year as 4-digit number and not just 2-digit number.
+        Example: June 5, 2018 will be formatted to something like 6/5/2018 instead of 6/5/18 fro en-US culture.
+        """
+        if not short_date_patterns:
+            return
+
+        s = short_date_patterns[0]
+
+        if len(s) > 100:
+            # Limiting the pattern length to avoid excessive memory usage
+            return
+
+        modified_pattern: list[str] = []
+        index = 0
+        while index < len(s):
+            if s[index] == "'":
+                # Copy characters within single quotes without modification, including the enclosing quotes
+                start_quote_index = index
+                index += 1  # Move past the opening quote
+                while index < len(s) and s[index] != "'":
+                    index += 1  # Skip over characters within quotes
+                # Copy the entire quoted string as is, including the closing quote
+                modified_pattern.extend(s[start_quote_index : index + 1])
+            elif s[index] == "y":
+                modified_pattern.append("y")
+                if index + 1 < len(s) and s[index + 1] == "y":
+                    # Detected 'yy', so we ensure it becomes 'yyyy'
+                    modified_pattern.extend(["y", "y", "y"])
+                    index += 2  # Move past the 'yy' in the original string
+                    while index < len(s) and s[index] == "y":
+                        # Skip any additional 'y' characters to avoid 'yyyyy' or longer
+                        index += 1
+                    continue  # Continue to the next character in the loop
+                # If only a single 'y', just proceed normally
+            else:
+                modified_pattern.append(s[index])
+            index += 1  # Move to the next character
+
+        modified_pattern_str = "".join(modified_pattern)
+        short_date_patterns[0] = modified_pattern_str
+
+        # Ensure the original pattern is preserved in the list, if not already present
+        if modified_pattern_str not in short_date_patterns[1:]:
+            short_date_patterns.append(s)
+
+    @classmethod
+    def _get_calendar_current_era(cls, calendar: Calendar) -> int:
+        if _GlobalizationMode._invariant:
+            return cls._invariant._iCurrentEra
+
+        # Get a calendar.
+        # Unfortunately we depend on the locale in the OS, so we need a locale
+        # no matter what.  So just get the appropriate calendar from the
+        # appropriate locale here
+
+        # Get a culture name
+        # TODO: Note that this doesn't handle the new calendars (lunisolar, etc)
+        calendar_id = calendar._base_calendar_id
+        culture = cls.__calendar_id_to_culture_name(calendar_id)
+
+        # Return our calendar
+        from pyoda_time._compatibility._culture_info import CultureInfo
+
+        return CultureInfo.get_culture_info(culture)._culture_data._get_calendar(calendar_id)._iCurrentEra
+
+    @staticmethod
+    def __calendar_id_to_culture_name(calendar_id: _CalendarId) -> str:
+        match calendar_id:
+            case _CalendarId.GREGORIAN_US:
+                return "fa-IR"  # Iran
+            case _CalendarId.JAPAN:
+                return "ja-JP"  # Japan
+            case _CalendarId.TAIWAN:
+                return "zh-TW"  # Taiwan
+            case _CalendarId.KOREA:
+                return "ko-KR"  # Korea
+            case _CalendarId.HIJRI | _CalendarId.GREGORIAN_ARABIC | _CalendarId.UMALQURA:
+                return "ar-SA"  # Saudi Arabia
+            case _CalendarId.THAI:
+                return "th-TH"  # Thailand
+            case _CalendarId.HEBREW:
+                return "he-IL"  # Israel
+            case _CalendarId.GREGORIAN_ME_FRENCH:
+                return "ar-DZ"  # Algeria
+            case _CalendarId.GREGORIAN_XLIT_ENGLISH | _CalendarId.GREGORIAN_XLIT_FRENCH:
+                return "ar-IQ"  # Iraq
+            case _:
+                # Default to gregorian en-US
+                pass
+        return "en-US"

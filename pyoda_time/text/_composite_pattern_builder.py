@@ -4,9 +4,9 @@
 from typing import Callable, Final, Generic, Sequence, TypeVar, cast, final
 
 from pyoda_time._compatibility._string_builder import StringBuilder
-from pyoda_time.text import ParseResult
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
+from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text._value_cursor import _ValueCursor
 from pyoda_time.utility._csharp_compatibility import _sealed
 from pyoda_time.utility._preconditions import _Preconditions

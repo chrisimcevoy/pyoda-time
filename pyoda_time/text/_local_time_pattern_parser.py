@@ -16,7 +16,51 @@ from pyoda_time.text.patterns._i_pattern_parser import _IPatternParser
 from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
+from pyoda_time.text.patterns._time_pattern_helper import _TimePatternHelper
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _private, _sealed, _towards_zero_division
+
+
+def hours_24_getter(value: LocalTime) -> int:
+    return value.hour
+
+
+def hours_24_setter(bucket: _ParseBucket[LocalTime], value: int) -> None:
+    assert isinstance(bucket, _LocalTimePatternParser._LocalTimeParseBucket)
+    bucket._hours_24 = value
+
+
+def minutes_getter(value: LocalTime) -> int:
+    return value.minute
+
+
+def minutes_setter(bucket: _ParseBucket[LocalTime], value: int) -> None:
+    assert isinstance(bucket, _LocalTimePatternParser._LocalTimeParseBucket)
+    bucket._minutes = value
+
+
+def seconds_getter(value: LocalTime) -> int:
+    return value.second
+
+
+def seconds_setter(bucket: _ParseBucket[LocalTime], value: int) -> None:
+    assert isinstance(bucket, _LocalTimePatternParser._LocalTimeParseBucket)
+    bucket._seconds = value
+
+
+def nanosecond_of_second_getter(value: LocalTime) -> int:
+    return value.nanosecond_of_second
+
+
+def fractional_seconds_setter(bucket: _ParseBucket[LocalTime], value: int) -> None:
+    assert isinstance(bucket, _LocalTimePatternParser._LocalTimeParseBucket)
+    bucket._fractional_seconds = value
+
+
+def _handle_colon(pattern: _PatternCursor, builder: _SteppedPatternBuilder[LocalTime]) -> None:
+    builder._add_literal(
+        expected_text=builder._format_info.time_separator,
+        failure=ParseResult._time_separator_mismatch,
+    )
 
 
 @final
@@ -25,6 +69,8 @@ from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _private, _
 class _LocalTimePatternParser(_IPatternParser[LocalTime]):
     """Pattern parser for ``LocalTime`` values."""
 
+    __template_value: LocalTime
+
     __pattern_character_handlers: Final[
         Mapping[str, Callable[[_PatternCursor, _SteppedPatternBuilder[LocalTime]], None]]
     ] = {
@@ -32,20 +78,29 @@ class _LocalTimePatternParser(_IPatternParser[LocalTime]):
         "'": lambda _, __: exec("raise NotImplementedError"),
         '"': lambda _, __: exec("raise NotImplementedError"),
         "\\": lambda _, __: exec("raise NotImplementedError"),
-        ".": lambda _, __: exec("raise NotImplementedError"),
+        ".": _TimePatternHelper._create_period_handler(9, nanosecond_of_second_getter, fractional_seconds_setter),
         ";": lambda _, __: exec("raise NotImplementedError"),
-        ":": lambda _, __: exec("raise NotImplementedError"),
+        ":": _handle_colon,
         "h": lambda _, __: exec("raise NotImplementedError"),
-        "H": lambda _, __: exec("raise NotImplementedError"),
-        "m": lambda _, __: exec("raise NotImplementedError"),
-        "s": lambda _, __: exec("raise NotImplementedError"),
+        "H": _SteppedPatternBuilder._handle_padded_field(
+            2, _PatternFields.HOURS_24, 0, 23, hours_24_getter, hours_24_setter, LocalTime
+        ),
+        "m": _SteppedPatternBuilder._handle_padded_field(
+            2, _PatternFields.MINUTES, 0, 59, minutes_getter, minutes_setter, LocalTime
+        ),
+        "s": _SteppedPatternBuilder._handle_padded_field(
+            2, _PatternFields.SECONDS, 0, 59, seconds_getter, seconds_setter, LocalTime
+        ),
         "f": lambda _, __: exec("raise NotImplementedError"),
         "F": lambda _, __: exec("raise NotImplementedError"),
         "t": lambda _, __: exec("raise NotImplementedError"),
     }
 
-    def __init__(self, template_value: LocalTime) -> None:
-        self.__template_value: Final[LocalTime] = template_value
+    @classmethod
+    def _ctor(cls, template_value: LocalTime) -> _LocalTimePatternParser:
+        self = super().__new__(cls)
+        self.__template_value = template_value
+        return self
 
     # Note: public to implement the interface. It does no harm, and it's simpler than using explicit
     # interface implementation.
@@ -195,18 +250,16 @@ class _LocalTimePatternParser(_IPatternParser[LocalTime]):
                 return None, self._hours_24
 
             # Okay, it's definitely valid - but we've still got 8 possibilities for what's been specified.
-            match used_fields & (_PatternFields.HOURS_12 | _PatternFields.AM_PM):
-                case _PatternFields.HOURS_12 | _PatternFields.AM_PM:
-                    hour = _csharp_modulo(self._hours_12, 12) + self._am_pm * 12
-                case _PatternFields.HOURS_12:
-                    # Preserve AM/PM from template value
-                    hour = (
-                        _csharp_modulo(self._hours_12, 12) + _towards_zero_division(self._template_value.hour, 12) * 12
-                    )
-                case _PatternFields.AM_PM:
-                    # Preserve 12-hour hour of day from template value, use specified AM/PM
-                    hour = _csharp_modulo(self._template_value.hour, 12) + self._am_pm * 12
-                case _PatternFields.NONE:
-                    hour = self._template_value.hour
+            flags = used_fields & (_PatternFields.HOURS_12 | _PatternFields.AM_PM)
+            if flags == _PatternFields.HOURS_12 | _PatternFields.AM_PM:
+                hour = _csharp_modulo(self._hours_12, 12) + self._am_pm * 12
+            elif flags == _PatternFields.HOURS_12:
+                # Preserve AM/PM from template value
+                hour = _csharp_modulo(self._hours_12, 12) + _towards_zero_division(self._template_value.hour, 12) * 12
+            elif flags == _PatternFields.AM_PM:
+                # Preserve 12-hour hour of day from template value, use specified AM/PM
+                hour = _csharp_modulo(self._template_value.hour, 12) + self._am_pm * 12
+            elif flags == _PatternFields.NONE:
+                hour = self._template_value.hour
 
             return None, hour

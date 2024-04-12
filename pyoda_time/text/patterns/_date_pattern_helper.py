@@ -3,21 +3,24 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import Callable, Sequence, TypeVar, final
+from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, final
 
-from pyoda_time import CalendarSystem
+from pyoda_time._calendar_system import CalendarSystem
 from pyoda_time._compatibility._string_builder import StringBuilder
-from pyoda_time.calendars import Era
+from pyoda_time.calendars._era import Era
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
-from pyoda_time.text import InvalidPatternError, ParseResult
-from pyoda_time.text._local_date_pattern_parser import _LocalDatePatternParser
+from pyoda_time.text._invalid_pattern_exception import InvalidPatternError
 from pyoda_time.text._parse_bucket import _ParseBucket
+from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text._text_error_messages import _TextErrorMessages
 from pyoda_time.text._value_cursor import _ValueCursor
 from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _sealed
+
+if TYPE_CHECKING:
+    from pyoda_time.text._local_date_pattern_parser import _LocalDatePatternParser
 
 T = TypeVar("T")
 
@@ -76,10 +79,12 @@ class _DatePatternHelper:
                     )
                 case 3 | 4:
                     field = _PatternFields.MONTH_OF_YEAR_TEXT
-                    format = builder._format_info
-                    non_genitive_text_values = format.short_month_names if count == 3 else format.long_month_names
+                    format_info = builder._format_info
+                    non_genitive_text_values = (
+                        format_info.short_month_names if count == 3 else format_info.long_month_names
+                    )
                     genitive_text_values = (
-                        format.short_month_genitive_names if count == 3 else format.long_month_genitive_names
+                        format_info.short_month_genitive_names if count == 3 else format_info.long_month_genitive_names
                     )
                     if non_genitive_text_values == genitive_text_values:
                         builder._add_parse_longest_text_action(
@@ -98,7 +103,7 @@ class _DatePatternHelper:
                         )
                     # Hack: see below
                     builder._add_format_action(
-                        _DatePatternHelper._MonthFormatActionHandler(format, count, number_getter)._dummy_method
+                        _DatePatternHelper._MonthFormatActionHandler(format_info, count, number_getter)._dummy_method
                     )
                 case _:
                     raise RuntimeError("Invalid count!")

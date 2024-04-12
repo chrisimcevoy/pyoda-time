@@ -151,7 +151,7 @@ class _ValueCursor(_TextCursor):
             max_index = self.length
         while local_index < max_index:
             digit = self.value[local_index]
-            if not digit.isdigit():
+            if not digit.isdigit() or not "0" <= digit <= "9":
                 break
             result = result * 10 + int(digit)
             local_index += 1
@@ -177,13 +177,13 @@ class _ValueCursor(_TextCursor):
         result = 0
         local_index = self.index
         min_index = local_index + minimum_digits
-        if min_index >= self.length:
+        if min_index > self.length:
             # If we don't have all the digits we're meant to have, we can't possibly succeed.
             return False, result
         max_index = min(local_index + maximum_digits, self.length)
         while local_index < max_index:
             digit = self.value[local_index]
-            if not digit.isdigit():
+            if not digit.isdigit() or not ("0" <= digit <= "9"):
                 break
             result = result * 10 + int(digit)
             local_index += 1
@@ -201,6 +201,12 @@ class _ValueCursor(_TextCursor):
         This currently only handles ASCII digits, which is all we have to parse to stay in line with the BCL.
         """
         # TODO unchecked
-        if self.current.isdigit():
+
+        # Pyoda Time implementation note:
+        # str.isdigit() and int() alone is not enough, because they are unicode-aware and
+        # perfectly happy to convert non-ascii characters to integers.
+        # To enforce the same behaviour as Noda Time, we need to explicitly check that
+        # the current character is an ascii value between "0" and "9"
+        if self.current.isdigit() and "0" <= self.current <= "9":
             return int(self.current)
         return -1

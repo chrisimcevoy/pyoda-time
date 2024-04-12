@@ -20,14 +20,18 @@ from typing import (
 from pyoda_time.text._parse_bucket import _ParseBucket
 from pyoda_time.text._value_cursor import _ValueCursor
 
-from ... import LocalDate, LocalDateTime, LocalTime
 from ..._compatibility._string_builder import StringBuilder
+from ..._local_date import LocalDate
+from ..._local_date_time import LocalDateTime
+from ..._local_time import LocalTime
 from ...globalization._pyoda_format_info import _PyodaFormatInfo
 from ...utility._csharp_compatibility import _sealed
 from ...utility._preconditions import _Preconditions
-from .. import InvalidPatternError, LocalDateTimePattern, ParseResult
 from .._format_helper import FormatHelper
 from .._i_partial_pattern import _IPartialPattern
+from .._invalid_pattern_exception import InvalidPatternError
+from .._local_time_pattern import LocalTimePattern
+from .._parse_result import ParseResult
 from .._text_error_messages import _TextErrorMessages
 from ._pattern_cursor import _PatternCursor
 from ._pattern_fields import _PatternFields
@@ -507,6 +511,8 @@ class _SteppedPatternBuilder(Generic[TResult]):
                     time_bucket._seconds = value.second
                     time_bucket._fractional_seconds = value.nanosecond_of_second
 
+                from .._local_date_time_pattern import LocalDateTimePattern
+
                 self._add_embedded_pattern(
                     LocalDateTimePattern._create(
                         embedded_pattern_text,
@@ -519,11 +525,69 @@ class _SteppedPatternBuilder(Generic[TResult]):
                     type_,
                 )
             case "d":
-                raise NotImplementedError
+                self.__add_embedded_date_pattern(
+                    "l", embedded_pattern_text, date_bucket_extractor, date_extractor, type_
+                )
             case "t":
-                raise NotImplementedError
+                self.__add_embedded_time_pattern(
+                    "l", embedded_pattern_text, time_bucket_extractor, time_extractor, type_
+                )
             case _:
                 raise RuntimeError("Bug in Pyoda Time: embedded pattern type wasn't date, time, or date+time")
+
+    def __add_embedded_date_pattern(
+        self,
+        character_in_pattern: str,
+        embedded_pattern_text: str,
+        date_bucket_extractor: Callable[[_ParseBucket[TResult]], _LocalDatePatternParser._LocalDateParseBucket],
+        date_extractor: Callable[[TResult], LocalDate],
+        eventual_result_type: type[TResult],
+    ) -> None:
+        template_value = date_bucket_extractor(self._create_sample_bucket())._template_value
+        self._add_field(_PatternFields.EMBEDDED_DATE, character_in_pattern)
+
+        def parse_action(bucket: _ParseBucket[TResult], value: LocalDate) -> None:
+            date_bucket = date_bucket_extractor(bucket)
+            date_bucket._calendar = value.calendar
+            date_bucket._year = value.year
+            date_bucket._month_of_year_numeric = value.month
+            date_bucket._day_of_month = value.day
+
+        from .._local_date_pattern import LocalDatePattern
+
+        self._add_embedded_pattern(
+            LocalDatePattern._create(
+                embedded_pattern_text, self.__format_info, template_value, LocalDatePattern._DEFAULT_TWO_DIGIT_YEAR_MAX
+            )._underlying_pattern,
+            parse_action,
+            date_extractor,
+            eventual_result_type,
+        )
+
+    def __add_embedded_time_pattern(
+        self,
+        character_in_pattern: str,
+        embedded_pattern_text: str,
+        time_bucket_extractor: Callable[[_ParseBucket[TResult]], _LocalTimePatternParser._LocalTimeParseBucket],
+        time_extractor: Callable[[TResult], LocalTime],
+        eventual_result_type: type[TResult],
+    ) -> None:
+        template_time = time_bucket_extractor(self._create_sample_bucket())._template_value
+        self._add_field(_PatternFields.EMBEDDED_TIME, character_in_pattern)
+
+        def parse_action(bucket: _ParseBucket[TResult], value: LocalTime) -> None:
+            time_bucket = time_bucket_extractor(bucket)
+            time_bucket._hours_24 = value.hour
+            time_bucket._minutes = value.minute
+            time_bucket._seconds = value.second
+            time_bucket._fractional_seconds = value.nanosecond_of_second
+
+        self._add_embedded_pattern(
+            LocalTimePattern._create(embedded_pattern_text, self.__format_info, template_time)._underlying_pattern,
+            parse_action,
+            time_extractor,
+            eventual_result_type,
+        )
 
     def _add_embedded_pattern(
         self,
