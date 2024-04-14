@@ -31,7 +31,15 @@ class TestBadiCalendarSystem:
     # 18 in LocalDate etc.
     __AYYAMI_HA_MONTH: Final[int] = 0
 
-    # TODO: def test_badi_epoch(self) -> None: [requires LocalDatePattern.bclsupport]
+    def test_badi_epoch(self) -> None:
+        badi_epoch: LocalDate = self.__create_badi_date(1, 1, 1)
+
+        gregorian: CalendarSystem = CalendarSystem.gregorian
+        converted: LocalDate = badi_epoch.with_calendar(gregorian)
+
+        expected: LocalDate = LocalDate(year=1844, month=3, day=21)
+
+        assert str(converted) == str(expected)
 
     def test_unix_epoch(self) -> None:
         badi: CalendarSystem = CalendarSystem.badi
