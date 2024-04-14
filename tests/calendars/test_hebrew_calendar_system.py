@@ -9,13 +9,55 @@ from pyoda_time._year_month_day import _YearMonthDay
 from pyoda_time.calendars import HebrewMonthNumbering
 from pyoda_time.calendars._hebrew_scriptural_calculator import _HebrewScripturalCalculator
 from pyoda_time.calendars._hebrew_year_month_day_calculator import _HebrewYearMonthDayCalculator
+from pyoda_time.text import LocalDatePattern
 
 
 class TestHebrewCalendarSystem:
     # TODO: def test_is_leap_year (requires BCL)
     # TODO: def test_bcl_through_history_civil (requires BCL)
     # TODO: def test_bcl_through_history_scriptural (requires BCL)
-    # TODO: def test_set_year (requires LocalDatePattern)
+
+    # Test cases are in scriptural month numbering, but we check both. This is
+    # mostly testing the behaviour of SetYear, via LocalDate.PlusYears.
+    @pytest.mark.parametrize(
+        "start_text,years,expected_end_text",
+        [
+            # Simple case
+            ("5405-02-10", 1, "5406-02-10"),
+            # Adar mapping - Adar from non-leap maps to Adar II in leap;
+            # Adar I and Adar II both map to Adar in a non-leap, except for the 30th of Adar I
+            # which maps to the 1st of Nisan.
+            ("5402-12-05", 1, "5403-12-05"),  # Mapping from Adar I to Adar
+            ("5402-13-05", 1, "5403-12-05"),  # Mapping from Adar II to Adar
+            ("5402-12-30", 1, "5403-01-01"),  # Mapping from 30th of Adar I to 1st of Nisan
+            ("5401-12-05", 1, "5402-13-05"),  # Mapping from Adar to Adar II
+            # Transfer to another leap year
+            ("5402-12-05", 2, "5404-12-05"),  # Adar I to Adar I
+            ("5402-12-30", 2, "5404-12-30"),  # 30th of Adar I to 30th of Adar I
+            ("5402-13-05", 2, "5404-13-05"),  # Adar II to Adar II
+            # Rollover of 30th of Kislev and Heshvan to the 1st of the next month.
+            ("5402-08-30", 1, "5403-09-01"),  # Rollover from 30th Heshvan to 1st Kislev
+            ("5400-09-30", 1, "5401-10-01"),  # Rollover from 30th Kislev to 1st Tevet
+            # No rollover required (target year has 30 days in as well)
+            ("5402-08-30", 3, "5405-08-30"),  # No truncation in Heshvan (both 5507 and 5509 are long)
+            ("5400-09-30", 2, "5402-09-30"),  # No truncation in Kislev (both 5503 and 5504 are long)
+        ],
+    )
+    def test_set_year(self, start_text: str, years: int, expected_end_text: str) -> None:
+        civil = CalendarSystem.hebrew_civil
+        scriptural = CalendarSystem.hebrew_scriptural
+        pattern = LocalDatePattern.create_with_invariant_culture("uuuu-MM-dd").with_template_value(
+            LocalDate(year=5774, month=1, day=1, calendar=scriptural)
+        )
+
+        start = pattern.parse(start_text).value
+        expected_end = pattern.parse(expected_end_text).value
+        assert start.plus_years(years) == expected_end
+
+        # Check civil as well... the date should be the same (year, month, day) even though
+        # the numbering is different.
+        assert start.with_calendar(civil).plus_years(years) == expected_end.with_calendar(civil)
+
     # TODO: def test_add_months_months_between (requires LocalDatePattern)
     # TODO: def test_months_between (requires LocalDatePattern)
     # TODO: def test_months_between_time_of_day(self) -> None:  (requires Period.Between())
