@@ -11,6 +11,23 @@ from pyoda_time.calendars._hebrew_scriptural_calculator import _HebrewScriptural
 from pyoda_time.calendars._hebrew_year_month_day_calculator import _HebrewYearMonthDayCalculator
 from pyoda_time.text import LocalDatePattern
 
+ADD_AND_SUBTRACT_MONTH_CASES: list[tuple[str, int, str]] = [
+    ("5502-02-13", 3, "5502-05-13"),  # Simple
+    ("5502-02-13", 238, "5521-05-13"),  # Simple after a 19-year cycle
+    ("5502-05-13", -3, "5502-02-13"),  # Simple (negative)
+    ("5521-05-13", -238, "5502-02-13"),  # Simple after a 19-year cycle (negative)
+    ("5501-02-13", 12, "5502-02-13"),  # Not a leap year
+    ("5502-02-13", 13, "5503-02-13"),  # Leap year
+    ("5501-02-13", 26, "5503-03-13"),  # Traversing both (and then an extra month)
+    ("5502-02-13", -12, "5501-02-13"),  # Not a leap year (negative)
+    ("5503-02-13", -13, "5502-02-13"),  # Leap year (negative)
+    ("5503-03-13", -26, "5501-02-13"),  # Traversing both (and then an extra month) (negative)
+    ("5507-01-30", 1, "5507-02-30"),  # Long Heshvan
+    ("5506-01-30", 1, "5506-02-29"),  # Short Heshvan
+    ("5505-01-30", 2, "5505-03-30"),  # Long Kislev
+    ("5506-01-30", 2, "5506-03-29"),  # Short Kislev
+]
+
 
 class TestHebrewCalendarSystem:
     # TODO: def test_is_leap_year (requires BCL)
@@ -48,7 +65,7 @@ class TestHebrewCalendarSystem:
         scriptural = CalendarSystem.hebrew_scriptural
         pattern = LocalDatePattern.create_with_invariant_culture("uuuu-MM-dd").with_template_value(
             LocalDate(year=5774, month=1, day=1, calendar=scriptural)
-        )
+        )  # Sample value in 2014 ISO
 
         start = pattern.parse(start_text).value
         expected_end = pattern.parse(expected_end_text).value
@@ -58,7 +75,17 @@ class TestHebrewCalendarSystem:
         # the numbering is different.
         assert start.with_calendar(civil).plus_years(years) == expected_end.with_calendar(civil)
 
-    # TODO: def test_add_months_months_between (requires LocalDatePattern)
+    @pytest.mark.parametrize("start_text,months,expected_end_text", ADD_AND_SUBTRACT_MONTH_CASES)
+    def test_add_months_months_between(self, start_text: str, months: int, expected_end_text: str) -> None:
+        civil = CalendarSystem.hebrew_civil
+        pattern = LocalDatePattern.create_with_invariant_culture("uuuu-MM-dd").with_template_value(
+            LocalDate(year=5774, month=1, day=1, calendar=civil)
+        )  # Sample value in 2014 ISO
+
+        start = pattern.parse(start_text).value
+        expected_end = pattern.parse(expected_end_text).value
+        assert start.plus_months(months) == expected_end
+
     # TODO: def test_months_between (requires LocalDatePattern)
     # TODO: def test_months_between_time_of_day(self) -> None:  (requires Period.Between())
 
