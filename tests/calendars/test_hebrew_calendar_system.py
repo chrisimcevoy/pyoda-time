@@ -4,7 +4,7 @@
 
 import pytest
 
-from pyoda_time import CalendarSystem, LocalDate, Period, PeriodUnits
+from pyoda_time import CalendarSystem, LocalDate, LocalDateTime, Period, PeriodUnits
 from pyoda_time._year_month_day import _YearMonthDay
 from pyoda_time.calendars import HebrewMonthNumbering
 from pyoda_time.calendars._hebrew_scriptural_calculator import _HebrewScripturalCalculator
@@ -106,7 +106,12 @@ class TestHebrewCalendarSystem:
         end = pattern.parse(end_text).value
         assert Period.between(start, end, PeriodUnits.MONTHS).months == expected_months
 
-    # TODO: def test_months_between_time_of_day(self) -> None:  (requires Period.Between())
+    def test_months_between_time_of_day(self) -> None:
+        civil = CalendarSystem.hebrew_civil
+        start = LocalDateTime(5774, 5, 10, 15, 0, calendar=civil)  # 3pm
+        end = LocalDateTime(5774, 7, 10, 5, 0, calendar=civil)  # 5am
+        # Would be 2, but the start time is later than the end time.
+        assert Period.between(start, end, PeriodUnits.MONTHS).months == 1
 
     @pytest.mark.parametrize(
         "numbering",
