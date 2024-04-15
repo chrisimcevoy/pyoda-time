@@ -2,6 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
+import helpers
 import pytest
 
 from pyoda_time import CalendarSystem, LocalDate, LocalDateTime, Period, PeriodUnits
@@ -152,7 +153,22 @@ class TestHebrewCalendarSystem:
             )
             assert calculator._get_days_in_year(year) == sum_, f"Days in {year}"
 
-    # TODO: def test_scriptural_compare(self): (requires LocalDatePattern)
+    @pytest.mark.parametrize(
+        "earlier,later",
+        [
+            ("5502-01-01", "5503-01-01"),
+            pytest.param("5502-01-01", "5502-02-01", id="Months in same half of year"),
+            # This is the test that looks odd...
+            pytest.param("5502-12-01", "5502-02-01", id="Months in opposite half of year"),
+            ("5502-03-10", "5502-03-12"),
+        ],
+    )
+    def test_scriptural_compare(self, earlier: str, later: str) -> None:
+        pattern = LocalDatePattern.iso.with_calendar(CalendarSystem.hebrew_scriptural)
+        earlier_date = pattern.parse(earlier).value
+        later_date = pattern.parse(later).value
+
+        helpers.test_compare_to_struct(earlier_date, earlier_date, later_date)
 
     def test_scriptural_get_days_from_start_of_year_to_start_of_month_invalid_for_coverage(self) -> None:
         with pytest.raises(ValueError):
