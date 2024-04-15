@@ -49,5 +49,10 @@ class OffsetTime:
         return self
 
     @property
+    def _offset_nanoseconds(self) -> int:
+        """Returns the number of nanoseconds in the offset, without going via an Offset."""
+        return self.__nanoseconds_and_offset >> self.__NANOSECONDS_BITS
+
+    @property
     def nanosecond_of_day(self) -> int:
         return self.__nanoseconds_and_offset & self.__NANOSECONDS_MASK

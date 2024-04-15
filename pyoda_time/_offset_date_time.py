@@ -6,10 +6,12 @@ from __future__ import annotations
 
 import typing
 
+from ._duration import Duration
+from ._instant import Instant
 from ._pyoda_constants import PyodaConstants
 
 if typing.TYPE_CHECKING:
-    from . import Instant, LocalDate, LocalDateTime, LocalTime, OffsetTime
+    from . import LocalDate, LocalDateTime, LocalTime, OffsetTime
     from ._calendar_system import CalendarSystem
     from ._offset import Offset
 
@@ -101,3 +103,21 @@ class OffsetDateTime:
         from . import LocalTime
 
         return LocalTime._ctor(nanoseconds=self.nanosecond_of_day)
+
+    def to_instant(self) -> Instant:
+        """Converts this offset date and time to an instant in time by subtracting the offset from the local date and
+        time.
+
+        :return: The instant represented by this offset date and time
+        """
+        from ._instant import Instant
+
+        return Instant._from_untrusted_duration(self.__to_elapsed_time_since_epoch())
+
+    def __to_elapsed_time_since_epoch(self) -> Duration:
+        # Equivalent to LocalDateTime.ToLocalInstant().Minus(offset)
+        days: int = self.__local_date._days_since_epoch
+        elapsed_time: Duration = Duration._ctor(days=days, nano_of_day=self.nanosecond_of_day)._minus_small_nanoseconds(
+            self.__offset_time._offset_nanoseconds
+        )
+        return elapsed_time

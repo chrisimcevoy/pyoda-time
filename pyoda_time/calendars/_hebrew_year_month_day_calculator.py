@@ -6,14 +6,12 @@ from __future__ import annotations
 
 import typing
 
+from .._year_month_day import _YearMonthDay
 from ..utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
 from ._hebrew_month_converter import _HebrewMonthConverter
 from ._hebrew_month_numbering import HebrewMonthNumbering
 from ._hebrew_scriptural_calculator import _HebrewScripturalCalculator
 from ._year_month_day_calculator import _YearMonthDayCalculator
-
-if typing.TYPE_CHECKING:
-    from .._year_month_day import _YearMonthDay
 
 
 @_sealed
@@ -107,7 +105,7 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
         current_year = year_month_day._year
         current_month = year_month_day._month
         target_day = year_month_day._day
-        target_scriptural_month = self.__calendar_to_scriptural_month(current_month, current_month)
+        target_scriptural_month = self.__calendar_to_scriptural_month(current_year, current_month)
         if target_scriptural_month == 13 and not self._is_leap_year(year):
             # If we were in Adar II and the target year is not a leap year, map to Adar.
             target_scriptural_month = 12
@@ -169,6 +167,8 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
         return _YearMonthDay._ctor(year=year, month=month, day=day)
 
     def _months_between(self, start: _YearMonthDay, end: _YearMonthDay) -> int:
+        # First (quite rough) guess...
+        # We could probably be more efficient than this, but it's unlikely to be very far off.
         start_civil_month: int = self.__calendar_to_civil_month(start._year, start._month)
         start_total_months: float = start_civil_month + (start._year * self.__MONTHS_PER_LEAP_CYCLE) / float(
             self.__YEARS_PER_LEAP_CYCLE
@@ -195,7 +195,7 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
                 diff += 1
             # Go backwards until we've overshot
             while self.compare(self._add_months(start, diff), end) >= 0:
-                diff += 1
+                diff -= 1
             # Take account of the overshoot
             return diff + 1
 

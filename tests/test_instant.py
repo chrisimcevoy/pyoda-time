@@ -8,8 +8,10 @@ import pytest
 import pytz
 
 from pyoda_time import (
+    CalendarSystem,
     Duration,
     Instant,
+    LocalDateTime,
     Offset,
     PyodaConstants,
 )
@@ -19,7 +21,39 @@ from tests import helpers
 
 
 class TestInstant:
-    # TODO def test_julian_date_conversions(self):
+    @pytest.mark.parametrize(
+        "julian_date,year,month,day,hour,minute,second",
+        [
+            # Gregorian calendar: 1957-10-04
+            pytest.param(
+                2436116.31, 1957, 9, 21, 19, 26, 24, id="Sample from Astronomical Algorithms 2nd Edition, chapter 7"
+            ),
+            # Gregorian calendar: 2013-01-01
+            pytest.param(2456293.520833, 2012, 12, 19, 0, 30, 0, id="Sample from Wikipedia"),
+            pytest.param(
+                1842713.0, 333, 1, 27, 12, 0, 0, id="Another sample from Astronomical Algorithms 2nd Edition, chapter 7"
+            ),
+            pytest.param(0.0, -4712, 1, 1, 12, 0, 0, id="Julian epoch"),
+        ],
+    )
+    def test_julian_date_conversions(
+        self,
+        julian_date: float,
+        year: int,
+        month: int,
+        day: int,
+        hour: int,
+        minute: int,
+        second: int,
+    ) -> None:
+        # When dealing with floating point binary data, if we're accurate to 50 milliseconds, that's fine...
+        # (0.000001 days = ~86ms, as a guide to the scale involved...)
+        actual: Instant = Instant.from_julian_date(julian_date)
+        expected: Instant = (
+            LocalDateTime(year, month, day, hour, minute, second, calendar=CalendarSystem.julian).in_utc().to_instant()
+        )
+        assert actual.to_unix_time_milliseconds() == pytest.approx(expected.to_unix_time_milliseconds(), abs=50)
+        assert expected.to_julian_date() == pytest.approx(julian_date, abs=0.000001)
 
     # TODO def test_from_utc_no_seconds(self):
 

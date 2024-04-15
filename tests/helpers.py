@@ -76,6 +76,23 @@ def test_equals(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values:
     assert hash(value) == hash(equal_value)
 
 
+def test_compare_to_struct(value: T_IComparable, equal_value: T_IComparable, *greater_values: T_IComparable) -> None:
+    """Tests the <see cref="IComparable{T}.CompareTo" /> method for value objects.
+
+    :param value: The base value.
+    :param equal_value: The value equal to but not the same object as the base value.
+    :param greater_values: The values greater than the base value, in ascending order.
+    """
+    assert value.compare_to(value) == 0, "value.CompareTo(value)"
+    assert value.compare_to(equal_value) == 0, "value.CompareTo(equal_value)"
+    assert equal_value.compare_to(value) == 0, "equal_value.CompareTo(value)"
+    for greater_value in greater_values:
+        assert value.compare_to(greater_value) < 0, "value.CompareTo(greater_value)"
+        assert greater_value.compare_to(value) > 0, "greater_value.CompareTo(value)"
+        # Now move up to the next pair...
+        value = greater_value
+
+
 def test_compare_to(value: T_IComparable, equal_value: T_IComparable, *greater_values: T_IComparable) -> None:
     """A combination of ``TestHelpers.TestCompareToStruct()`` and ``TestHelpers.TestNonGenericCompareTo()`` from Noda
     Time.
@@ -86,6 +103,7 @@ def test_compare_to(value: T_IComparable, equal_value: T_IComparable, *greater_v
     :param equal_value: The value equal to but not the same object as the base value.
     :param greater_values: The values greater than the base value, in ascending order.
     """
+    # TODO: Make sure this is equivalent to `TestNonGenericCompareTo` and rename.
     _validate_input(value, equal_value, greater_values, "greater_values")
     assert value.compare_to(value) == 0
     assert value.compare_to(equal_value) == 0

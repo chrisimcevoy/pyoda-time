@@ -11,7 +11,7 @@ from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
 if typing.TYPE_CHECKING:
-    from . import Period
+    from . import Period, ZonedDateTime
     from ._iso_day_of_week import IsoDayOfWeek
     from ._local_date import LocalDate
     from ._local_instant import _LocalInstant
@@ -360,3 +360,26 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         return LocalDateTime._ctor(local_date=date, local_time=time)
 
     # endregion
+
+    def in_utc(self) -> ZonedDateTime:
+        """Returns the mapping of this local date/time within ``DateTimeZone.Utc``.
+
+        As UTC is a fixed time zone, there is no chance that this local date/time is ambiguous or skipped.
+
+        :return: The result of mapping this local date/time in UTC.
+        """
+        # TODO: Check if the use of local imports are really necessary...
+        from pyoda_time import OffsetTime
+
+        from ._date_time_zone import DateTimeZone
+        from ._offset_date_time import OffsetDateTime
+        from ._zoned_date_time import ZonedDateTime
+
+        # Use the internal constructors to avoid validation. We know it will be fine.
+        return ZonedDateTime._ctor(
+            offset_date_time=OffsetDateTime._ctor(
+                local_date=self.date,
+                offset_time=OffsetTime._ctor(nanosecond_of_day_zero_offset=self.__time.nanosecond_of_day),
+            ),
+            zone=DateTimeZone.utc,
+        )

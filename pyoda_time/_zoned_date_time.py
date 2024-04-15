@@ -86,3 +86,15 @@ class ZonedDateTime:
         :return: The year of this zoned date and time.
         """
         return self.__offset_date_time.year
+
+    def to_instant(self) -> Instant:
+        """Converts this value to the instant it represents on the timeline.
+
+        This is always an unambiguous conversion. Any difficulties due to daylight saving
+        transitions or other changes in time zone are handled when converting from a
+        ``LocalDateTime`` to a ``ZonedDateTime``; the ``ZonedDateTime`` remembers
+        the actual offset from UTC to local time, so it always knows the exact instant represented.
+
+        :return: The instant corresponding to this value.
+        """
+        return self.__offset_date_time.to_instant()

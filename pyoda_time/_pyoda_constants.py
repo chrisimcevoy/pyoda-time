@@ -21,18 +21,26 @@ class _PyodaConstantsMeta(type):
     """
 
     @property
-    def BCL_EPOCH(cls) -> Instant:
-        """The instant at the BCL epoch of midnight 1st January 0001 UTC."""
-        from . import Instant
-
-        return Instant.from_utc(1, 1, 1, 0, 0)
-
-    @property
     def UNIX_EPOCH(cls) -> Instant:
         """The instant at the Unix epoch of midnight 1st January 1970 UTC."""
         from . import Instant
 
         return Instant.from_unix_time_ticks(0)
+
+    @property
+    def JULIAN_EPOCH(cls) -> Instant:
+        """The instant at the Julian epoch of noon (UTC) January 1st 4713 BCE in the proleptic Julian calendar, or
+        November 24th 4714 BCE in the proleptic Gregorian calendar."""
+        from . import Instant
+
+        return Instant.from_utc(-4713, 11, 24, 12, 0)
+
+    @property
+    def BCL_EPOCH(cls) -> Instant:
+        """The instant at the BCL epoch of midnight 1st January 0001 UTC."""
+        from . import Instant
+
+        return Instant.from_utc(1, 1, 1, 0, 0)
 
 
 class PyodaConstants(metaclass=_PyodaConstantsMeta):
