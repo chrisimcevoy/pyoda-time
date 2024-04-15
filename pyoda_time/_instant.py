@@ -257,6 +257,24 @@ class Instant(metaclass=_InstantMeta):
         """Returns the earlier instant of the given two."""
         return min(x, y)
 
+    def to_julian_date(self) -> float:
+        """Returns the Julian Date of this instance - the number of days since ``PyodaConstants.JULIAN_EPOCH``
+        (noon on January 1st, 4713 BCE in the Julian calendar).
+
+        :return: The number of days (including fractional days) since the Julian Epoch.
+        """
+        return (self - PyodaConstants.JULIAN_EPOCH).total_days
+
+    @classmethod
+    def from_julian_date(cls, julian_date: float) -> Instant:
+        """Converts a Julian Date representing the given number of days since ``PyodaConstants.JULIAN_EPOCH`` (noon on
+        January 1st, 4713 BCE in the Julian calendar) into an ``Instant``.
+
+        :param julian_date: The number of days since the Julian Epoch to convert into an ``Instant``.
+        :return: An ``Instant`` value which is ``julianDate`` days after the Julian Epoch.
+        """
+        return PyodaConstants.JULIAN_EPOCH + Duration.from_days(julian_date)
+
     @classmethod
     def from_datetime_utc(cls, datetime: datetime.datetime) -> Instant:
         """Converts a datetime.datetime into a new Instant representing the same instant in time.
