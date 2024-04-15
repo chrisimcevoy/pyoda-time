@@ -167,6 +167,8 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
         return _YearMonthDay._ctor(year=year, month=month, day=day)
 
     def _months_between(self, start: _YearMonthDay, end: _YearMonthDay) -> int:
+        # First (quite rough) guess...
+        # We could probably be more efficient than this, but it's unlikely to be very far off.
         start_civil_month: int = self.__calendar_to_civil_month(start._year, start._month)
         start_total_months: float = start_civil_month + (start._year * self.__MONTHS_PER_LEAP_CYCLE) / float(
             self.__YEARS_PER_LEAP_CYCLE
@@ -193,7 +195,7 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
                 diff += 1
             # Go backwards until we've overshot
             while self.compare(self._add_months(start, diff), end) >= 0:
-                diff += 1
+                diff -= 1
             # Take account of the overshoot
             return diff + 1
 

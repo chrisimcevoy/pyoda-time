@@ -4,7 +4,7 @@
 
 import pytest
 
-from pyoda_time import CalendarSystem, LocalDate
+from pyoda_time import CalendarSystem, LocalDate, Period, PeriodUnits
 from pyoda_time._year_month_day import _YearMonthDay
 from pyoda_time.calendars import HebrewMonthNumbering
 from pyoda_time.calendars._hebrew_scriptural_calculator import _HebrewScripturalCalculator
@@ -26,6 +26,15 @@ ADD_AND_SUBTRACT_MONTH_CASES: list[tuple[str, int, str]] = [
     ("5506-01-30", 1, "5506-02-29"),  # Short Heshvan
     ("5505-01-30", 2, "5505-03-30"),  # Long Kislev
     ("5506-01-30", 2, "5506-03-29"),  # Short Kislev
+]
+
+MONTH_BETWEEN_CASES: list[tuple[str, int, str]] = [
+    ("5502-02-13", 1, "5502-03-15"),
+    ("5502-02-13", 0, "5502-03-05"),
+    ("5502-02-13", 0, "5502-02-15"),
+    ("5502-02-13", 0, "5502-02-05"),
+    ("5502-02-13", 0, "5502-01-15"),
+    ("5502-02-13", -1, "5502-01-05"),
 ]
 
 
@@ -86,7 +95,17 @@ class TestHebrewCalendarSystem:
         expected_end = pattern.parse(expected_end_text).value
         assert start.plus_months(months) == expected_end
 
-    # TODO: def test_months_between (requires LocalDatePattern)
+    @pytest.mark.parametrize("start_text,expected_months,end_text", ADD_AND_SUBTRACT_MONTH_CASES + MONTH_BETWEEN_CASES)
+    def test_months_between(self, start_text: str, expected_months: int, end_text: str) -> None:
+        civil = CalendarSystem.hebrew_civil
+        pattern = LocalDatePattern.create_with_invariant_culture("uuuu-MM-dd").with_template_value(
+            LocalDate(year=5774, month=1, day=1, calendar=civil)
+        )  # Sample value in 2014 ISO
+
+        start = pattern.parse(start_text).value
+        end = pattern.parse(end_text).value
+        assert Period.between(start, end, PeriodUnits.MONTHS).months == expected_months
+
     # TODO: def test_months_between_time_of_day(self) -> None:  (requires Period.Between())
 
     @pytest.mark.parametrize(
