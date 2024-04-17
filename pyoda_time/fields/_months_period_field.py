@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, final
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._local_date import LocalDate
 
 from ..utility._csharp_compatibility import _sealed
@@ -14,7 +14,7 @@ from ._i_date_period_field import _IDatePeriodField
 
 
 @_sealed
-@typing.final
+@final
 class _MonthsPeriodField(_IDatePeriodField):
     def add(self, local_date: LocalDate, value: int) -> LocalDate:
         from pyoda_time import LocalDate

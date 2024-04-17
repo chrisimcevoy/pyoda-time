@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 import abc
-import typing
+from typing import TYPE_CHECKING, Final, overload
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from ..utility._csharp_compatibility import _towards_zero_division
 from ..utility._preconditions import _Preconditions
@@ -54,7 +54,7 @@ class _YearMonthDayCalculator(abc.ABC):
         self.__days_at_start_of_year_1 = days_at_start_of_year_1
         # Cache to speed up working out when a particular year starts.
         # See the ``YearStartCacheEntry`` documentation and ``GetStartOfYearInDays`` for more details.
-        self.__year_cache: typing.Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
+        self.__year_cache: Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
 
     # region Abstract methods
 
@@ -179,10 +179,10 @@ class _YearMonthDayCalculator(abc.ABC):
             + year_month_day._day
         )
 
-    @typing.overload
+    @overload
     def _get_year_month_day(self, *, year: int, day_of_year: int) -> _YearMonthDay: ...
 
-    @typing.overload
+    @overload
     def _get_year_month_day(self, *, days_since_epoch: int) -> _YearMonthDay: ...
 
     def _get_year_month_day(

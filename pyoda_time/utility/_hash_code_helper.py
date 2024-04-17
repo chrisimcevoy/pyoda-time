@@ -6,10 +6,10 @@ from __future__ import annotations
 
 __all__: list[str] = []
 
-import typing
+from typing import Hashable
 
 
-def _hash_code_helper(*values: typing.Hashable) -> int:
+def _hash_code_helper(*values: Hashable) -> int:
     """Provides help with generating hash codes."""
     # In Noda Time, this is a builder pattern struct.
     multiplier = 37

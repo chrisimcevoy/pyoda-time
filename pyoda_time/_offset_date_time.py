@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, overload
 
 from ._duration import Duration
 from ._instant import Instant
 from ._pyoda_constants import PyodaConstants
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import LocalDate, LocalDateTime, LocalTime, OffsetTime
     from ._calendar_system import CalendarSystem
     from ._offset import Offset
@@ -29,15 +29,15 @@ class OffsetDateTime:
         )
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, local_date: LocalDate, offset_time: OffsetTime) -> OffsetDateTime: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, instant: Instant, offset: Offset) -> OffsetDateTime: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, instant: Instant, offset: Offset, calendar: CalendarSystem) -> OffsetDateTime: ...
 
     @classmethod

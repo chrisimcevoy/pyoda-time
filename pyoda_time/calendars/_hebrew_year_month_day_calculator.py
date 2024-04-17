@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import typing
+from typing import Final, final
 
 from .._year_month_day import _YearMonthDay
 from ..utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
@@ -15,11 +15,11 @@ from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @_sealed
-@typing.final
+@final
 class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
-    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: typing.Final[int] = -2092590
-    __MONTHS_PER_LEAP_CYCLE: typing.Final[int] = 235
-    __YEARS_PER_LEAP_CYCLE: typing.Final[int] = 19
+    __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: Final[int] = -2092590
+    __MONTHS_PER_LEAP_CYCLE: Final[int] = 235
+    __YEARS_PER_LEAP_CYCLE: Final[int] = 19
 
     def __init__(self, month_numbering: HebrewMonthNumbering) -> None:
         super().__init__(
@@ -28,7 +28,7 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
             3654,  # Average length of 10 years
             self.__UNIX_EPOCH_DAY_AT_START_OF_YEAR_1,
         )
-        self.__month_numbering: typing.Final[HebrewMonthNumbering] = month_numbering
+        self.__month_numbering: Final[HebrewMonthNumbering] = month_numbering
 
     def __calendar_to_civil_month(self, year: int, month: int) -> int:
         return (

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import datetime
-import typing
+from typing import Final, final
 
 from ._compatibility._culture_info import CultureInfo
 from ._pyoda_constants import PyodaConstants
@@ -30,21 +30,21 @@ class _OffsetMeta(type):
         return Offset.from_hours(18)
 
 
-@typing.final
+@final
 @_sealed
 class Offset(metaclass=_OffsetMeta):
     """An offset from UTC in seconds."""
 
-    __MIN_HOURS: typing.Final[int] = -18
-    __MAX_HOURS: typing.Final[int] = 18
-    __MIN_SECONDS: typing.Final[int] = -18 * PyodaConstants.SECONDS_PER_HOUR
-    __MAX_SECONDS: typing.Final[int] = 18 * PyodaConstants.SECONDS_PER_HOUR
-    __MIN_MILLISECONDS: typing.Final[int] = -18 * PyodaConstants.MILLISECONDS_PER_HOUR
-    __MAX_MILLISECONDS: typing.Final[int] = 18 * PyodaConstants.MILLISECONDS_PER_HOUR
-    __MIN_TICKS: typing.Final[int] = -18 * PyodaConstants.TICKS_PER_HOUR
-    __MAX_TICKS: typing.Final[int] = 18 * PyodaConstants.TICKS_PER_HOUR
-    __MIN_NANOSECONDS: typing.Final[int] = -18 * PyodaConstants.NANOSECONDS_PER_HOUR
-    __MAX_NANOSECONDS: typing.Final[int] = 18 * PyodaConstants.NANOSECONDS_PER_HOUR
+    __MIN_HOURS: Final[int] = -18
+    __MAX_HOURS: Final[int] = 18
+    __MIN_SECONDS: Final[int] = -18 * PyodaConstants.SECONDS_PER_HOUR
+    __MAX_SECONDS: Final[int] = 18 * PyodaConstants.SECONDS_PER_HOUR
+    __MIN_MILLISECONDS: Final[int] = -18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MAX_MILLISECONDS: Final[int] = 18 * PyodaConstants.MILLISECONDS_PER_HOUR
+    __MIN_TICKS: Final[int] = -18 * PyodaConstants.TICKS_PER_HOUR
+    __MAX_TICKS: Final[int] = 18 * PyodaConstants.TICKS_PER_HOUR
+    __MIN_NANOSECONDS: Final[int] = -18 * PyodaConstants.NANOSECONDS_PER_HOUR
+    __MAX_NANOSECONDS: Final[int] = 18 * PyodaConstants.NANOSECONDS_PER_HOUR
 
     def __init__(self) -> None:
         self.__seconds = 0

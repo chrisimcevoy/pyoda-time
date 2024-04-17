@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import functools
-import typing
+from typing import final
 
 from ..utility._csharp_compatibility import _private, _sealed
 
@@ -83,7 +83,7 @@ class _EraMeta(type):
         return Era._ctor("BE", "Eras_Bahai")
 
 
-@typing.final
+@final
 @_private
 @_sealed
 class Era(metaclass=_EraMeta):

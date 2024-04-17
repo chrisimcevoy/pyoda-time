@@ -4,33 +4,31 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Final, final
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from .._year_month_day_calendar import _YearMonthDayCalendar
 from ..utility._csharp_compatibility import _towards_zero_division
 from ._g_j_year_month_day_calculator import _GJYearMonthDayCalculator
 
 
-@typing.final
+@final
 class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
-    _MIN_GREGORIAN_YEAR: typing.Final[int] = -9998
-    _MAX_GREGORIAN_YEAR: typing.Final[int] = 9999
+    _MIN_GREGORIAN_YEAR: Final[int] = -9998
+    _MAX_GREGORIAN_YEAR: Final[int] = 9999
 
-    __FIRST_OPTIMIZED_YEAR: typing.Final[int] = 1900
-    __LAST_OPTIMIZED_YEAR: typing.Final[int] = 2100
-    __FIRST_OPTIMIZED_DAY: typing.Final[int] = -25567
-    __LAST_OPTIMIZED_DAY: typing.Final[int] = 47846
+    __FIRST_OPTIMIZED_YEAR: Final[int] = 1900
+    __LAST_OPTIMIZED_YEAR: Final[int] = 2100
+    __FIRST_OPTIMIZED_DAY: Final[int] = -25567
+    __LAST_OPTIMIZED_DAY: Final[int] = 47846
     # The 0-based days-since-unix-epoch for the start of each month
-    __MONTH_START_DAYS: typing.Final[list[int]] = list(
-        range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1)
-    )
+    __MONTH_START_DAYS: Final[list[int]] = list(range((__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR) * 12 + 1))
     # The 1-based days-since-unix-epoch for the start of each year
-    __YEAR_START_DAYS: typing.Final[list[int]] = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
+    __YEAR_START_DAYS: Final[list[int]] = list(range(__LAST_OPTIMIZED_YEAR + 1 - __FIRST_OPTIMIZED_YEAR))
 
-    __DAYS_FROM_0000_to_1970: typing.Final[int] = 719527
-    __AVERAGE_DAYS_PER_10_YEARS: typing.Final[int] = 3652
+    __DAYS_FROM_0000_to_1970: Final[int] = 719527
+    __AVERAGE_DAYS_PER_10_YEARS: Final[int] = 3652
 
     @classmethod
     def _get_gregorian_year_month_day_calendar_from_days_since_epoch(

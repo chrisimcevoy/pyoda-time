@@ -6,12 +6,12 @@ from __future__ import annotations
 
 import datetime
 import functools
-import typing
+from typing import TYPE_CHECKING, Final, Self, final, overload
 
 from ._duration import Duration
 from ._pyoda_constants import PyodaConstants
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import (
         CalendarSystem,
         DateTimeZone,
@@ -56,7 +56,7 @@ class _InstantMeta(type):
         return Instant._ctor(days=Instant._MAX_DAYS, nano_of_day=PyodaConstants.NANOSECONDS_PER_DAY - 1)
 
 
-@typing.final
+@final
 @_sealed
 class Instant(metaclass=_InstantMeta):
     """Represents an instant on the global timeline, with nanosecond resolution.
@@ -68,18 +68,18 @@ class Instant(metaclass=_InstantMeta):
     """
 
     # These correspond to -9998-01-01 and 9999-12-31 respectively.
-    _MIN_DAYS: typing.Final[int] = -4371222
-    _MAX_DAYS: typing.Final[int] = 2932896
+    _MIN_DAYS: Final[int] = -4371222
+    _MAX_DAYS: Final[int] = 2932896
 
-    __MIN_TICKS: typing.Final[int] = _MIN_DAYS * PyodaConstants.TICKS_PER_DAY
-    __MAX_TICKS: typing.Final[int] = (_MAX_DAYS + 1) * PyodaConstants.TICKS_PER_DAY - 1
-    __MIN_MILLISECONDS: typing.Final[int] = _MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY
-    __MAX_MILLISECONDS: typing.Final[int] = (_MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY - 1
-    __MIN_SECONDS: typing.Final[int] = _MIN_DAYS * PyodaConstants.SECONDS_PER_DAY
-    __MAX_SECONDS: typing.Final[int] = (_MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1
+    __MIN_TICKS: Final[int] = _MIN_DAYS * PyodaConstants.TICKS_PER_DAY
+    __MAX_TICKS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.TICKS_PER_DAY - 1
+    __MIN_MILLISECONDS: Final[int] = _MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY
+    __MAX_MILLISECONDS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY - 1
+    __MIN_SECONDS: Final[int] = _MIN_DAYS * PyodaConstants.SECONDS_PER_DAY
+    __MAX_SECONDS: Final[int] = (_MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1
 
     @classmethod
-    def _before_min_value(cls) -> typing.Self:
+    def _before_min_value(cls) -> Self:
         """Instant which is invalid *except* for comparison purposes; it is earlier than any valid value.
 
         This must never be exposed.
@@ -87,7 +87,7 @@ class Instant(metaclass=_InstantMeta):
         return cls.__ctor(days=Duration._MIN_DAYS, deliberately_invalid=True)
 
     @classmethod
-    def _after_max_value(cls) -> typing.Self:
+    def _after_max_value(cls) -> Self:
         """Instant which is invalid *except* for comparison purposes; it is later than any valid value.
 
         This must never be exposed.
@@ -104,7 +104,7 @@ class Instant(metaclass=_InstantMeta):
         return self
 
     @classmethod
-    @typing.overload
+    @overload
     def __ctor(cls, *, duration: Duration) -> Instant:
         """Constructor which constructs a new instance with the given duration, which is trusted to be valid.
 
@@ -113,7 +113,7 @@ class Instant(metaclass=_InstantMeta):
         ...
 
     @classmethod
-    @typing.overload
+    @overload
     def __ctor(cls, *, days: int, deliberately_invalid: bool) -> Instant:
         """Constructor which should *only* be used to construct the invalid instances."""
         ...
@@ -152,10 +152,10 @@ class Instant(metaclass=_InstantMeta):
             return self._from_untrusted_duration(self.__duration + other)
         return NotImplemented  # type: ignore[unreachable]
 
-    @typing.overload
+    @overload
     def __sub__(self, other: Instant) -> Duration: ...
 
-    @typing.overload
+    @overload
     def __sub__(self, other: Duration) -> Instant: ...
 
     def __sub__(self, other: Instant | Duration) -> Instant | Duration:

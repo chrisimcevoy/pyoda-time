@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Annotated, Final, Iterable, final, overload
 
 from .calendars._badi_year_month_day_calculator import _BadiYearMonthDayCalculator
 from .calendars._coptic_year_month_day_calculator import _CopticYearMonthDayCalculator
@@ -19,7 +19,7 @@ from .calendars._single_era_calculator import _SingleEraCalculator
 from .calendars._um_al_qura_year_month_day_calculator import _UmAlQuraYearMonthDayCalculator
 from .calendars._year_month_day_calculator import _YearMonthDayCalculator
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
 
@@ -194,7 +194,7 @@ class _CalendarSystemMeta(type):
         return CalendarSystem._for_ordinal(_CalendarOrdinal.UM_AL_QURA)
 
     @property
-    def ids(cls) -> typing.Iterable[str]:
+    def ids(cls) -> Iterable[str]:
         """Returns the IDs of all calendar systems available within Pyoda Time.
 
         The order of the keys is not guaranteed.
@@ -202,7 +202,7 @@ class _CalendarSystemMeta(type):
         return CalendarSystem._ids()
 
 
-@typing.final
+@final
 @_private
 @_sealed
 class CalendarSystem(metaclass=_CalendarSystemMeta):
@@ -224,23 +224,23 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
     # IDs and names are separated out (usually with the ID either being the same as the name,
     # or the base ID being the same as a name and then other IDs being formed from it.) The
     # differentiation is only present for clarity.
-    __GREGORIAN_NAME: typing.Final[str] = "Gregorian"
-    __GREGORIAN_ID: typing.Final[str] = __GREGORIAN_NAME
+    __GREGORIAN_NAME: Final[str] = "Gregorian"
+    __GREGORIAN_ID: Final[str] = __GREGORIAN_NAME
 
-    __ISO_NAME: typing.Final[str] = "ISO"
-    __ISO_ID: typing.Final[str] = __ISO_NAME
+    __ISO_NAME: Final[str] = "ISO"
+    __ISO_ID: Final[str] = __ISO_NAME
 
-    __COPTIC_NAME: typing.Final[str] = "Coptic"
-    __COPTIC_ID: typing.Final[str] = __COPTIC_NAME
+    __COPTIC_NAME: Final[str] = "Coptic"
+    __COPTIC_ID: Final[str] = __COPTIC_NAME
 
-    __BADI_NAME: typing.Final[str] = "Badi"
-    __BADI_ID: typing.Final[str] = __BADI_NAME
+    __BADI_NAME: Final[str] = "Badi"
+    __BADI_ID: Final[str] = __BADI_NAME
 
-    __JULIAN_NAME: typing.Final[str] = "Julian"
-    __JULIAN_ID: typing.Final[str] = __JULIAN_NAME
+    __JULIAN_NAME: Final[str] = "Julian"
+    __JULIAN_ID: Final[str] = __JULIAN_NAME
 
-    __ISLAMIC_NAME: typing.Final[str] = "Hijri"
-    __ISLAMIC_ID_BASE: typing.Final[str] = __ISLAMIC_NAME
+    __ISLAMIC_NAME: Final[str] = "Hijri"
+    __ISLAMIC_ID_BASE: Final[str] = __ISLAMIC_NAME
 
     @staticmethod
     def _get_islamic_id(base: str, leap_year_pattern: IslamicLeapYearPattern, epoch: IslamicEpoch) -> str:
@@ -249,24 +249,24 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
 
         return f"{base} {to_camel_case(epoch.name)}-{to_camel_case(leap_year_pattern.name)}"
 
-    __PERSIAN_NAME: typing.Final[str] = "Persian"
-    __PERSIAN_ID_BASE: typing.Final[str] = __PERSIAN_NAME
-    __PERSIAN_SIMPLE_ID: typing.Final[str] = __PERSIAN_ID_BASE + " Simple"
-    __PERSIAN_ASTRONOMICAL_ID: typing.Final[str] = __PERSIAN_ID_BASE + " Algorithmic"
-    __PERSIAN_ARITHMETIC_ID: typing.Final[str] = __PERSIAN_ID_BASE + " Arithmetic"
+    __PERSIAN_NAME: Final[str] = "Persian"
+    __PERSIAN_ID_BASE: Final[str] = __PERSIAN_NAME
+    __PERSIAN_SIMPLE_ID: Final[str] = __PERSIAN_ID_BASE + " Simple"
+    __PERSIAN_ASTRONOMICAL_ID: Final[str] = __PERSIAN_ID_BASE + " Algorithmic"
+    __PERSIAN_ARITHMETIC_ID: Final[str] = __PERSIAN_ID_BASE + " Arithmetic"
 
-    __HEBREW_NAME: typing.Final[str] = "Hebrew"
-    __HEBREW_ID_BASE: typing.Final[str] = __HEBREW_NAME
-    __HEBREW_CIVIL_ID: typing.Final[str] = __HEBREW_ID_BASE + " Civil"
-    __HEBREW_SCRIPTURAL_ID: typing.Final[str] = __HEBREW_ID_BASE + " Scriptural"
+    __HEBREW_NAME: Final[str] = "Hebrew"
+    __HEBREW_ID_BASE: Final[str] = __HEBREW_NAME
+    __HEBREW_CIVIL_ID: Final[str] = __HEBREW_ID_BASE + " Civil"
+    __HEBREW_SCRIPTURAL_ID: Final[str] = __HEBREW_ID_BASE + " Scriptural"
 
-    __UM_AL_QURA_NAME: typing.Final[str] = "Um Al Qura"
-    __UM_AL_QURA_ID: typing.Final[str] = __UM_AL_QURA_NAME
+    __UM_AL_QURA_NAME: Final[str] = "Um Al Qura"
+    __UM_AL_QURA_ID: Final[str] = __UM_AL_QURA_NAME
 
     # While we could implement some of these as auto-props, it probably adds more confusion than convenience.
-    __CALENDAR_BY_ORDINAL: typing.Final[dict[_CalendarOrdinal, CalendarSystem]] = {}
+    __CALENDAR_BY_ORDINAL: Final[dict[_CalendarOrdinal, CalendarSystem]] = {}
 
-    __ID_ORDINAL_MAP: typing.Final[dict[str, _CalendarOrdinal]] = {
+    __ID_ORDINAL_MAP: Final[dict[str, _CalendarOrdinal]] = {
         __BADI_ID: _CalendarOrdinal.BADI,
         __COPTIC_ID: _CalendarOrdinal.COPTIC,
         __GREGORIAN_ID: _CalendarOrdinal.GREGORIAN,
@@ -339,7 +339,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         return cls._for_ordinal_uncached(ordinal)
 
     @classmethod
-    def _ids(cls) -> typing.Iterable[str]:
+    def _ids(cls) -> Iterable[str]:
         """Returns an iterable of all valid IDs.
 
         The public static property is implemented in the metaclass. This classmethod just exists to expose the keys of
@@ -410,18 +410,18 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
 
     # endregion
 
-    __ordinal: typing.Annotated[_CalendarOrdinal, "Set by private constructor"]
-    __id: typing.Annotated[str, "Set by private constructor"]
-    __name: typing.Annotated[str, "Set by private constructor"]
-    __year_month_day_calculator: typing.Annotated[_YearMonthDayCalculator, "Set by private constructor"]
-    __era_calculator: typing.Annotated[_EraCalculator, "Set by private constructor"]
-    __min_year: typing.Annotated[int, "Set by private constructor"]
-    __max_year: typing.Annotated[int, "Set by private constructor"]
-    __min_days: typing.Annotated[int, "Set by private constructor"]
-    __max_days: typing.Annotated[int, "Set by private constructor"]
+    __ordinal: Annotated[_CalendarOrdinal, "Set by private constructor"]
+    __id: Annotated[str, "Set by private constructor"]
+    __name: Annotated[str, "Set by private constructor"]
+    __year_month_day_calculator: Annotated[_YearMonthDayCalculator, "Set by private constructor"]
+    __era_calculator: Annotated[_EraCalculator, "Set by private constructor"]
+    __min_year: Annotated[int, "Set by private constructor"]
+    __max_year: Annotated[int, "Set by private constructor"]
+    __min_days: Annotated[int, "Set by private constructor"]
+    __max_days: Annotated[int, "Set by private constructor"]
 
     @classmethod
-    @typing.overload
+    @overload
     def __ctor(
         cls,
         *,
@@ -433,7 +433,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
     ) -> CalendarSystem: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def __ctor(
         cls,
         *,
@@ -517,7 +517,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
 
     # region Era-based members
 
-    def eras(self) -> typing.Iterable[Era]:
+    def eras(self) -> Iterable[Era]:
         """Gets a read-only iterable of eras used in this calendar system."""
         yield from self.__era_calculator._eras
 

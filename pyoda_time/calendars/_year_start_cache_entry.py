@@ -4,18 +4,18 @@
 
 from __future__ import annotations
 
-import typing
+from typing import Final
 
 
 class _YearStartCacheEntry:
     """Type containing as much logic as possible for how the cache of "start of year" data works."""
 
-    __CACHE_INDEX_BITS: typing.Final[int] = 10
-    __CACHE_SIZE: typing.Final[int] = 1 << __CACHE_INDEX_BITS
-    __CACHE_INDEX_MASK: typing.Final[int] = __CACHE_SIZE - 1
-    __ENTRY_VALIDATION_BITS: typing.Final[int] = 7
-    __ENTRY_VALIDATION_MASK: typing.Final[int] = (1 << __ENTRY_VALIDATION_BITS) - 1
-    _INVALID_ENTRY_YEAR: typing.Final[int] = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
+    __CACHE_INDEX_BITS: Final[int] = 10
+    __CACHE_SIZE: Final[int] = 1 << __CACHE_INDEX_BITS
+    __CACHE_INDEX_MASK: Final[int] = __CACHE_SIZE - 1
+    __ENTRY_VALIDATION_BITS: Final[int] = 7
+    __ENTRY_VALIDATION_MASK: Final[int] = (1 << __ENTRY_VALIDATION_BITS) - 1
+    _INVALID_ENTRY_YEAR: Final[int] = (__ENTRY_VALIDATION_MASK >> 1) << __CACHE_INDEX_BITS
 
     def __init__(self, year: int, days: int) -> None:
         self.__value = (days << self.__ENTRY_VALIDATION_BITS) | self.__get_validator(year)

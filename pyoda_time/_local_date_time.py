@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, final, overload
 
 from ._calendar_system import CalendarSystem
 from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import Period, ZonedDateTime
     from ._iso_day_of_week import IsoDayOfWeek
     from ._local_date import LocalDate
@@ -25,7 +25,7 @@ class _LocalDateTimeMeta(type):
     pass
 
 
-@typing.final
+@final
 @_sealed
 class LocalDateTime(metaclass=_LocalDateTimeMeta):
     def __init__(
@@ -46,11 +46,11 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         self.__time = LocalTime(hour=hour, minute=minute, second=second, millisecond=millisecond)
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, local_instant: _LocalInstant) -> LocalDateTime: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, local_date: LocalDate, local_time: LocalTime) -> LocalDateTime: ...
 
     @classmethod

@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import typing
+from typing import final
 
 from ..utility._preconditions import _Preconditions
 from ._era import Era
@@ -12,7 +12,7 @@ from ._era_calculator import _EraCalculator
 from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
-@typing.final
+@final
 class _GJEraCalculator(_EraCalculator):
     """Era calculator for Gregorian and Julian calendar systems, which use BC and AD."""
 

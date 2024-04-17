@@ -4,18 +4,18 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, final, overload
 
 from .utility._csharp_compatibility import _sealed
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import Duration, Instant, Offset
 
 
 __all__ = ["_LocalInstant"]
 
 
-@typing.final
+@final
 @_sealed
 class _LocalInstant:
     """Represents a local date and time without reference to a calendar system. Essentially.
@@ -45,11 +45,11 @@ class _LocalInstant:
         self.__duration = Duration()
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, nanoseconds: Duration) -> _LocalInstant: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, days: int, nano_of_day: int) -> _LocalInstant: ...
 
     @classmethod

@@ -4,19 +4,19 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, final
 
 from ._period_units import PeriodUnits
 from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from ._period import Period
 
 __all__ = ["PeriodBuilder"]
 
 
-@typing.final
+@final
 @_sealed
 class PeriodBuilder:
     """A mutable builder class for ``Period`` values.

@@ -6,13 +6,13 @@ from __future__ import annotations
 
 import datetime
 import decimal
-import typing
+from typing import Any, Final, TypeVar
 
 __all__: list[str] = []
 
-SEALED_CLASSES: typing.Final[list[type]] = []
-_T = typing.TypeVar("_T")
-_Ttype = typing.TypeVar("_Ttype", bound=type)
+SEALED_CLASSES: Final[list[type]] = []
+_T = TypeVar("_T")
+_Ttype = TypeVar("_Ttype", bound=type)
 
 
 def _as_span(text: str | None, start: int) -> str:
@@ -71,7 +71,7 @@ def _private(klass: _Ttype) -> _Ttype:
 
     msg = f"{klass.__name__} is not intended to be initialised directly."
 
-    def __init__(self: typing.Any) -> None:
+    def __init__(self: Any) -> None:
         """
 
         :raises TypeError: This class is not intended to be instantiated directly.
@@ -85,7 +85,7 @@ def _private(klass: _Ttype) -> _Ttype:
         """
         raise TypeError(msg)
 
-    def __call__(*_args: typing.Any, **_kwargs: typing.Any) -> _Ttype:
+    def __call__(*_args: Any, **_kwargs: Any) -> _Ttype:
         """
 
         :raises TypeError: This class is not intended to be instantiated directly.
@@ -104,10 +104,10 @@ def _private(klass: _Ttype) -> _Ttype:
 
 
 class _CsharpConstants:
-    INT_MIN_VALUE: typing.Final[int] = -2147483648
-    INT_MAX_VALUE: typing.Final[int] = 2147483647
-    LONG_MIN_VALUE: typing.Final[int] = -9223372036854775808
-    LONG_MAX_VALUE: typing.Final[int] = 9223372036854775807
+    INT_MIN_VALUE: Final[int] = -2147483648
+    INT_MAX_VALUE: Final[int] = 2147483647
+    LONG_MIN_VALUE: Final[int] = -9223372036854775808
+    LONG_MAX_VALUE: Final[int] = 9223372036854775807
 
 
 def _int32_overflow(value: int) -> int:

@@ -6,11 +6,11 @@ from __future__ import annotations
 
 import abc
 import functools
-import typing
+from typing import TYPE_CHECKING, Final
 
 from .utility._preconditions import _Preconditions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import Instant, Offset
     from .time_zones import ZoneInterval
 
@@ -41,7 +41,7 @@ class DateTimeZone(abc.ABC, metaclass=_DateTimeZoneMeta):
     A time zone maps UTC instants to local times - or, equivalently, to the offset from UTC at any particular instant.
     """
 
-    _UTC_ID: typing.Final[str] = "UTC"
+    _UTC_ID: Final[str] = "UTC"
 
     def __init__(self, id_: str, is_fixed: bool, min_offset: Offset, max_offset: Offset) -> None:
         """Initializes a new instance of the DateTimeZone class.
