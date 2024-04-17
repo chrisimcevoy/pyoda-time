@@ -11,6 +11,7 @@ from ._g_j_year_month_day_calculator import _GJYearMonthDayCalculator
 
 
 @_sealed
+@typing.final
 class _JulianYearMonthDayCalculator(_GJYearMonthDayCalculator):
     __AVERAGE_DAYS_PER_10_JULIAN_YEARS: typing.Final[int] = 3653  # Ideally 365.25 per year
 

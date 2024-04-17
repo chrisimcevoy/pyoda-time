@@ -15,6 +15,7 @@ from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @_sealed
+@typing.final
 class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
     __UNIX_EPOCH_DAY_AT_START_OF_YEAR_1: typing.Final[int] = -2092590
     __MONTHS_PER_LEAP_CYCLE: typing.Final[int] = 235
