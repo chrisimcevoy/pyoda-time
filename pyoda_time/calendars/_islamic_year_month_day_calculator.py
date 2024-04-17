@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
 
 
 @_sealed
+@typing.final
 class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
     # Days in a pair of months, in days.
     __MONTH_PAIR_LENGTH: typing.Final[int] = 59

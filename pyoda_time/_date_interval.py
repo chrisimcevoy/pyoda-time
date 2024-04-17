@@ -16,6 +16,7 @@ __all__ = ["DateInterval"]
 
 
 @_sealed
+@typing.final
 class DateInterval:
     """An interval between two dates."""
 

@@ -10,6 +10,7 @@ import typing
 
 __all__: list[str] = []
 
+SEALED_CLASSES: typing.Final[list[type]] = []
 _T = typing.TypeVar("_T")
 _Ttype = typing.TypeVar("_Ttype", bound=type)
 
@@ -46,8 +47,8 @@ def _to_ticks(dt: datetime.datetime) -> int:
 def _sealed(cls: _Ttype) -> _Ttype:
     """Prevents the decorated class from being subclassed.
 
-    This is intended to loosely emulate the behaviour of the `sealed` keyword in C#.
-    Its use should be accompanied by the `typing.final` decorator to aid static analysis.
+    This is intended to loosely emulate the behaviour of the ``sealed`` keyword in C#.
+    Its use should be accompanied by the ``typing.final`` decorator to aid static analysis.
     """
 
     def __init_subclass__() -> None:
@@ -55,6 +56,8 @@ def _sealed(cls: _Ttype) -> _Ttype:
 
     # Use setattr to stop mypy shouting
     setattr(cls, "__init_subclass__", __init_subclass__)
+
+    SEALED_CLASSES.append(cls)
 
     return cls
 

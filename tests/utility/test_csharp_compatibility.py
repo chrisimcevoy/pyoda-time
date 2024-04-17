@@ -8,7 +8,7 @@ from typing import Annotated
 
 import pytest
 
-from pyoda_time.utility._csharp_compatibility import _private, _sealed
+from pyoda_time.utility._csharp_compatibility import SEALED_CLASSES, _private, _sealed
 
 
 def test_foo() -> None:
@@ -58,3 +58,22 @@ def test_foo() -> None:
             pass
 
     assert str(e.value) == "Foo is not intended to be subclassed."
+
+
+@pytest.mark.parametrize("sealed_class", SEALED_CLASSES)
+def test_sealed_class_is_decorated_with_typing_final(sealed_class: type) -> None:
+    """Assert that all ``@sealed`` classes are also decorated with ``@typing.final``."""
+
+    assert hasattr(sealed_class, "__final__")
+
+
+@pytest.mark.parametrize("sealed_class", SEALED_CLASSES)
+def test_sealed_class_raises_type_error_when_subclassed(sealed_class: type) -> None:
+    """Assert that all classes decorated with ``@sealed`` raise TypeError when subclassed."""
+
+    with pytest.raises(TypeError) as e:
+
+        class Foo(sealed_class):  # type: ignore
+            pass
+
+    assert str(e.value) == f"{sealed_class.__name__} is not intended to be subclassed."

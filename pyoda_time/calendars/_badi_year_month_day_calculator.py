@@ -14,6 +14,7 @@ from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @_sealed
+@typing.final
 class _BadiYearMonthDayCalculator(_YearMonthDayCalculator):
     # named constants to avoid use of raw numbers in the code
     __AVERAGE_DAYS_PER_10_years: typing.Final[int] = 3652

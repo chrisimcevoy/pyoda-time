@@ -11,7 +11,7 @@ from pyoda_time._compatibility._culture_info import CultureInfo
 from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._instant_pattern import InstantPattern
 from pyoda_time.text._text_error_messages import _TextErrorMessages
-from pyoda_time.utility._csharp_compatibility import _CsharpConstants, _sealed
+from pyoda_time.utility._csharp_compatibility import _CsharpConstants
 
 from ..culture_saver import CultureSaver
 from .cultures import Cultures
@@ -19,7 +19,6 @@ from .pattern_test_base import PatternTestBase
 from .pattern_test_data import PatternTestData
 
 
-@_sealed
 class Data(PatternTestData[Instant]):
     """A container for test data for formatting and parsing ``Instant`` objects."""
 
