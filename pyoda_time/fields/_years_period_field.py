@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 if TYPE_CHECKING:
     from .._local_date import LocalDate
@@ -15,6 +15,7 @@ from ._i_date_period_field import _IDatePeriodField
 
 
 @_sealed
+@final
 class _YearsPeriodField(_IDatePeriodField):
     def add(self, local_date: LocalDate, value: int) -> LocalDate:
         from pyoda_time import LocalDate
