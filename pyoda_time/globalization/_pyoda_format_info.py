@@ -5,8 +5,7 @@
 from __future__ import annotations
 
 import threading
-import typing
-from typing import final
+from typing import TYPE_CHECKING, Final, Sequence, TypeVar, cast, final
 
 from .._compatibility._culture_info import CultureInfo
 from .._compatibility._date_time_format_info import DateTimeFormatInfo
@@ -14,7 +13,7 @@ from .._compatibility._i_format_provider import IFormatProvider
 from ..calendars import Era
 from ..utility._cache import _Cache
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._duration import Duration
     from .._instant import Instant
     from .._local_date import LocalDate
@@ -30,7 +29,7 @@ from ..utility._csharp_compatibility import _sealed
 from ..utility._preconditions import _Preconditions
 from ._pattern_resources import _PatternResources
 
-T = typing.TypeVar("T")
+T = TypeVar("T")
 
 
 class _PyodaFormatInfoMeta(type):
@@ -63,18 +62,16 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
     """
 
     # Names that we can use to check for broken Mono behaviour.
-    __SHORT_INVARIANT_MONTH_NAMES: typing.Final[typing.Sequence[str]] = list(
+    __SHORT_INVARIANT_MONTH_NAMES: Final[Sequence[str]] = list(
         CultureInfo.invariant_culture.date_time_format.abbreviated_month_names
     )
-    __LONG_INVARIANT_MONTH_NAMES: typing.Final[typing.Sequence[str]] = list(
+    __LONG_INVARIANT_MONTH_NAMES: Final[Sequence[str]] = list(
         CultureInfo.invariant_culture.date_time_format.month_names
     )
 
-    __FIELD_LOCK: typing.Final[threading.Lock] = threading.Lock()
+    __FIELD_LOCK: Final[threading.Lock] = threading.Lock()
 
-    __CACHE: typing.Final[_Cache[CultureInfo, _PyodaFormatInfo]] = _Cache(
-        500, lambda culture: _PyodaFormatInfo(culture)
-    )
+    __CACHE: Final[_Cache[CultureInfo, _PyodaFormatInfo]] = _Cache(500, lambda culture: _PyodaFormatInfo(culture))
 
     def __init__(self, culture_info: CultureInfo, date_time_format: DateTimeFormatInfo | None = None) -> None:
         _Preconditions._check_not_null(culture_info, "culture_info")
@@ -123,7 +120,7 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
             )
 
     @staticmethod
-    def __convert_month_array(month_names: typing.Sequence[str]) -> list[str]:
+    def __convert_month_array(month_names: Sequence[str]) -> list[str]:
         """The BCL returns arrays of month names starting at 0; we want a read-only list starting at 1 (with 0 as an
         empty string)."""
         return ["", *month_names]
@@ -148,7 +145,7 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
 
     @classmethod
     def __convert_genitive_month_array(
-        cls, non_genitive_names: list[str], bcl_names: typing.Sequence[str], invariant_names: typing.Sequence[str]
+        cls, non_genitive_names: list[str], bcl_names: Sequence[str], invariant_names: Sequence[str]
     ) -> list[str]:
         """Checks whether any of the genitive names differ from the non-genitive names, and returns either a reference
         to the non-genitive names or a converted list as per ConvertMonthArray."""
@@ -256,27 +253,27 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
     #  internal FixedFormatInfoPatternParser<YearMonth> YearMonthPatternParser
 
     @property
-    def long_month_names(self) -> typing.Sequence[str]:
+    def long_month_names(self) -> Sequence[str]:
         """Returns a read-only list of the names of the months for the default calendar for this culture.
 
         See the usage guide for caveats around the use of these names for other calendars. Element 0 of the list is
         null, to allow a more natural mapping from (say) 1 to the string "January".
         """
         self.__ensure_months_initialized()
-        return typing.cast(list[str], self.__long_month_names)
+        return cast(list[str], self.__long_month_names)
 
     @property
-    def short_month_names(self) -> typing.Sequence[str]:
+    def short_month_names(self) -> Sequence[str]:
         """Returns a read-only list of the abbreviated names of the months for the default calendar for this culture.
 
         See the usage guide for caveats around the use of these names for other calendars. Element 0 of the list is
         null, to allow a more natural mapping from (say) 1 to the string "Jan".
         """
         self.__ensure_months_initialized()
-        return typing.cast(list[str], self.__short_month_names)
+        return cast(list[str], self.__short_month_names)
 
     @property
-    def long_month_genitive_names(self) -> typing.Sequence[str]:
+    def long_month_genitive_names(self) -> Sequence[str]:
         """Returns a read-only list of the names of the months for the default calendar for this culture.
 
         See the usage guide for caveats around the use of these names for other calendars.
@@ -286,10 +283,10 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
         ``long_month_names``.
         """
         self.__ensure_months_initialized()
-        return typing.cast(list[str], self.__long_month_genitive_names)
+        return cast(list[str], self.__long_month_genitive_names)
 
     @property
-    def short_month_genitive_names(self) -> typing.Sequence[str]:
+    def short_month_genitive_names(self) -> Sequence[str]:
         """Returns a read-only list of the abbreviated names of the months for the default calendar for this culture.
 
         See the usage guide for caveats around the use of these names for other calendars.
@@ -299,10 +296,10 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
         ``short_month_names``.
         """
         self.__ensure_months_initialized()
-        return typing.cast(list[str], self.__short_month_genitive_names)
+        return cast(list[str], self.__short_month_genitive_names)
 
     @property
-    def long_day_names(self) -> typing.Sequence[str]:
+    def long_day_names(self) -> Sequence[str]:
         """Returns a read-only list of the names of the days of the week for the default calendar for this culture.
 
         See the usage guide for caveats around the use of these names for other calendars.
@@ -311,10 +308,10 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
         """
         self.__ensure_days_initialized()
         # Cast required as mypy thinks this might be None.
-        return typing.cast(list[str], self.__long_day_names)
+        return cast(list[str], self.__long_day_names)
 
     @property
-    def short_day_names(self) -> typing.Sequence[str]:
+    def short_day_names(self) -> Sequence[str]:
         """Returns a read-only list of the abbreviated names of the days of the week for the default calendar for this
         culture.
 
@@ -383,38 +380,36 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
     @property
     def offset_pattern_long(self) -> str:
         """Gets the ``Offset`` 'l' pattern."""
-        return typing.cast(str, _PatternResources._resource_manager.get_string("OffsetPatternLong", self.culture_info))
+        return cast(str, _PatternResources._resource_manager.get_string("OffsetPatternLong", self.culture_info))
 
     @property
     def offset_pattern_medium(self) -> str:
         """Gets the ``Offset`` 'm' pattern."""
-        return typing.cast(
-            str, _PatternResources._resource_manager.get_string("OffsetPatternMedium", self.culture_info)
-        )
+        return cast(str, _PatternResources._resource_manager.get_string("OffsetPatternMedium", self.culture_info))
 
     @property
     def offset_pattern_short(self) -> str:
         """Gets the ``Offset`` 's' pattern."""
-        return typing.cast(str, _PatternResources._resource_manager.get_string("OffsetPatternShort", self.culture_info))
+        return cast(str, _PatternResources._resource_manager.get_string("OffsetPatternShort", self.culture_info))
 
     @property
     def offset_pattern_long_no_punctuation(self) -> str:
         """Gets the ``Offset`` 'L' pattern."""
-        return typing.cast(
+        return cast(
             str, _PatternResources._resource_manager.get_string("OffsetPatternLongNoPunctuation", self.culture_info)
         )
 
     @property
     def offset_pattern_medium_no_punctuation(self) -> str:
         """Gets the ``Offset`` 'M' pattern."""
-        return typing.cast(
+        return cast(
             str, _PatternResources._resource_manager.get_string("OffsetPatternMediumNoPunctuation", self.culture_info)
         )
 
     @property
     def offset_pattern_short_no_punctuation(self) -> str:
         """Gets the ``Offset`` 'S' pattern."""
-        return typing.cast(
+        return cast(
             str, _PatternResources._resource_manager.get_string("OffsetPatternShortNoPunctuation", self.culture_info)
         )
 

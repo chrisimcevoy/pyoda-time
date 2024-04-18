@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, final
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import LocalDate
 
 from .utility._csharp_compatibility import _sealed
@@ -16,7 +16,7 @@ __all__ = ["DateInterval"]
 
 
 @_sealed
-@typing.final
+@final
 class DateInterval:
     """An interval between two dates."""
 

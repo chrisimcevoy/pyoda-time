@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, final, overload
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._calendar_system import CalendarSystem
@@ -13,7 +13,7 @@ from .calendars import Era
 from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import LocalDateTime, LocalTime, Period, YearMonth
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
@@ -54,25 +54,25 @@ class _LocalDateMeta(type):
         )
 
 
-@typing.final
+@final
 @_sealed
 class LocalDate(metaclass=_LocalDateMeta):
     """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
     zone or time of day."""
 
-    @typing.overload
+    @overload
     def __init__(self) -> None: ...
 
-    @typing.overload
+    @overload
     def __init__(self, *, year: int, month: int, day: int): ...
 
-    @typing.overload
+    @overload
     def __init__(self, *, year: int, month: int, day: int, calendar: CalendarSystem): ...
 
-    @typing.overload
+    @overload
     def __init__(self, *, era: Era, year_of_era: int, month: int, day: int): ...
 
-    @typing.overload
+    @overload
     def __init__(self, *, era: Era, year_of_era: int, month: int, day: int, calendar: CalendarSystem): ...
 
     def __init__(
@@ -100,15 +100,15 @@ class LocalDate(metaclass=_LocalDateMeta):
             raise TypeError
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, year_month_day_calendar: _YearMonthDayCalendar) -> LocalDate: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, days_since_epoch: int) -> LocalDate: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, days_since_epoch: int, calendar: CalendarSystem) -> LocalDate: ...
 
     @classmethod
@@ -199,7 +199,7 @@ class LocalDate(metaclass=_LocalDateMeta):
 
         return YearMonth(year=self.year, month=self.month, calendar=self.calendar)
 
-    @typing.overload
+    @overload
     def __add__(self, other: Period) -> LocalDate:
         """Adds the specified period to the date.
 
@@ -209,7 +209,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         :return: The sum of the given date and period
         """
 
-    @typing.overload
+    @overload
     def __add__(self, other: LocalTime) -> LocalDateTime:
         """Combines the given ``LocalDate`` and ``LocalTime`` components into a single ``LocalDateTime``.
 

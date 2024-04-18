@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Final, final, overload
 
 from ._calendar_system import CalendarSystem
 from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from ._calendar_ordinal import _CalendarOrdinal
     from ._date_interval import DateInterval
     from ._local_date import LocalDate
@@ -23,7 +23,7 @@ __all__ = ["YearMonth"]
 
 
 @_sealed
-@typing.final
+@final
 class YearMonth:
     """A year and month in a particular calendar.
 
@@ -33,7 +33,7 @@ class YearMonth:
     # The start of the month. This is used as our base representation as we already have
     # plenty of other code that integrates it, and it implements a compact representation
     # without us having to duplicate any of the logic.
-    __start_of_month: typing.Final[_YearMonthDayCalendar]
+    __start_of_month: Final[_YearMonthDayCalendar]
 
     @property
     def calendar(self) -> CalendarSystem:
@@ -90,10 +90,10 @@ class YearMonth:
     def __year_month_day(self) -> _YearMonthDay:
         return self.__start_of_month._to_year_month_day()
 
-    @typing.overload
+    @overload
     def __init__(self, *, year: int, month: int, calendar: CalendarSystem = CalendarSystem.iso) -> None: ...
 
-    @typing.overload
+    @overload
     def __init__(
         self, *, era: Era, year_of_era: int, month: int, calendar: CalendarSystem = CalendarSystem.iso
     ) -> None: ...

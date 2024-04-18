@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Final, final
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._calendar_system import CalendarSystem
     from .._local_date import LocalDate
 from .._iso_day_of_week import IsoDayOfWeek
@@ -17,14 +17,14 @@ from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @_sealed
-@typing.final
+@final
 class _SimpleWeekYearRule(IWeekYearRule):
     def __init__(self, min_days_in_first_week: int, first_day_of_week: IsoDayOfWeek, irregular_weeks: bool) -> None:
         # TODO: Preconditions.DebugCheckArgumentRange
         _Preconditions._check_argument_range("first_day_of_week", int(first_day_of_week), 1, 7)
-        self.__min_days_in_first_week: typing.Final[int] = min_days_in_first_week
-        self.__first_day_of_week: typing.Final[IsoDayOfWeek] = first_day_of_week
-        self.__irregular_weeks: typing.Final[bool] = irregular_weeks
+        self.__min_days_in_first_week: Final[int] = min_days_in_first_week
+        self.__first_day_of_week: Final[IsoDayOfWeek] = first_day_of_week
+        self.__irregular_weeks: Final[bool] = irregular_weeks
 
     def get_local_date(
         self,

@@ -5,12 +5,12 @@
 from __future__ import annotations
 
 import abc
-import typing
+from typing import TYPE_CHECKING, Final
 
 from ..utility._csharp_compatibility import _towards_zero_division
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 
 
@@ -21,9 +21,9 @@ class _FixedMonthYearMonthDayCalculator(_RegularYearMonthDayCalculator, abc.ABC)
     after twelve months fall into a thirteenth month.
     """
 
-    __DAYS_IN_MONTH: typing.Final[int] = 30
+    __DAYS_IN_MONTH: Final[int] = 30
 
-    __AVERAGE_DAYS_PER_10_YEARS: typing.Final[int] = 3653  # Ideally 365.25 days per year...
+    __AVERAGE_DAYS_PER_10_YEARS: Final[int] = 3653  # Ideally 365.25 days per year...
 
     def __init__(self, min_year: int, max_year: int, days_at_start_of_year_1: int) -> None:
         super().__init__(min_year, max_year, 13, self.__AVERAGE_DAYS_PER_10_YEARS, days_at_start_of_year_1)

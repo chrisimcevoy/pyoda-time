@@ -3,7 +3,6 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-import typing
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -14,6 +13,7 @@ from typing import (
     Sequence,
     TypeVar,
     final,
+    overload,
     runtime_checkable,
 )
 
@@ -237,10 +237,10 @@ class _SteppedPatternBuilder(Generic[TResult]):
 
         self._add_parse_action(parse_value_action)
 
-    @typing.overload
+    @overload
     def _add_literal(self, *, expected_text: str, failure: Callable[[_ValueCursor], ParseResult[TResult]]) -> None: ...
 
-    @typing.overload
+    @overload
     def _add_literal(
         self, *, expected_char: str, failure_selector: Callable[[_ValueCursor, str], ParseResult[TResult]]
     ) -> None: ...

@@ -5,13 +5,13 @@
 from __future__ import annotations
 
 import functools
-import typing
+from typing import TYPE_CHECKING, final, overload
 
 from ._pyoda_constants import PyodaConstants
 from .utility._csharp_compatibility import _csharp_modulo, _int32_overflow, _sealed, _towards_zero_division
 from .utility._preconditions import _Preconditions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import LocalDateTime
     from ._local_date import LocalDate
 
@@ -47,19 +47,19 @@ class _LocalTimeMeta(type):
         return LocalTime._ctor(nanoseconds=PyodaConstants.NANOSECONDS_PER_DAY - 1)
 
 
-@typing.final
+@final
 @_sealed
 class LocalTime(metaclass=_LocalTimeMeta):
     """LocalTime is an immutable struct representing a time of day, with no reference to a particular calendar, time
     zone or date."""
 
-    @typing.overload
+    @overload
     def __init__(self, *, hour: int, minute: int) -> None: ...
 
-    @typing.overload
+    @overload
     def __init__(self, *, hour: int, minute: int, second: int) -> None: ...
 
-    @typing.overload
+    @overload
     def __init__(self, *, hour: int, minute: int, second: int, millisecond: int) -> None: ...
 
     def __init__(self, *, hour: int, minute: int, second: int = 0, millisecond: int = 0):

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import functools
-import typing
+from typing import TYPE_CHECKING, final, overload
 
 from ._period_units import PeriodUnits
 from ._pyoda_constants import PyodaConstants
@@ -13,7 +13,7 @@ from .fields._time_period_field import _TimePeriodField
 from .utility._csharp_compatibility import _csharp_modulo, _private, _sealed, _towards_zero_division
 from .utility._preconditions import _Preconditions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import Duration, LocalDate, LocalDateTime, LocalTime, PeriodBuilder, YearMonth
 
 __all__ = ["Period"]
@@ -28,7 +28,7 @@ class _PeriodMeta(type):
 
 
 @_sealed
-@typing.final
+@final
 @_private
 class Period(metaclass=_PeriodMeta):
     # TODO: public static IEqualityComparer<Period?> NormalizingEqualityComparer
@@ -281,21 +281,21 @@ class Period(metaclass=_PeriodMeta):
         return cls._internal_days_between(start, end)
 
     @classmethod
-    @typing.overload
+    @overload
     def between(
         cls, start: LocalDateTime, end: LocalDateTime, units: PeriodUnits = PeriodUnits.DATE_AND_TIME
     ) -> Period: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def between(cls, start: LocalDate, end: LocalDate, units: PeriodUnits = PeriodUnits.YEAR_MONTH_DAY) -> Period: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def between(cls, start: LocalTime, end: LocalTime, units: PeriodUnits = PeriodUnits.ALL_TIME_UNITS) -> Period: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def between(
         cls, start: YearMonth, end: YearMonth, units: PeriodUnits = PeriodUnits.YEARS | PeriodUnits.MONTHS
     ) -> Period: ...

@@ -4,44 +4,44 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Final, final, overload
 
 from ._calendar_ordinal import _CalendarOrdinal
 from .utility._csharp_compatibility import _int32_overflow, _sealed
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from ._year_month_day import _YearMonthDay
 
 
-@typing.final
+@final
 @_sealed
 class _YearMonthDayCalendar:
     """A compact representation of a year, month, day and calendar ordinal (integer ID) in a single 32-bit integer."""
 
     # These constants are internal so they can be used in YearMonthDay
-    _CALENDAR_BITS: typing.Final[int] = 6  # Up to 64 calendars.
-    _DAY_BITS: typing.Final[int] = 6  # Up to 64 days in a month.
-    _MONTH_BITS: typing.Final[int] = 5  # Up to 32 months per year.
-    _YEAR_BITS: typing.Final[int] = 15  # 32K range; only need -10K to +10K.
+    _CALENDAR_BITS: Final[int] = 6  # Up to 64 calendars.
+    _DAY_BITS: Final[int] = 6  # Up to 64 days in a month.
+    _MONTH_BITS: Final[int] = 5  # Up to 32 months per year.
+    _YEAR_BITS: Final[int] = 15  # 32K range; only need -10K to +10K.
 
     # Just handy constants to use for shifting and masking.
-    __CALENDAR_DAY_BITS: typing.Final[int] = _CALENDAR_BITS + _DAY_BITS
-    __CALENDAR_DAY_MONTH_BITS: typing.Final[int] = __CALENDAR_DAY_BITS + _MONTH_BITS
+    __CALENDAR_DAY_BITS: Final[int] = _CALENDAR_BITS + _DAY_BITS
+    __CALENDAR_DAY_MONTH_BITS: Final[int] = __CALENDAR_DAY_BITS + _MONTH_BITS
 
-    __CALENDAR_MASK: typing.Final[int] = (1 << _CALENDAR_BITS) - 1
-    __DAY_MASK: typing.Final[int] = ((1 << _DAY_BITS) - 1) << _CALENDAR_BITS
-    __MONTH_MASK: typing.Final[int] = ((1 << _MONTH_BITS) - 1) << __CALENDAR_DAY_BITS
-    __YEAR_MASK: typing.Final[int] = ((1 << _YEAR_BITS) - 1) << __CALENDAR_DAY_MONTH_BITS
+    __CALENDAR_MASK: Final[int] = (1 << _CALENDAR_BITS) - 1
+    __DAY_MASK: Final[int] = ((1 << _DAY_BITS) - 1) << _CALENDAR_BITS
+    __MONTH_MASK: Final[int] = ((1 << _MONTH_BITS) - 1) << __CALENDAR_DAY_BITS
+    __YEAR_MASK: Final[int] = ((1 << _YEAR_BITS) - 1) << __CALENDAR_DAY_MONTH_BITS
 
     def __init__(self) -> None:
         self.__value: int = 0
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, year_month_day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def _ctor(cls, *, year: int, month: int, day: int, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar: ...
 
     @classmethod

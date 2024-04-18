@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import datetime
 import decimal
-import typing
+from typing import Final, final, overload
 
 from ._pyoda_constants import PyodaConstants
 from .utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
@@ -59,7 +59,7 @@ class _DurationMeta(type):
         return Duration._ctor(days=1, nano_of_day=0)
 
 
-@typing.final
+@final
 @_sealed
 class Duration(metaclass=_DurationMeta):
     """Represents a fixed (and calendar-independent) length of time."""
@@ -68,14 +68,14 @@ class Duration(metaclass=_DurationMeta):
     #  `~MaxDays`. However, that range is not sufficiently large for timedelta conversion.
     #  The thinking here is to retain the flavour of the Noda Time implementation, while
     #  accommodating the range of the standard way of representing durations in Python.
-    _MAX_DAYS: typing.Final[int] = (1 << 30) - 1
-    _MIN_DAYS: typing.Final[int] = ~_MAX_DAYS
+    _MAX_DAYS: Final[int] = (1 << 30) - 1
+    _MIN_DAYS: Final[int] = ~_MAX_DAYS
 
-    _MIN_NANOSECONDS: typing.Final[int] = _MIN_DAYS * PyodaConstants.NANOSECONDS_PER_DAY
-    _MAX_NANOSECONDS: typing.Final[int] = ((_MAX_DAYS + 1) * PyodaConstants.NANOSECONDS_PER_DAY) - 1
+    _MIN_NANOSECONDS: Final[int] = _MIN_DAYS * PyodaConstants.NANOSECONDS_PER_DAY
+    _MAX_NANOSECONDS: Final[int] = ((_MAX_DAYS + 1) * PyodaConstants.NANOSECONDS_PER_DAY) - 1
 
-    _MIN_DECIMAL_NANOSECONDS: typing.Final[decimal.Decimal] = decimal.Decimal(_MIN_NANOSECONDS)
-    _MAX_DECIMAL_NANOSECONDS: typing.Final[decimal.Decimal] = decimal.Decimal(_MAX_NANOSECONDS)
+    _MIN_DECIMAL_NANOSECONDS: Final[decimal.Decimal] = decimal.Decimal(_MIN_NANOSECONDS)
+    _MAX_DECIMAL_NANOSECONDS: Final[decimal.Decimal] = decimal.Decimal(_MAX_NANOSECONDS)
 
     def __init__(self) -> None:
         self.__days = 0
@@ -92,7 +92,7 @@ class Duration(metaclass=_DurationMeta):
         return self
 
     @classmethod
-    @typing.overload
+    @overload
     def __ctor(
         cls,
         *,
@@ -112,7 +112,7 @@ class Duration(metaclass=_DurationMeta):
         ...
 
     @classmethod
-    @typing.overload
+    @overload
     def __ctor(cls, *, days: int, nano_of_day: int, no_validation: bool) -> Duration:
         """Trusted constructor with no validation.
 
@@ -457,10 +457,10 @@ class Duration(metaclass=_DurationMeta):
         """
         return self - other
 
-    @typing.overload
+    @overload
     def __truediv__(self, other: int | float) -> Duration: ...
 
-    @typing.overload
+    @overload
     def __truediv__(self, other: Duration) -> float: ...
 
     def __truediv__(self, other: int | float | Duration) -> Duration | float:
@@ -472,11 +472,11 @@ class Duration(metaclass=_DurationMeta):
         return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
-    @typing.overload
+    @overload
     def divide(left: Duration, right: int | float) -> Duration: ...
 
     @staticmethod
-    @typing.overload
+    @overload
     def divide(left: Duration, right: Duration) -> float: ...
 
     @staticmethod
@@ -496,11 +496,11 @@ class Duration(metaclass=_DurationMeta):
         return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
-    @typing.overload
+    @overload
     def multiply(left: Duration, right: int | float) -> Duration: ...
 
     @staticmethod
-    @typing.overload
+    @overload
     def multiply(left: int | float, right: Duration) -> Duration: ...
 
     @staticmethod

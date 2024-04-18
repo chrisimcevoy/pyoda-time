@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 import copy
-import typing
 from enum import IntEnum
 from threading import Lock
+from typing import TYPE_CHECKING, Any, Final, Sequence, cast, overload
 
 import icu
 
@@ -21,7 +21,7 @@ from pyoda_time._compatibility._icu_locale_data import _IcuLocaleData, _IcuLocal
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.utility._csharp_compatibility import _as_span, _private
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from pyoda_time._compatibility._culture_info import CultureInfo
     from pyoda_time._compatibility._number_format_info import NumberFormatInfo
 
@@ -175,11 +175,11 @@ class _CultureData(metaclass=_CultureDataMeta):
     (That is unlikely to change As of dotnet 5, the globalization mode defaults to ICU over NLS.)
     """
 
-    __ICU_ULOC_KEYWORD_AND_VALUES_CAPACITY: typing.Final[int] = 100  # max size of keyword or value
-    __ICU_ULOC_FULLNAME_CAPACITY: typing.Final[int] = 157  # max size of locale name
-    __WINDOWS_MAX_COLLATION_NAME_LENGTH: typing.Final[int] = 8  # max collation name length in the culture name
-    __LOCALE_NAME_MAX_LENGTH: typing.Final[int] = 85
-    __UNDEF: typing.Final[int] = -1
+    __ICU_ULOC_KEYWORD_AND_VALUES_CAPACITY: Final[int] = 100  # max size of keyword or value
+    __ICU_ULOC_FULLNAME_CAPACITY: Final[int] = 157  # max size of locale name
+    __WINDOWS_MAX_COLLATION_NAME_LENGTH: Final[int] = 8  # max collation name length in the culture name
+    __LOCALE_NAME_MAX_LENGTH: Final[int] = 85
+    __UNDEF: Final[int] = -1
 
     # Cache of cultures we've already looked up
     __s_cachedCultures: dict[str, _CultureData] | None = None
@@ -258,8 +258,8 @@ class _CultureData(metaclass=_CultureDataMeta):
     _sAM1159: str | None = None  # (user can override) AM designator
     _sPM2359: str | None = None  # (user can override) PM designator
     _sTimeSeparator: str | None = None
-    _saLongTimes: typing.Sequence[str] | None = None  # (user can override) time format
-    _saShortTimes: typing.Sequence[str] | None = None  # (user can override) short time format
+    _saLongTimes: Sequence[str] | None = None  # (user can override) time format
+    _saShortTimes: Sequence[str] | None = None  # (user can override) short time format
     _saDurationFormats: list[str] | None = None  # time duration format
 
     # Calendar specific data
@@ -416,7 +416,7 @@ class _CultureData(metaclass=_CultureDataMeta):
         assert self._sRealName is not None
         assert not _GlobalizationMode._invariant
 
-        ICU_COLLATION_KEYWORD: typing.Final[str] = "@collation="
+        ICU_COLLATION_KEYWORD: Final[str] = "@collation="
         real_name_buffer = self._sRealName
 
         # Basic validation
@@ -493,10 +493,10 @@ class _CultureData(metaclass=_CultureDataMeta):
         windows_name = "".join(buffer)
         return True, windows_name
 
-    @typing.overload
+    @overload
     def __icu_get_locale_info(self, type_: LocaleNumberData) -> int: ...
 
-    @typing.overload
+    @overload
     def __icu_get_locale_info(self, type_: LocaleStringData, ui_culture_name: str | None = None) -> str: ...
 
     def __icu_get_locale_info(
@@ -528,12 +528,12 @@ class _CultureData(metaclass=_CultureDataMeta):
             return _Interop._Globalization._get_locale_info_string(self._sWindowsName, type_) or ""
         raise NotImplementedError
 
-    def __get_time_formats_core(self, short_format: bool) -> typing.Sequence[str]:
+    def __get_time_formats_core(self, short_format: bool) -> Sequence[str]:
         time_format = self.__icu_get_time_format_string(short_format)
         return [time_format]
 
     @classmethod
-    def _get_cultures(cls, types: CultureTypes) -> typing.Sequence[CultureInfo]:
+    def _get_cultures(cls, types: CultureTypes) -> Sequence[CultureInfo]:
         # TODO: ArgumentOutOfRange validation?
 
         # TODO: WindowsOnlyCulture check
@@ -576,7 +576,7 @@ class _CultureData(metaclass=_CultureDataMeta):
         return self._sPM2359
 
     @property
-    def _long_times(self) -> typing.Sequence[str]:
+    def _long_times(self) -> Sequence[str]:
         if self._saLongTimes is None and not _GlobalizationMode._invariant:
             assert not _GlobalizationMode._invariant
             long_times = self.__get_time_formats_core(short_format=False)
@@ -590,7 +590,7 @@ class _CultureData(metaclass=_CultureDataMeta):
         return self._saLongTimes
 
     @property
-    def _short_times(self) -> typing.Sequence[str]:
+    def _short_times(self) -> Sequence[str]:
         if self._saShortTimes is None and not _GlobalizationMode._invariant:
             assert not _GlobalizationMode._invariant
             short_times = self.__get_time_formats_core(short_format=True)
@@ -604,41 +604,41 @@ class _CultureData(metaclass=_CultureDataMeta):
         assert self._saShortTimes is not None
         return self._saShortTimes
 
-    def __derive_short_times_from_long(self) -> typing.Sequence[str]:
+    def __derive_short_times_from_long(self) -> Sequence[str]:
         raise NotImplementedError
 
-    def _long_dates(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+    def _long_dates(self, calendar_id: _CalendarId) -> Sequence[str]:
         long_dates = self._get_calendar(calendar_id)._saLongDates
         assert long_dates
         return long_dates
 
-    def _day_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+    def _day_names(self, calendar_id: _CalendarId) -> Sequence[str]:
         # Cast required as mypy thinks this might be None.
         # Can be refactored out later.
-        return typing.cast(list[str], self._get_calendar(calendar_id)._saDayNames)
+        return cast(list[str], self._get_calendar(calendar_id)._saDayNames)
 
-    def _abbreviated_day_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
-        return typing.cast(list[str], self._get_calendar(calendar_id)._saAbbrevDayNames)
+    def _abbreviated_day_names(self, calendar_id: _CalendarId) -> Sequence[str]:
+        return cast(list[str], self._get_calendar(calendar_id)._saAbbrevDayNames)
 
-    def _month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+    def _month_names(self, calendar_id: _CalendarId) -> Sequence[str]:
         # Cast required as mypy thinks this might be None.
         # Can be refactored out later.
-        return typing.cast(list[str], self._get_calendar(calendar_id)._saMonthNames)
+        return cast(list[str], self._get_calendar(calendar_id)._saMonthNames)
 
-    def _genitive_month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
-        return typing.cast(list[str], self._get_calendar(calendar_id)._saMonthGenitiveNames)
+    def _genitive_month_names(self, calendar_id: _CalendarId) -> Sequence[str]:
+        return cast(list[str], self._get_calendar(calendar_id)._saMonthGenitiveNames)
 
-    def _abbreviated_month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
-        return typing.cast(list[str], self._get_calendar(calendar_id)._saAbbrevMonthNames)
+    def _abbreviated_month_names(self, calendar_id: _CalendarId) -> Sequence[str]:
+        return cast(list[str], self._get_calendar(calendar_id)._saAbbrevMonthNames)
 
-    def _abbreviated_genitive_month_names(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
-        return typing.cast(list[str], self._get_calendar(calendar_id)._saAbbrevMonthGenitiveNames)
+    def _abbreviated_genitive_month_names(self, calendar_id: _CalendarId) -> Sequence[str]:
+        return cast(list[str], self._get_calendar(calendar_id)._saAbbrevMonthGenitiveNames)
 
-    def _short_dates(self, calendar_id: _CalendarId) -> typing.Sequence[str]:
+    def _short_dates(self, calendar_id: _CalendarId) -> Sequence[str]:
         """(user can override default only) short date format."""
         # Cast required as mypy thinks this might be None.
         # Can be refactored out later.
-        return typing.cast(list[str], self._get_calendar(calendar_id)._saShortDates)
+        return cast(list[str], self._get_calendar(calendar_id)._saShortDates)
 
     def _get_calendar(self, calendar_id: _CalendarId) -> _CalendarData:
         if _GlobalizationMode._invariant:
@@ -920,10 +920,10 @@ class _CultureData(metaclass=_CultureDataMeta):
         number_format: icu.DecimalFormatSymbols = icu.DecimalFormatSymbols(icu.Locale(self._sWindowsName))
         nfi.positive_sign = number_format.getSymbol(icu.DecimalFormatSymbols.kPlusSignSymbol)
 
-    @typing.overload
+    @overload
     def __get_locale_info_core(self, type_: LocaleNumberData) -> int: ...
 
-    @typing.overload
+    @overload
     def __get_locale_info_core(self, type_: LocaleStringData, ui_culture_name: str | None = None) -> str: ...
 
     def __get_locale_info_core(
@@ -945,7 +945,7 @@ class _CultureData(metaclass=_CultureDataMeta):
         return self.__icu_get_locale_info(type_)
 
     @classmethod
-    def __icu_enum_cultures(cls, types: CultureTypes) -> typing.Sequence[CultureInfo]:
+    def __icu_enum_cultures(cls, types: CultureTypes) -> Sequence[CultureInfo]:
         assert not _GlobalizationMode._invariant
         assert not _GlobalizationMode._use_nls
 
@@ -1018,7 +1018,7 @@ class _CultureData(metaclass=_CultureDataMeta):
 
         return True, index_of_underscore, index_of_extensions
 
-    def __deepcopy__(self, memo: dict[int, typing.Any]) -> _CultureData:
+    def __deepcopy__(self, memo: dict[int, Any]) -> _CultureData:
         """Implements copy functionality.
 
         In C# this class has no public constructor, so in Python we mimic that by monkeypatching __init__ and __new__ to
@@ -1060,11 +1060,11 @@ class _CultureData(metaclass=_CultureDataMeta):
         return self._bNeutral
 
     @classmethod
-    @typing.overload
+    @overload
     def __normalize_culture_name(cls, name: str) -> tuple[str, bool]: ...
 
     @classmethod
-    @typing.overload
+    @overload
     def __normalize_culture_name(cls, name: str, extension: str) -> tuple[str, int]: ...
 
     @classmethod

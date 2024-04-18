@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, final
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .. import Instant, Offset
     from . import ZoneInterval
 
@@ -15,7 +15,7 @@ from ..utility._csharp_compatibility import _sealed
 
 
 @_sealed
-@typing.final
+@final
 class _FixedDateTimeZone(DateTimeZone):
     def __init__(self, offset: Offset, id_: str | None = None, name: str | None = None) -> None:
         from .. import Instant, Offset

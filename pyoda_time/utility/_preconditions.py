@@ -6,9 +6,9 @@ from __future__ import annotations
 
 __all__: list[str] = []
 
-import typing
+from typing import Any, TypeVar
 
-_T = typing.TypeVar("_T")
+_T = TypeVar("_T")
 
 
 class _Preconditions:
@@ -42,7 +42,7 @@ class _Preconditions:
         )
 
     @classmethod
-    def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: typing.Any) -> None:
+    def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: Any) -> None:
         if not expession:
             if message_args:
                 message = message.format(*message_args)

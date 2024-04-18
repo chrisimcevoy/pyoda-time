@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Final
 
 from ..utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
 from ..utility._preconditions import _Preconditions
 from ._year_start_cache_entry import _YearStartCacheEntry
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 
 
@@ -20,21 +20,21 @@ class _HebrewScripturalCalculator:
     month numbering.
     """
 
-    _MAX_YEAR: typing.Final[int] = 9999
-    _MIN_YEAR: typing.Final[int] = 1
+    _MAX_YEAR: Final[int] = 9999
+    _MIN_YEAR: Final[int] = 1
     # Use the bottom two bits of the day value to indicate Heshvan/Kislev.
     # Using the top bits causes issues for negative day values (only relevant for
     # invalid years, but still problematic in general).
-    __IS_HESHVAN_LONG_CACHE_BIT: typing.Final[int] = 1 << 0
-    __IS_KISLEV_SHORT_CACHE_BIT: typing.Final[int] = 1 << 1
+    __IS_HESHVAN_LONG_CACHE_BIT: Final[int] = 1 << 0
+    __IS_KISLEV_SHORT_CACHE_BIT: Final[int] = 1 << 1
     # Number of bits to shift the elapsed days in order to get the cache value.
-    __ELAPSED_DAYS_CACHE_SHIFT: typing.Final[int] = 2
+    __ELAPSED_DAYS_CACHE_SHIFT: Final[int] = 2
 
     # Cache of when each year starts (in  terms of absolute days). This is the heart of
     # the algorithm, so just caching this is highly effective.
     # Each entry additionally encodes the length of Heshvan and Kislev. We could encode
     # more information too, but those are the tricky bits.
-    __YEAR_CACHE: typing.Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
+    __YEAR_CACHE: Final[dict[int, _YearStartCacheEntry]] = _YearStartCacheEntry._create_cache()
 
     @staticmethod
     def _is_leap_year(year: int) -> bool:

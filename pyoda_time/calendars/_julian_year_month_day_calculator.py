@@ -4,16 +4,16 @@
 
 from __future__ import annotations
 
-import typing
+from typing import Final, final
 
 from ..utility._csharp_compatibility import _sealed
 from ._g_j_year_month_day_calculator import _GJYearMonthDayCalculator
 
 
 @_sealed
-@typing.final
+@final
 class _JulianYearMonthDayCalculator(_GJYearMonthDayCalculator):
-    __AVERAGE_DAYS_PER_10_JULIAN_YEARS: typing.Final[int] = 3653  # Ideally 365.25 per year
+    __AVERAGE_DAYS_PER_10_JULIAN_YEARS: Final[int] = 3653  # Ideally 365.25 per year
 
     def __init__(self) -> None:
         super().__init__(-9997, 9998, self.__AVERAGE_DAYS_PER_10_JULIAN_YEARS, -719164)

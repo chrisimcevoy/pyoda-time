@@ -4,9 +4,9 @@
 
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Final, final
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .. import (
         Duration,
         Instant,
@@ -25,7 +25,7 @@ __all__ = ["ZoneInterval"]
 
 
 @_sealed
-@typing.final
+@final
 class ZoneInterval:
     """Represents a range of time for which a particular Offset applies.
 
@@ -149,14 +149,14 @@ class ZoneInterval:
         _Preconditions._check_argument(
             start < end, "start", f"The start Instant must be less than the end Instant. start: {start}; end: {end}"
         )
-        self.__name: typing.Final[str] = name
-        self.__raw_start: typing.Final[Instant] = start
-        self.__raw_end: typing.Final[Instant] = end
-        self.__wall_offset: typing.Final[Offset] = wall_offset
-        self.__savings: typing.Final[Offset] = savings
+        self.__name: Final[str] = name
+        self.__raw_start: Final[Instant] = start
+        self.__raw_end: Final[Instant] = end
+        self.__wall_offset: Final[Offset] = wall_offset
+        self.__savings: Final[Offset] = savings
         # Work out the corresponding local instants, taking care to "go infinite" appropriately.
-        self.__local_start: typing.Final[_LocalInstant] = start._safe_plus(wall_offset)
-        self.__local_end: typing.Final[_LocalInstant] = end._safe_plus(wall_offset)
+        self.__local_start: Final[_LocalInstant] = start._safe_plus(wall_offset)
+        self.__local_end: Final[_LocalInstant] = end._safe_plus(wall_offset)
 
     def _with_start(self, new_start: Instant) -> ZoneInterval:
         """Returns a copy of this zone interval, but with the given start instant."""

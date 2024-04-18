@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 import abc
-import typing
+from typing import TYPE_CHECKING
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from ..utility._csharp_compatibility import _towards_zero_division
 from ._year_month_day_calculator import _YearMonthDayCalculator
