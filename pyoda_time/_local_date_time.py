@@ -269,55 +269,57 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         :param other: An object to compare with this object.
         :return: True if the current object is equal to the ``other`` parameter; otherwise, False.
         """
-        return self.__date == other.__date and self.__time == other.__time
+        return self == other
 
     # endregion
 
     # region Operators
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, LocalDateTime):
-            return self.equals(other)
-        return NotImplemented
+        if not isinstance(other, LocalDateTime):
+            return NotImplemented
+        return self.__date == other.__date and self.__time == other.__time
 
     def __ne__(self, other: object) -> bool:
-        if isinstance(other, LocalDateTime):
-            return not (self == other)
-        return NotImplemented
+        if not isinstance(other, LocalDateTime):
+            return NotImplemented
+        return not (self == other)
 
     def __lt__(self, other: LocalDateTime) -> bool:
-        if isinstance(other, LocalDateTime):
-            _Preconditions._check_argument(
-                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
-            )
-            return self.compare_to(other) < 0
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, LocalDateTime):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+        )
+        return self.compare_to(other) < 0
 
     def __le__(self, other: LocalDateTime) -> bool:
-        if isinstance(other, LocalDateTime):
-            _Preconditions._check_argument(
-                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
-            )
-            return self.compare_to(other) <= 0
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, LocalDateTime):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+        )
+        return self.compare_to(other) <= 0
 
     def __gt__(self, other: LocalDateTime) -> bool:
-        if isinstance(other, LocalDateTime):
-            _Preconditions._check_argument(
-                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
-            )
-            return self.compare_to(other) > 0
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, LocalDateTime):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+        )
+        return self.compare_to(other) > 0
 
     def __ge__(self, other: LocalDateTime) -> bool:
-        if isinstance(other, LocalDateTime):
-            _Preconditions._check_argument(
-                self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
-            )
-            return self.compare_to(other) >= 0
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, LocalDateTime):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.calendar == other.calendar, "other", "Only values in the same calendar can be compared"
+        )
+        return self.compare_to(other) >= 0
 
-    def compare_to(self, other: LocalDateTime) -> int:
+    def compare_to(self, other: LocalDateTime | None) -> int:
+        if other is None:
+            return 1
         # This will check calendars...
         date_comparison = self.__date.compare_to(other.__date)
         if date_comparison != 0:

@@ -513,35 +513,35 @@ class Duration(metaclass=_DurationMeta):
         raise TypeError("Duration.multiply() accepts one Duration argument and one int/float argument.")
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, Duration):
-            return self.__days == other.__days and self.__nano_of_day == other.__nano_of_day
-        return NotImplemented
+        if not isinstance(other, Duration):
+            return NotImplemented
+        return self.__days == other.__days and self.__nano_of_day == other.__nano_of_day
 
     def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Duration):
+            return NotImplemented
         return not (self == other)
 
-    def __lt__(self, other: Duration | None) -> bool:
-        if other is None:
-            return False
-        if isinstance(other, Duration):
-            return self.__days < other.__days or (
-                self.__days == other.__days and self.__nano_of_day < other.__nano_of_day
-            )
-        return NotImplemented  # type: ignore[unreachable]
+    def __lt__(self, other: Duration) -> bool:
+        if not isinstance(other, Duration):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__days < other.__days or (self.__days == other.__days and self.__nano_of_day < other.__nano_of_day)
 
-    def __le__(self, other: Duration | None) -> bool:
+    def __le__(self, other: Duration) -> bool:
+        if not isinstance(other, Duration):
+            return NotImplemented  # type: ignore[unreachable]
         return self < other or self == other
 
-    def __gt__(self, other: Duration | None) -> bool:
-        if other is None:
-            return True
-        if isinstance(other, Duration):
-            return (self.__days > other.__days) or (
-                (self.__days == other.__days) and (self.__nano_of_day > other.__nano_of_day)
-            )
-        return NotImplemented  # type: ignore[unreachable]
+    def __gt__(self, other: Duration) -> bool:
+        if not isinstance(other, Duration):
+            return NotImplemented  # type: ignore[unreachable]
+        return (self.__days > other.__days) or (
+            (self.__days == other.__days) and (self.__nano_of_day > other.__nano_of_day)
+        )
 
-    def __ge__(self, other: Duration | None) -> bool:
+    def __ge__(self, other: Duration) -> bool:
+        if not isinstance(other, Duration):
+            return NotImplemented  # type: ignore[unreachable]
         return self > other or self == other
 
     def __neg__(self) -> Duration:
@@ -589,7 +589,7 @@ class Duration(metaclass=_DurationMeta):
             if not (day_comparison := self.__days - other.__days) == 0:
                 return day_comparison
             return self.__nano_of_day - other.__nano_of_day
-        raise TypeError
+        raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
 
     # endregion IComparable<Duration> Members
 

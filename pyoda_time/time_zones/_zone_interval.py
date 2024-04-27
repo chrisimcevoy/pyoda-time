@@ -203,16 +203,19 @@ class ZoneInterval:
         return self == other
 
     def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ZoneInterval):
+            return NotImplemented
         return (
-            isinstance(other, ZoneInterval)
-            and self.name == other.name
+            self.name == other.name
             and self._raw_start == other._raw_start
             and self._raw_end == other._raw_end
             and self.wall_offset == other.wall_offset
             and self.savings == other.savings
-        ) or NotImplemented
+        )
 
     def __ne__(self, other: object) -> bool:
+        if not isinstance(other, ZoneInterval):
+            return NotImplemented
         return not self == other
 
     # endregion

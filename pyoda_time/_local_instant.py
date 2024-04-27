@@ -104,19 +104,34 @@ class _LocalInstant:
         return Instant._from_untrusted_duration(self.__duration._minus_small_nanoseconds(offset.nanoseconds))
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, _LocalInstant):
-            return self.__duration == other.__duration
-        return NotImplemented
+        if not isinstance(other, _LocalInstant):
+            return NotImplemented
+        return self.__duration == other.__duration
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, _LocalInstant):
+            return NotImplemented
+        return not (self.__duration == other.__duration)
 
     def __lt__(self, other: _LocalInstant) -> bool:
-        if isinstance(other, _LocalInstant):
-            return self.__duration < other.__duration
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, _LocalInstant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration < other.__duration
 
     def __le__(self, other: _LocalInstant) -> bool:
-        if isinstance(other, _LocalInstant):
-            return self.__duration <= other.__duration
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, _LocalInstant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration <= other.__duration
+
+    def __gt__(self, other: _LocalInstant) -> bool:
+        if not isinstance(other, _LocalInstant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration > other.__duration
+
+    def __ge__(self, other: _LocalInstant) -> bool:
+        if not isinstance(other, _LocalInstant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration >= other.__duration
 
     # endregion
 

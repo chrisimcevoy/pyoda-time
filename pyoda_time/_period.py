@@ -784,22 +784,24 @@ class Period(metaclass=_PeriodMeta):
     def __eq__(self, other: object) -> bool:
         if self is other:
             return True
-        if isinstance(other, Period):
-            return (
-                self.years == other.years
-                and self.months == other.months
-                and self.weeks == other.weeks
-                and self.days == other.days
-                and self.hours == other.hours
-                and self.minutes == other.minutes
-                and self.seconds == other.seconds
-                and self.milliseconds == other.milliseconds
-                and self.ticks == other.ticks
-                and self.nanoseconds == other.nanoseconds
-            )
-        return NotImplemented
+        if not isinstance(other, Period):
+            return NotImplemented
+        return (
+            self.years == other.years
+            and self.months == other.months
+            and self.weeks == other.weeks
+            and self.days == other.days
+            and self.hours == other.hours
+            and self.minutes == other.minutes
+            and self.seconds == other.seconds
+            and self.milliseconds == other.milliseconds
+            and self.ticks == other.ticks
+            and self.nanoseconds == other.nanoseconds
+        )
 
     def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Period):
+            return NotImplemented
         return not (self == other)
 
     # endregion

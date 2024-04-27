@@ -138,8 +138,9 @@ class TestOffsetOperators:
         value = Offset.from_seconds(12345)
         equal_value = Offset.from_seconds(12345)
         greater_value = Offset.from_seconds(54321)
-        helpers.test_equals(value, equal_value, greater_value)
-        helpers.test_compare_to(value, equal_value, greater_value)
+        helpers.test_equals_struct(value, equal_value, greater_value)
+        helpers.test_compare_to_struct(value, equal_value, greater_value)
+        helpers.test_non_generic_compare_to(value, equal_value, greater_value)
         helpers.test_operator_comparison_equality(value, equal_value, greater_value)
 
     def test_unary_plus_operator(self) -> None:

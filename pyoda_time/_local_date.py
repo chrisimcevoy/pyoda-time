@@ -232,54 +232,58 @@ class LocalDate(metaclass=_LocalDateMeta):
         return NotImplemented  # type: ignore[unreachable]
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, LocalDate):
-            return self.__year_month_day_calendar == other.__year_month_day_calendar
-        return NotImplemented
+        if not isinstance(other, LocalDate):
+            return NotImplemented
+        return self.__year_month_day_calendar == other.__year_month_day_calendar
 
     def __ne__(self, other: object) -> bool:
-        if isinstance(other, LocalDate):
-            return not self == other
-        return NotImplemented
+        if not isinstance(other, LocalDate):
+            return NotImplemented
+        return not self == other
 
     def __lt__(self, other: LocalDate) -> bool:
-        if isinstance(other, LocalDate):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) < 0
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, LocalDate):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) < 0
 
     def __le__(self, other: LocalDate) -> bool:
-        if isinstance(other, LocalDate):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) <= 0
+        if not isinstance(other, LocalDate):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) <= 0
 
     def __gt__(self, other: LocalDate) -> bool:
-        if isinstance(other, LocalDate):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) > 0
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, LocalDate):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) > 0
 
     def __ge__(self, other: LocalDate) -> bool:
-        if isinstance(other, LocalDate):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) >= 0
+        if not isinstance(other, LocalDate):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) >= 0
 
-    def compare_to(self, other: LocalDate) -> int:
+    def compare_to(self, other: LocalDate | None) -> int:
+        if other is None:
+            return 1
         _Preconditions._check_argument(
             self.__calendar_ordinal == other.__calendar_ordinal,
             "other",

@@ -116,10 +116,10 @@ class TestDuration:
         different1 = Duration._ctor(days=1, nano_of_day=200)
         different2 = Duration._ctor(days=2, nano_of_day=PyodaConstants.TICKS_PER_HOUR)
 
-        helpers.test_equals(equal1, equal2, different1)
+        helpers.test_equals_struct(equal1, equal2, different1)
         helpers.test_operator_equality(equal1, equal2, different1)
 
-        helpers.test_equals(equal1, equal2, different2)
+        helpers.test_equals_struct(equal1, equal2, different2)
         helpers.test_operator_equality(equal1, equal2, different2)
 
     def test_comparison(self) -> None:
@@ -128,7 +128,8 @@ class TestDuration:
         greater1 = Duration._ctor(days=1, nano_of_day=PyodaConstants.NANOSECONDS_PER_HOUR + 1)
         greater2 = Duration._ctor(days=2, nano_of_day=0)
 
-        helpers.test_compare_to(equal1, equal2, greater1)
+        helpers.test_compare_to_struct(equal1, equal2, greater1)
+        helpers.test_non_generic_compare_to(equal1, equal2, greater1)
         helpers.test_operator_comparison_equality(equal1, equal2, greater1, greater2)
 
     @pytest.mark.parametrize(

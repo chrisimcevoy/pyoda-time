@@ -281,26 +281,38 @@ class LocalTime(metaclass=_LocalTimeMeta):
         return self.__nanoseconds
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, LocalTime):
-            return self.__nanoseconds == other.__nanoseconds
-        return NotImplemented
+        if not isinstance(other, LocalTime):
+            return NotImplemented
+        return self.__nanoseconds == other.__nanoseconds
 
     def __ne__(self, other: object) -> bool:
+        if not isinstance(other, LocalTime):
+            return NotImplemented
         return not (self == other)
 
     def __lt__(self, other: LocalTime) -> bool:
+        if not isinstance(other, LocalTime):
+            return NotImplemented  # type: ignore[unreachable]
         return self.__nanoseconds < other.__nanoseconds
 
     def __le__(self, other: LocalTime) -> bool:
+        if not isinstance(other, LocalTime):
+            return NotImplemented  # type: ignore[unreachable]
         return self.__nanoseconds <= other.__nanoseconds
 
     def __gt__(self, other: LocalTime) -> bool:
+        if not isinstance(other, LocalTime):
+            return NotImplemented  # type: ignore[unreachable]
         return self.__nanoseconds > other.__nanoseconds
 
     def __ge__(self, other: LocalTime) -> bool:
+        if not isinstance(other, LocalTime):
+            return NotImplemented  # type: ignore[unreachable]
         return self.__nanoseconds >= other.__nanoseconds
 
-    def compare_to(self, other: LocalTime) -> int:
+    def compare_to(self, other: LocalTime | None) -> int:
+        if other is None:
+            return 1
         return self.__nanoseconds - other.__nanoseconds
 
     def on(self, date: LocalDate) -> LocalDateTime:

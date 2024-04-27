@@ -211,7 +211,9 @@ class Offset(metaclass=_OffsetMeta):
         :param other: The object to compare this one to for equality.
         :return: ``True`` if values are equal to each other, otherwise ``False``.
         """
-        return isinstance(other, Offset) and self.equals(other)
+        if not isinstance(other, Offset):
+            return NotImplemented
+        return self.seconds == other.seconds
 
     def __ne__(self, other: object) -> bool:
         """Implements the operator != (inequality). See the type documentation for a description of equality semantics.
@@ -219,16 +221,20 @@ class Offset(metaclass=_OffsetMeta):
         :param other: The object to compare with this one.
         :return: ``True`` if values are not equal to each other, otherwise ``False``.
         """
-        return not (self == other)
+        if not isinstance(other, Offset):
+            return NotImplemented
+        return not self == other
 
-    def __lt__(self, other: Offset | None) -> bool:
+    def __lt__(self, other: Offset) -> bool:
         """Implements the operator ``<`` (less than). See the type documentation for a description of ordering
         semantics.
 
         :param other: The offset to compare with this one.
         :return: ``True`` if this offset is less than ``other``, otherwise ``False``.
         """
-        return isinstance(other, Offset) and self.compare_to(other) < 0
+        if not isinstance(other, Offset):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.compare_to(other) < 0
 
     def __le__(self, other: Offset) -> bool:
         """Implements the operator ``<=`` (less than or equal). See the type documentation for a description of ordering
@@ -237,16 +243,20 @@ class Offset(metaclass=_OffsetMeta):
         :param other: The offset to compare with this one.
         :return: ``True`` if this offset is less than or equal to ``other``, otherwise ``False``.
         """
-        return isinstance(other, Offset) and self.compare_to(other) <= 0
+        if not isinstance(other, Offset):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.compare_to(other) <= 0
 
-    def __gt__(self, other: Offset | None) -> bool:
+    def __gt__(self, other: Offset) -> bool:
         """Implements the operator ``>`` (greater than). See the type documentation for a description of ordering
         semantics.
 
         :param other: The offset to compare with this one.
         :return: ``True`` if this offset is greater than ``other``, otherwise ``False``.
         """
-        return other is None or (isinstance(other, Offset) and self.compare_to(other) > 0)
+        if not isinstance(other, Offset):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.compare_to(other) > 0
 
     def __ge__(self, other: Offset) -> bool:
         """Implements the operator ``>=`` (greater than or equal). See the type documentation for a description of
@@ -255,13 +265,15 @@ class Offset(metaclass=_OffsetMeta):
         :param other: The offset to compare with this one.
         :return: ``True`` if this offset is greater than or equal to ``other``, otherwise ``False``.
         """
-        return other is None or (isinstance(other, Offset) and self.compare_to(other) >= 0)
+        if not isinstance(other, Offset):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.compare_to(other) >= 0
 
     # endregion
 
     # region IComparable<Offset> Members
 
-    def compare_to(self, other: Offset) -> int:
+    def compare_to(self, other: Offset | None) -> int:
         """Compares the current object with another object of the same type. See the type documentation for a
         description of ordering semantics.
 
@@ -279,8 +291,10 @@ class Offset(metaclass=_OffsetMeta):
         > 0    This object is greater than ``other``.
         =====  ======
         """
+        if other is None:
+            return 1
         if not isinstance(other, Offset):
-            raise TypeError(f"Offset can only be compared_to another Offset, not {other.__class__.__name__}")
+            raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
         return self.seconds - other.seconds
 
     # endregion
@@ -294,7 +308,7 @@ class Offset(metaclass=_OffsetMeta):
         :param other: An object to compare with this object.
         :return: true if the current object is equal to the ``other`` parameter; otherwise, false.
         """
-        return self.seconds == other.seconds
+        return self == other
 
     # endregion
 

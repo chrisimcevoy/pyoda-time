@@ -113,9 +113,12 @@ class _YearMonthDayCalendar:
         return _YearMonthDay._ctor(raw_value=self.__value >> self._CALENDAR_BITS)
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, _YearMonthDayCalendar):
-            return self.__value == other.__value
-        return NotImplemented
+        if not isinstance(other, _YearMonthDayCalendar):
+            return NotImplemented
+        return self.__value == other.__value
+
+    def equals(self, other: _YearMonthDayCalendar) -> bool:
+        return self == other
 
     def __hash__(self) -> int:
         return self.__value

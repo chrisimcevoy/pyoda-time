@@ -133,24 +133,60 @@ class Instant(metaclass=_InstantMeta):
         return self
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, Instant):
-            return self.__duration == other.__duration
-        return NotImplemented
+        if not isinstance(other, Instant):
+            return NotImplemented
+        return self.__duration == other.__duration
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Instant):
+            return NotImplemented
+        return not (self.__duration == other.__duration)
 
     def __lt__(self, other: Instant) -> bool:
-        if isinstance(other, Instant):
-            return self.__duration < other.__duration
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, Instant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration < other.__duration
 
     def __le__(self, other: Instant) -> bool:
-        if isinstance(other, Instant):
-            return self < other or self == other
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, Instant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration <= other.__duration
+
+    def __gt__(self, other: Instant) -> bool:
+        if not isinstance(other, Instant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration > other.__duration
+
+    def __ge__(self, other: Instant) -> bool:
+        if not isinstance(other, Instant):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__duration >= other.__duration
 
     def __add__(self, other: Duration) -> Instant:
         if isinstance(other, Duration):
             return self._from_untrusted_duration(self.__duration + other)
         return NotImplemented  # type: ignore[unreachable]
+
+    @overload
+    def minus(self, duration: Duration, /) -> Instant: ...
+
+    @overload
+    def minus(self, instant: Instant, /) -> Duration: ...
+
+    def minus(self, other: Instant | Duration, /) -> Instant | Duration:
+        return self - other
+
+    @staticmethod
+    @overload
+    def subtract(left: Instant, right: Instant, /) -> Duration: ...
+
+    @staticmethod
+    @overload
+    def subtract(left: Instant, right: Duration, /) -> Instant: ...
+
+    @staticmethod
+    def subtract(left: Instant, right: Instant | Duration, /) -> Instant | Duration:
+        return left - right
 
     @overload
     def __sub__(self, other: Instant) -> Duration: ...
@@ -162,8 +198,16 @@ class Instant(metaclass=_InstantMeta):
         if isinstance(other, Instant):
             return self.__duration - other.__duration
         if isinstance(other, Duration):
-            return self._from_trusted_duration(self.__duration - other)
+            return self._from_untrusted_duration(self.__duration - other)
         return NotImplemented  # type: ignore[unreachable]
+
+    @property
+    def _time_since_epoch(self) -> Duration:
+        """Get the elapsed time since the Unix epoch, to nanosecond resolution.
+
+        :return: The elapsed time since the Unix epoch.
+        """
+        return self.__duration
 
     @property
     def _days_since_epoch(self) -> int:
@@ -257,6 +301,13 @@ class Instant(metaclass=_InstantMeta):
         """Returns the earlier instant of the given two."""
         return min(x, y)
 
+    # region IEquatable<Instant> Members
+
+    def equals(self, other: Instant) -> bool:
+        return self == other
+
+    # endregion
+
     def to_julian_date(self) -> float:
         """Returns the Julian Date of this instance - the number of days since ``PyodaConstants.JULIAN_EPOCH``
         (noon on January 1st, 4713 BCE in the Julian calendar).
@@ -341,6 +392,16 @@ class Instant(metaclass=_InstantMeta):
 
         return _LocalInstant._ctor(nanoseconds=self.__duration._plus_small_nanoseconds(offset.nanoseconds))
 
+    @staticmethod
+    def add(left: Instant, right: Duration) -> Instant:
+        """Adds a duration to an instant. Friendly alternative to ``+``.
+
+        :param left: The left hand side of the operator.
+        :param right: >The right hand side of the operator.
+        :return: A new ``Instant`` representing the sum of the given values.
+        """
+        return left + right
+
     def plus(self, other: Duration) -> Instant:
         """Returns the result of adding a duration to this instant, for a fluent alternative to the + operator."""
         return self + other
@@ -374,6 +435,33 @@ class Instant(metaclass=_InstantMeta):
     @property
     def _nanosecond_of_day(self) -> int:
         return self.__duration._nanosecond_of_floor_day
+
+    # region IComparable<Instant> and IComparable Members
+
+    def compare_to(self, other: Instant | None) -> int:
+        """Compares the current object with another object of the same type. See the type documentation for a
+        description of ordering semantics.
+
+        :param other: An object to compare with this object.
+        :return: An integer that indicates the relative order of the objects being compared.
+
+        The return value has the following meanings:
+
+        =====  ======
+        Value  Meaning
+        =====  ======
+        < 0    This object is less than the ``other`` parameter.
+        0      This object is equal to ``other``.
+        > 0    This object is greater than ``other``.
+        =====  ======
+        """
+        if other is None:
+            return 1
+        if not isinstance(other, Instant):
+            raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
+        return self.__duration.compare_to(other.__duration)
+
+    # endregion
 
     def in_utc(self) -> ZonedDateTime:
         from . import DateTimeZone, LocalDate, OffsetDateTime, OffsetTime, ZonedDateTime
