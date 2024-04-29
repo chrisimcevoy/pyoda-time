@@ -7,6 +7,8 @@ import pytest
 from pyoda_time._calendar_ordinal import _CalendarOrdinal
 from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
 
+from . import helpers
+
 
 class TestYearMonthDayCalendar:
     def test_all_years(self) -> None:
@@ -46,7 +48,47 @@ class TestYearMonthDayCalendar:
             assert ymdc._day == 64
             assert ymdc._calendar_ordinal == calendar
 
-    # TODO: def test_equality():
+    def test_equality(self) -> None:
+        original = _YearMonthDayCalendar._ctor(year=1000, month=12, day=20, calendar_ordinal=_CalendarOrdinal.COPTIC)
+        helpers.test_equals_struct(
+            original,
+            _YearMonthDayCalendar._ctor(year=1000, month=12, day=20, calendar_ordinal=_CalendarOrdinal.COPTIC),
+            _YearMonthDayCalendar._ctor(
+                year=original._year + 1,
+                month=original._month,
+                day=original._day,
+                calendar_ordinal=original._calendar_ordinal,
+            ),
+            _YearMonthDayCalendar._ctor(
+                year=original._year,
+                month=original._month + 1,
+                day=original._day,
+                calendar_ordinal=original._calendar_ordinal,
+            ),
+            _YearMonthDayCalendar._ctor(
+                year=original._year,
+                month=original._month,
+                day=original._day + 1,
+                calendar_ordinal=original._calendar_ordinal,
+            ),
+            _YearMonthDayCalendar._ctor(
+                year=original._year,
+                month=original._month,
+                day=original._day,
+                calendar_ordinal=_CalendarOrdinal.GREGORIAN,
+            ),
+        )
+        # Just test the first one again with operators.
+        helpers.test_operator_equality(
+            original,
+            original,
+            _YearMonthDayCalendar._ctor(
+                year=original._year + 1,
+                month=original._month,
+                day=original._day,
+                calendar_ordinal=original._calendar_ordinal,
+            ),
+        )
 
     @pytest.mark.parametrize(
         "text,year,month,day,calendar",

@@ -49,9 +49,9 @@ class DateInterval:
     def __eq__(self, other: object) -> bool:
         if self is other:
             return True
-        if isinstance(other, DateInterval):
-            return self.start == other.start and self.end == other.end
-        return NotImplemented
+        if not isinstance(other, DateInterval):
+            return NotImplemented
+        return self.start == other.start and self.end == other.end
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, DateInterval):

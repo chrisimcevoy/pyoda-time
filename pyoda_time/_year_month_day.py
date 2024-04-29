@@ -70,42 +70,44 @@ class _YearMonthDay:
     def _with_calendar_ordinal(self, calendar_ordinal: _CalendarOrdinal) -> _YearMonthDayCalendar:
         return _YearMonthDayCalendar._ctor(year_month_day=self.__value, calendar_ordinal=calendar_ordinal)
 
-    def compare_to(self, other: _YearMonthDay) -> int:
+    def compare_to(self, other: _YearMonthDay | None) -> int:
+        if other is None:
+            return 1
         # In Noda Time, this method calls `int.CompareTo(otherInt)`
         return self.__value - other.__value
 
     def equals(self, other: _YearMonthDay) -> bool:
-        return isinstance(other, _YearMonthDay) and self.__value == other.__value
+        return self == other
 
     def __hash__(self) -> int:
         return self.__value
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, _YearMonthDay):
-            return self.__value == other.__value
-        return NotImplemented
+        if not isinstance(other, _YearMonthDay):
+            return NotImplemented
+        return self.__value == other.__value
 
     def __ne__(self, other: object) -> bool:
-        if isinstance(other, _YearMonthDay):
-            return not (self == other)
-        return NotImplemented
+        if not isinstance(other, _YearMonthDay):
+            return NotImplemented
+        return not (self == other)
 
     def __lt__(self, other: _YearMonthDay) -> bool:
-        if isinstance(other, _YearMonthDay):
-            return self.__value < other.__value
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, _YearMonthDay):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__value < other.__value
 
     def __le__(self, other: _YearMonthDay) -> bool:
-        if isinstance(other, _YearMonthDay):
-            return self.__value <= other.__value
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, _YearMonthDay):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__value <= other.__value
 
     def __gt__(self, other: _YearMonthDay) -> bool:
-        if isinstance(other, _YearMonthDay):
-            return self.__value > other.__value
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, _YearMonthDay):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__value > other.__value
 
     def __ge__(self, other: _YearMonthDay) -> bool:
-        if isinstance(other, _YearMonthDay):
-            return self.__value >= other.__value
-        return NotImplemented  # type: ignore[unreachable]
+        if not isinstance(other, _YearMonthDay):
+            return NotImplemented  # type: ignore[unreachable]
+        return self.__value >= other.__value

@@ -153,7 +153,7 @@ class YearMonth:
             calendar=self.calendar,
         )
 
-    def compare_to(self, other: YearMonth) -> int:
+    def compare_to(self, other: YearMonth | None) -> int:
         """Indicates whether this year/month is earlier, later or the same as another one. See the type documentation
         for a description of ordering semantics.
 
@@ -162,6 +162,8 @@ class YearMonth:
             zero if this year/month is the same as ``other``;
             a value greater than zero if this date is later than ``other``.
         """
+        if other is None:
+            return 1
         _Preconditions._check_argument(isinstance(other, YearMonth), "other", "Object must be of type YearMonth.")
         _Preconditions._check_argument(
             self.__calendar_ordinal == other.__calendar_ordinal,
@@ -178,53 +180,45 @@ class YearMonth:
         """
         return self.calendar._compare(self.__year_month_day, other.__year_month_day)
 
-    def __lt__(self, other: YearMonth | None) -> bool:
-        if other is None:
-            return False
-        if isinstance(other, YearMonth):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) < 0
-        return NotImplemented  # type: ignore[unreachable]
+    def __lt__(self, other: YearMonth) -> bool:
+        if not isinstance(other, YearMonth):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) < 0
 
-    def __le__(self, other: YearMonth | None) -> bool:
-        if other is None:
-            return False
-        if isinstance(other, YearMonth):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) <= 0
-        return NotImplemented  # type: ignore[unreachable]
+    def __le__(self, other: YearMonth) -> bool:
+        if not isinstance(other, YearMonth):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) <= 0
 
-    def __gt__(self, other: YearMonth | None) -> bool:
-        if other is None:
-            return True
-        if isinstance(other, YearMonth):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) > 0
-        return NotImplemented  # type: ignore[unreachable]
+    def __gt__(self, other: YearMonth) -> bool:
+        if not isinstance(other, YearMonth):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) > 0
 
-    def __ge__(self, other: YearMonth | None) -> bool:
-        if other is None:
-            return True
-        if isinstance(other, YearMonth):
-            _Preconditions._check_argument(
-                self.__calendar_ordinal == other.__calendar_ordinal,
-                "other",
-                "Only values in the same calendar can be compared",
-            )
-            return self.__trusted_compare_to(other) >= 0
-        return NotImplemented  # type: ignore[unreachable]
+    def __ge__(self, other: YearMonth) -> bool:
+        if not isinstance(other, YearMonth):
+            return NotImplemented  # type: ignore[unreachable]
+        _Preconditions._check_argument(
+            self.__calendar_ordinal == other.__calendar_ordinal,
+            "other",
+            "Only values in the same calendar can be compared",
+        )
+        return self.__trusted_compare_to(other) >= 0
 
     def __hash__(self) -> int:
         return hash(self.__start_of_month)
@@ -234,12 +228,14 @@ class YearMonth:
         return self == other
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, YearMonth):
-            return self.__start_of_month == other.__start_of_month
-        return NotImplemented
+        if not isinstance(other, YearMonth):
+            return NotImplemented
+        return self.__start_of_month == other.__start_of_month
 
     def __ne__(self, other: object) -> bool:
         """Compares two ``YearMonth`` values for equality."""
+        if not isinstance(other, YearMonth):
+            return NotImplemented
         return not self == other
 
     # TODO: ToString()

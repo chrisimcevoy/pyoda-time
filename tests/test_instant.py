@@ -19,6 +19,10 @@ from pyoda_time._local_instant import _LocalInstant
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants, _towards_zero_division
 from tests import helpers
 
+ONE = Instant._from_untrusted_duration(Duration.from_nanoseconds(1))
+THREE_MILLION = Instant._from_untrusted_duration(Duration.from_nanoseconds(3000000))
+NEGATIVE_FIFTY_MILLION = Instant._from_untrusted_duration(Duration.from_nanoseconds(-50000000))
+
 
 class TestInstant:
     @pytest.mark.parametrize(
@@ -368,3 +372,97 @@ class TestInstantFormat:
     @staticmethod
     def __test_to_string_base(value: Instant, gvalue: str) -> None:
         assert str(value) == gvalue
+
+
+class TestInstantOperators:
+    def test_equality(self) -> None:
+        equal = Instant._ctor(days=1, nano_of_day=100)
+        different_1 = Instant._ctor(days=1, nano_of_day=200)
+        different_2 = Instant._ctor(days=2, nano_of_day=100)
+
+        helpers.test_equals_struct(equal, equal, different_1)
+        helpers.test_operator_equality(equal, equal, different_1)
+
+        helpers.test_equals_struct(equal, equal, different_2)
+        helpers.test_operator_equality(equal, equal, different_2)
+
+    def test_comparison(self) -> None:
+        equal = Instant._ctor(days=1, nano_of_day=100)
+        greater_1 = Instant._ctor(days=1, nano_of_day=200)
+        greater_2 = Instant._ctor(days=2, nano_of_day=100)
+
+        helpers.test_compare_to_struct(equal, equal, greater_1)
+        helpers.test_non_generic_compare_to(equal, equal, greater_1)
+        helpers.test_operator_comparison_equality(equal, equal, greater_1, greater_2)
+
+    # region operator +
+
+    def test_plus_ticks(self) -> None:
+        instant = Instant.from_unix_time_ticks(5)
+        assert instant.plus_ticks(3) == Instant.from_unix_time_ticks(8)
+
+    def test_plus_nanoseconds(self) -> None:
+        instant = Instant.from_unix_time_ticks(5)
+        assert instant.plus_nanoseconds(300) == Instant.from_unix_time_ticks(8)
+
+    def test_operator_plus_duration_non_zero(self) -> None:
+        assert (THREE_MILLION + Duration.epsilon)._time_since_epoch.to_nanoseconds() == 3000001
+        assert (ONE + -Duration.epsilon)._time_since_epoch.to_nanoseconds() == 0
+        assert (NEGATIVE_FIFTY_MILLION + Duration.epsilon)._time_since_epoch.to_nanoseconds() == -49999999
+
+    def test_operator_plus_equivalents(self) -> None:
+        """Smoke tests for methods which simply delegate to the + operator."""
+        assert THREE_MILLION.plus(Duration.epsilon) == THREE_MILLION + Duration.epsilon
+        assert Instant.add(THREE_MILLION, Duration.epsilon) == THREE_MILLION + Duration.epsilon
+
+    def test_operator_plus_offset_zero_is_neutral_element(self) -> None:
+        """The plus(Offset) method *would* be an operator, but can't be as LocalInstant is internal."""
+        assert PyodaConstants.UNIX_EPOCH._plus(Offset.zero) == _LocalInstant._ctor(days=0, nano_of_day=0)
+        assert ONE._plus(Offset.zero) == _LocalInstant._ctor(days=0, nano_of_day=1)
+        assert PyodaConstants.UNIX_EPOCH._plus(Offset.from_hours(1)) == _LocalInstant._ctor(
+            days=0, nano_of_day=PyodaConstants.NANOSECONDS_PER_HOUR
+        )
+
+    def test_operator_plus_out_of_range(self) -> None:
+        with pytest.raises(OverflowError):
+            hash(Instant.max_value + Duration.epsilon)
+
+    # endregion
+
+    # region operator - (duration)
+
+    def test_operator_minus_duration(self) -> None:
+        assert THREE_MILLION - Duration.zero == THREE_MILLION
+        assert (THREE_MILLION - Duration.epsilon)._time_since_epoch.to_nanoseconds() == 2999999
+        assert (ONE - Duration.from_nanoseconds(-1))._time_since_epoch.to_nanoseconds() == 2
+        assert (NEGATIVE_FIFTY_MILLION - Duration.epsilon)._time_since_epoch.to_nanoseconds() == -50000001
+
+    def test_operator_minus_duration_equivalents(self) -> None:
+        """Smoke tests for methods which simply delegate to the - operator."""
+        assert THREE_MILLION - Duration.epsilon == THREE_MILLION.minus(Duration.epsilon)
+        assert Instant.subtract(THREE_MILLION, Duration.epsilon) == THREE_MILLION.minus(Duration.epsilon)
+
+    def test_operator_minus_out_of_range(self) -> None:
+        with pytest.raises(OverflowError):
+            hash(Instant.min_value - Duration.epsilon)
+
+    # endregion
+
+    # region operator - (instant)
+
+    def test_operator_minus_instant_non_zero(self) -> None:
+        assert (THREE_MILLION - ONE).to_nanoseconds() == 2999999
+        assert (ONE - Instant._from_untrusted_duration(Duration.from_nanoseconds(-1))).to_nanoseconds() == 2
+        assert (NEGATIVE_FIFTY_MILLION - ONE).to_nanoseconds() == -50000001
+
+    def test_operator_minus_instant_unix_epoch_is_neutral_element(self) -> None:
+        assert (PyodaConstants.UNIX_EPOCH - PyodaConstants.UNIX_EPOCH).to_nanoseconds() == 0
+        assert (ONE - PyodaConstants.UNIX_EPOCH).to_nanoseconds() == 1
+        assert (PyodaConstants.UNIX_EPOCH - ONE).to_nanoseconds() == -1
+
+    def test_operator_minus_instant_equivalents(self) -> None:
+        """Smoke tests for methods which simply delegate to the - operator."""
+        assert THREE_MILLION.minus(ONE) == THREE_MILLION - ONE
+        assert Instant.subtract(THREE_MILLION, ONE) == THREE_MILLION - ONE
+
+    # region
