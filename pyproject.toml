@@ -50,7 +50,6 @@ include = [
     "LICENSE.txt",
     "NOTICE.txt",
     "py.typed",
-    "version.py",
 ]
 
 [tool.poetry.dependencies]

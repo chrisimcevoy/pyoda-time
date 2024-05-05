@@ -7,7 +7,7 @@ from typing import Any
 
 from sphinx.application import Sphinx
 
-from pyoda_time.version import __version__ as pyoda_time_version
+from pyoda_time import __version__ as pyoda_time_version
 
 # Project information
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
