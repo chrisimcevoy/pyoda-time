@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import datetime
 import decimal
-from typing import Any, Final, TypeVar
+from typing import Any, Final, Literal, TypeVar
 
 __all__: list[str] = []
 
@@ -110,16 +110,34 @@ class _CsharpConstants:
     LONG_MAX_VALUE: Final[int] = 9223372036854775807
 
 
-def _int32_overflow(value: int) -> int:
-    """Simulates 32-bit signed integer overflow behavior.
+def __int_overflow(value: int, bits: Literal[32, 64]) -> int:
+    """Simulates C# signed integer overflow behavior for a specified bit width.
 
-    Args:
-        value (int): The integer value to apply 32-bit overflow to.
-
-    Returns:
-        int: The result after simulating 32-bit overflow.
+    :param value: The integer value to apply overflow to.
+    :param bits: The bit width of the integer.
+    :return: The result after simulating overflow for the specified bit width.
     """
-    return (value + 2**31) % 2**32 - 2**31
+    max_value: int = 2 ** (bits - 1)
+    result: int = (value + max_value) % (2**bits) - max_value
+    return result
+
+
+def _int32_overflow(value: int) -> int:
+    """Simulates C# 32-bit signed integer overflow behavior.
+
+    :param value: The integer value to apply 32-bit overflow to.
+    :return: The result after simulating 32-bit overflow.
+    """
+    return __int_overflow(value, 32)
+
+
+def _int64_overflow(value: int) -> int:
+    """Simulates C# 64-bit signed integer overflow behavior.
+
+    :param value: The integer value to apply 64-bit overflow to.
+    :return: The result after simulating 64-bit overflow.
+    """
+    return __int_overflow(value, 64)
 
 
 def _csharp_modulo(dividend: int, divisor: int) -> int:
