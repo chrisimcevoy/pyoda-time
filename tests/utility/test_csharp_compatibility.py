@@ -8,7 +8,14 @@ from typing import Annotated
 
 import pytest
 
-from pyoda_time.utility._csharp_compatibility import SEALED_CLASSES, _private, _sealed
+from pyoda_time.utility._csharp_compatibility import (
+    SEALED_CLASSES,
+    _CsharpConstants,
+    _int32_overflow,
+    _int64_overflow,
+    _private,
+    _sealed,
+)
 
 
 def test_foo() -> None:
@@ -77,3 +84,49 @@ def test_sealed_class_raises_type_error_when_subclassed(sealed_class: type) -> N
             pass
 
     assert str(e.value) == f"{sealed_class.__name__} is not intended to be subclassed."
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        # Tests around underflow boundary
+        (_CsharpConstants.INT_MIN_VALUE, _CsharpConstants.INT_MIN_VALUE),
+        (_CsharpConstants.INT_MIN_VALUE + 1, _CsharpConstants.INT_MIN_VALUE + 1),
+        (_CsharpConstants.INT_MIN_VALUE - 1, _CsharpConstants.INT_MAX_VALUE),
+        # Tests around overflow boundary
+        (_CsharpConstants.INT_MAX_VALUE, _CsharpConstants.INT_MAX_VALUE),
+        (_CsharpConstants.INT_MAX_VALUE - 1, _CsharpConstants.INT_MAX_VALUE - 1),
+        (_CsharpConstants.INT_MAX_VALUE + 1, _CsharpConstants.INT_MIN_VALUE),
+        # Common non-boundary values
+        (0, 0),
+        (1, 1),
+        (-1, -1),
+        (123456789, 123456789),
+        (-123456789, -123456789),
+    ],
+)
+def test_int32_overflow(value: int, expected: int) -> None:
+    assert _int32_overflow(value) == expected
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        # Tests around underflow boundary
+        (_CsharpConstants.LONG_MIN_VALUE, _CsharpConstants.LONG_MIN_VALUE),
+        (_CsharpConstants.LONG_MIN_VALUE + 1, _CsharpConstants.LONG_MIN_VALUE + 1),
+        (_CsharpConstants.LONG_MIN_VALUE - 1, _CsharpConstants.LONG_MAX_VALUE),
+        # Tests around overflow boundary
+        (_CsharpConstants.LONG_MAX_VALUE, _CsharpConstants.LONG_MAX_VALUE),
+        (_CsharpConstants.LONG_MAX_VALUE - 1, _CsharpConstants.LONG_MAX_VALUE - 1),
+        (_CsharpConstants.LONG_MAX_VALUE + 1, _CsharpConstants.LONG_MIN_VALUE),
+        # Common non-boundary values
+        (0, 0),
+        (1, 1),
+        (-1, -1),
+        (123456789, 123456789),
+        (-123456789, -123456789),
+    ],
+)
+def test_int64_overflow(value: int, expected: int) -> None:
+    assert _int64_overflow(value) == expected
