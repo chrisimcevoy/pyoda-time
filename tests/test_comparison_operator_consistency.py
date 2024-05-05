@@ -18,6 +18,7 @@ from pyoda_time import (
     LocalDate,
     LocalTime,
     Offset,
+    OffsetTime,
     Period,
     YearMonth,
 )
@@ -38,6 +39,7 @@ VALUES = [
     LocalTime.max_value,
     LocalDate.max_iso_value + LocalTime.max_value,
     Offset.zero,
+    OffsetTime(LocalTime.midnight, Offset.zero),
     Period.zero,
     YearMonth(year=1, month=1),
     _YearMonthDay._ctor(raw_value=1),

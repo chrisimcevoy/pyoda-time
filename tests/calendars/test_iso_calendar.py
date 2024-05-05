@@ -123,7 +123,7 @@ class TestIsoCalendarSystem:
 
     def test_before_common_era_by_specifying_era(self) -> None:
         # Year -1 in absolute terms is 2BCE
-        local_date = LocalDate(era=Era.before_common, year_of_era=2, month=1, day=1)
+        local_date = LocalDate(2, 1, 1, era=Era.before_common)
         assert local_date.era == Era.before_common
         assert local_date.year == -1
         assert local_date.year_of_era == 2

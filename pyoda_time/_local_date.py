@@ -4,12 +4,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, final, overload
+from typing import TYPE_CHECKING, Generator, final, overload
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._calendar_system import CalendarSystem
 from ._iso_day_of_week import IsoDayOfWeek
-from .calendars import Era
+from .calendars import Era, WeekYearRules
 from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
@@ -60,44 +60,39 @@ class LocalDate(metaclass=_LocalDateMeta):
     """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
     zone or time of day."""
 
-    @overload
-    def __init__(self) -> None: ...
-
-    @overload
-    def __init__(self, *, year: int, month: int, day: int): ...
-
-    @overload
-    def __init__(self, *, year: int, month: int, day: int, calendar: CalendarSystem): ...
-
-    @overload
-    def __init__(self, *, era: Era, year_of_era: int, month: int, day: int): ...
-
-    @overload
-    def __init__(self, *, era: Era, year_of_era: int, month: int, day: int, calendar: CalendarSystem): ...
-
     def __init__(
         self,
         year: int = 1,
         month: int = 1,
         day: int = 1,
-        calendar: CalendarSystem | None = None,
+        calendar: CalendarSystem = CalendarSystem.iso,
         era: Era | None = None,
-        year_of_era: int | None = None,
     ):
+        """Initialises a new instance of ``LocalDate`` for the given ``year``, ``month`` and ``day`` in a given
+        ``calendar``.
+
+        If ``era`` is not None, ``year`` is interpreted as the "year of era" rather than the absolute year, and is
+        passed to ``CalendarSystem.get_absolute_year`` to determine the absolute year.
+
+        :param year: The year. If ``era`` is None, this is the "absolute year", so, for the ISO calendar, a value of 0
+            means 1 BC, for example. If ``era`` is provided, this is interpreted as the "year of era".
+        :param month: The month of year.
+        :param day: The day of month.
+        :param calendar: Calendar system in which to create the date.
+        :param era: The era within which to create a date. Must be a valid era within the specified calendar.
+        """
+        _Preconditions._check_not_null(calendar, "calendar")
+
+        if era is not None:
+            year = calendar.get_absolute_year(year, era)
+
+        calendar._validate_year_month_day(year, month, day)
+
         from ._year_month_day_calendar import _YearMonthDayCalendar
 
-        calendar = calendar or CalendarSystem.iso
-
-        if era is not None and year_of_era is not None and month is not None and day is not None:
-            year = calendar.get_absolute_year(year_of_era, era)
-
-        if year is not None and month is not None and day is not None:
-            calendar._validate_year_month_day(year, month, day)
-            self.__year_month_day_calendar = _YearMonthDayCalendar._ctor(
-                year=year, month=month, day=day, calendar_ordinal=calendar._ordinal
-            )
-        else:
-            raise TypeError
+        self.__year_month_day_calendar = _YearMonthDayCalendar._ctor(
+            year=year, month=month, day=day, calendar_ordinal=calendar._ordinal
+        )
 
     @classmethod
     @overload
@@ -194,7 +189,58 @@ class LocalDate(metaclass=_LocalDateMeta):
     def _year_month_day(self) -> _YearMonthDay:
         return self.__year_month_day_calendar._to_year_month_day()
 
+    @classmethod
+    def from_week_year_week_and_day(
+        cls, week_year: int, week_of_week_year: int, day_of_week: IsoDayOfWeek
+    ) -> LocalDate:
+        """Returns the local date corresponding to the given "week year", "week of week year", and "day of week" in the
+        ISO calendar system, using the ISO week-year rules.
+
+        :param week_year: ISO-8601 week year of value to return
+        :param week_of_week_year: ISO-8601 week of week year of value to return
+        :param day_of_week: ISO-8601 day of week to return
+        :return: The date corresponding to the given week year / week of week year / day of week.
+        """
+        return WeekYearRules.iso.get_local_date(week_year, week_of_week_year, day_of_week, CalendarSystem.iso)
+
+    @classmethod
+    def from_year_month_week_and_day(
+        cls, year: int, month: int, occurrence: int, day_of_week: IsoDayOfWeek
+    ) -> LocalDate:
+        """Returns the local date corresponding to a particular occurrence of a day-of-week within a year and month. For
+        example, this method can be used to ask for "the third Monday in April 2012".
+
+        The returned date is always in the ISO calendar. This method is unrelated to week-years and any rules for
+        "business weeks" and the like - if a month begins on a Friday, then asking for the first Friday will give
+        that day, for example.
+
+        :param year: The year of the value to return.
+        :param month: The month of the value to return.
+        :param occurrence: The occurrence of the value to return, which must be in the range [1, 5]. The value 5 can be
+            used to always return the last occurrence of the specified day-of-week, even if there are only 4
+            occurrences of that day-of-week in the month.
+        :param day_of_week: The day-of-week of the value to return.
+        :return: The date corresponding to the given year and month, on the given occurrence of the given day of week.
+        """
+        # This validates year and month as well as getting us a useful date.
+        start_of_month = LocalDate(year, month, 1)
+        _Preconditions._check_argument_range("occurrence", occurrence, 1, 5)
+        _Preconditions._check_argument_range("day_of_week", day_of_week, 1, 7)
+
+        # Correct day of week, 1st week of month.
+        week_1_day: int = start_of_month.day_of_week + 1
+        if week_1_day <= 0:
+            week_1_day += 7
+        target_day: int = week_1_day + (occurrence - 1) * 7
+        if target_day > CalendarSystem.iso.get_days_in_month(year, month):
+            target_day -= 7
+        return LocalDate(year, month, target_day)
+
     def to_year_month(self) -> YearMonth:
+        """Creates a ``YearMonth`` value for the month containing this date.
+
+        :return: A year/month value containing this date.
+        """
         from . import YearMonth
 
         return YearMonth(year=self.year, month=self.month, calendar=self.calendar)
@@ -360,6 +406,18 @@ class LocalDate(metaclass=_LocalDateMeta):
         :return: The ``LocalDateTime`` representation of the given time on this date.
         """
         return self + time
+
+    def __iter__(self) -> Generator[int, None, None]:
+        """Deconstructs the current instance into its components.
+
+        This enables instances of ``LocalDate`` to be unpacked into year, month
+        and day, similar to the equivalent ``LocalDate.Deconstruct`` in Noda Time.
+
+        :return: A generator which yields the "year", "month" and "day" components of this date.
+        """
+        yield self.year
+        yield self.month
+        yield self.day
 
     # region Formatting
 
