@@ -52,7 +52,27 @@ class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
         date = start.date if extra_days == 0 else start.date.plus_days(extra_days)
         return LocalDateTime._ctor(local_date=date, local_time=time)
 
-    # TODO: def _add_local_time(self, local_time: _LocalTime, value: int) -> _LocalTime:
+    def _add_local_time(self, local_time: LocalTime, value: int) -> LocalTime:
+        # TODO: unchecked
+
+        # Arithmetic with a LocalTime wraps round, and every unit divides exactly
+        # into a day, so we can make sure we add a value which is less than a day.
+        if value > 0:
+            if value > self.__units_per_day:
+                value = _csharp_modulo(value, self.__units_per_day)
+            nanos_to_add = value * self.__unit_nanoseconds
+            new_nanos = local_time.nanosecond_of_day + nanos_to_add
+            if new_nanos >= PyodaConstants.NANOSECONDS_PER_DAY:
+                new_nanos -= PyodaConstants.NANOSECONDS_PER_DAY
+            return LocalTime._ctor(nanoseconds=new_nanos)
+        else:
+            if value <= self.__units_per_day:
+                value = _csharp_modulo(value, self.__units_per_day)
+            nanos_to_add = value * self.__unit_nanoseconds
+            new_nanos = local_time.nanosecond_of_day + nanos_to_add
+            if new_nanos < 0:
+                new_nanos += PyodaConstants.NANOSECONDS_PER_DAY
+            return LocalTime._ctor(nanoseconds=new_nanos)
 
     def _add_local_time_with_extra_days(self, local_time: LocalTime, value: int) -> tuple[LocalTime, int]:
         extra_days = 0

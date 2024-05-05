@@ -39,6 +39,19 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         millisecond: int = 0,
         calendar: CalendarSystem = CalendarSystem.iso,
     ) -> None:
+        """Initializes a new instance of the ``LocalDateTime`` class.
+
+        :param year: The year. This is the "absolute year", so, for the ISO calendar, a value of 0 means 1 BC, for
+            example.
+        :param month: The month of year.
+        :param day: The day of month.
+        :param hour: The hour.
+        :param minute: The minute.
+        :param second: The second.
+        :param millisecond: The millisecond.
+        :param calendar: The calendar.
+        :raises ValueError: The parameters do not form a valid date and time.
+        """
         from ._local_date import LocalDate
         from ._local_time import LocalTime
 
