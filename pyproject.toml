@@ -2,14 +2,6 @@
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.commitizen]
-name = "cz_conventional_commits"
-tag_format = "$version"
-version_scheme = "pep440"
-version_provider = "poetry"
-update_changelog_on_bump = true
-major_version_zero = true
-
 [tool.docformatter]
 black = true
 recursive = true
@@ -61,7 +53,6 @@ pytest = ">=7.4.3,<9.0.0"
 pytz = ">=2023.3,<2025.0"
 pre-commit = "^3.5.0"
 coverage = "^7.3.2"
-commitizen = "^3.12.0"
 sphinx = "^7.2.6"
 
 [tool.ruff]
