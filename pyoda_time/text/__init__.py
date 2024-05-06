@@ -3,6 +3,7 @@
 # as found in the LICENSE.txt file.
 
 __all__: list[str] = [
+    "patterns",
     "InstantPattern",
     "InvalidPatternError",
     "LocalDatePattern",
