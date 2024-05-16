@@ -126,6 +126,22 @@ def test_non_generic_compare_to(
     assert str(e.value) == f"{value.__class__.__name__} cannot be compared to object"
 
 
+def test_equals_class(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values: T_IEquatable) -> None:
+    """Tests the IEquatable.Equals method for reference objects. Also tests the object equals method.
+
+    :param value: The base value.
+    :param equal_value: The value equal to but not the same object as the base value.
+    :param unequal_values: Values not equal to the base value.
+    """
+    test_object_equals(value, equal_value, *unequal_values)
+    assert not value.equals(None)
+    assert value.equals(value)
+    assert value.equals(equal_value)
+    assert equal_value.equals(value)
+    for unequal_value in unequal_values:
+        assert not value.equals(unequal_value)
+
+
 def test_equals_struct(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values: T_IEquatable) -> None:
     """Tests the IEquatable.Equals method for value objects. Also tests the object equals method.
 
@@ -283,28 +299,6 @@ def _validate_input(value: T, equal_value: T, unequal_values: T | Sequence[T], u
     for unequal_value in unequal_values:
         assert unequal_value is not None, f"{unequal_name} cannot be null"
         assert unequal_value is not value, f"{unequal_name} and value MUST be different objects"
-
-
-def test_equals(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values: T_IEquatable) -> None:
-    """A combination of ``TestHelpers.TestEqualsClass``, ``TestHelpers.TestEqualsStruct`` and
-    ``TestHelpers.TestObjectEquals`` from Noda Time.
-
-    In Pyoda Time we don't have structs, so we don't need separate helpers for "value types".
-
-    :param value: The base value.
-    :param equal_value: The value equal to but not the same object as the base value.
-    :param unequal_values: The value not equal to the base value.
-    """
-    # TODO: IMplement TestEqualsClass abd TestEqualsStruct & TestObjectEquals instead of this
-    _validate_input(value, equal_value, unequal_values, "unequal_value")
-    assert value is not None
-    assert value.equals(value)
-    assert value.equals(equal_value)
-    assert equal_value.equals(value)
-    for unequal_value in unequal_values:
-        assert not value.equals(unequal_value)
-    assert hash(value) == hash(value)
-    assert hash(value) == hash(equal_value)
 
 
 def create_positive_offset(hours: int, minutes: int, seconds: int) -> Offset:

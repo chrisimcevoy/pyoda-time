@@ -134,7 +134,7 @@ class TestZoneInterval:
             str(interval.iso_local_end)
 
     def test_equality(self) -> None:
-        helpers.test_equals(
+        helpers.test_equals_class(
             # Equal values
             ZoneInterval(
                 name="name",

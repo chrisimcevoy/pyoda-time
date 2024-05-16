@@ -6,19 +6,19 @@ from __future__ import annotations
 
 import abc
 import functools
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, _ProtocolMeta
 
+from .time_zones._i_zone_interval_map import _IZoneIntervalMap
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
     from . import Instant, Offset
-    from .time_zones import ZoneInterval
 
 
 __all__ = ["DateTimeZone"]
 
 
-class _DateTimeZoneMeta(abc.ABCMeta):
+class _DateTimeZoneMeta(_ProtocolMeta, type):
     @property
     @functools.cache
     def utc(cls) -> DateTimeZone:
@@ -36,7 +36,7 @@ class _DateTimeZoneMeta(abc.ABCMeta):
         return _FixedDateTimeZone(Offset.zero)
 
 
-class DateTimeZone(abc.ABC, metaclass=_DateTimeZoneMeta):
+class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
     """Represents a time zone - a mapping between UTC and local time.
     A time zone maps UTC instants to local times - or, equivalently, to the offset from UTC at any particular instant.
     """
@@ -89,9 +89,5 @@ class DateTimeZone(abc.ABC, metaclass=_DateTimeZoneMeta):
 
     def get_utc_offset(self, instant: Instant) -> Offset:
         return self.get_zone_interval(instant).wall_offset
-
-    @abc.abstractmethod
-    def get_zone_interval(self, instant: Instant) -> ZoneInterval:
-        raise NotImplementedError
 
     # endregion
