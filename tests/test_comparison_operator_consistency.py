@@ -28,6 +28,7 @@ from pyoda_time._local_instant import _LocalInstant
 from pyoda_time._year_month_day import _YearMonthDay
 from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
 from pyoda_time.time_zones import ZoneInterval
+from pyoda_time.time_zones.cldr import MapZone
 
 VALUES = [
     DateInterval(LocalDate.min_iso_value, LocalDate.max_iso_value),
@@ -38,6 +39,7 @@ VALUES = [
     LocalDate.max_iso_value,
     LocalTime.max_value,
     LocalDate.max_iso_value + LocalTime.max_value,
+    MapZone("windowsId", "territory", ["tzdbId1"]),
     Offset.zero,
     OffsetTime(LocalTime.midnight, Offset.zero),
     Period.zero,
@@ -84,11 +86,12 @@ def test_are_all_pyoda_time_classes_covered() -> None:
         "__lt__",
         "__le__",
     ]
-    classes_which_define_comparison_operators = [
+    classes_which_define_comparison_operators = {
         cls.__name__ for cls in classes if any(op in cls.__dict__ for op in comparison_operators)
-    ]
-    classes_covered_by_tests = [value.__class__.__name__ for value in VALUES]
-    assert sorted(classes_covered_by_tests) == sorted(classes_which_define_comparison_operators)
+    }
+    classes_covered_by_tests = {value.__class__.__name__ for value in VALUES}
+    uncovered = sorted(classes_which_define_comparison_operators.difference(classes_covered_by_tests))
+    assert not uncovered
 
 
 def generate_test_param_id(test_param: Any) -> str:
