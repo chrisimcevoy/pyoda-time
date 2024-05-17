@@ -5,4 +5,4 @@ The only reason this exists is so that the labeler action knows to tag those aut
 See also: `.github/workflows/labeler.yml`
 """
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
