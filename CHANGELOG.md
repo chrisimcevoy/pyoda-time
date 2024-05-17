@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/chrisimcevoy/pyoda-time/compare/v0.7.0...v0.7.1) (2024-05-17)
+
+
+### Documentation
+
+* switch to pre-alpha trove classifier ([#113](https://github.com/chrisimcevoy/pyoda-time/issues/113)) ([384a3d5](https://github.com/chrisimcevoy/pyoda-time/commit/384a3d578838d8182e0f70a35796f06ec6eea819))
+
 ## [0.7.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.6.0...v0.7.0) (2024-05-17)
 
 
