@@ -1,43 +1,43 @@
 python:
-  - changed-files:
-      any-glob-to-any-file: '**/*.py'
+- changed-files:
+    - any-glob-to-any-file: '**/*.py'
 
 yaml:
-  - changed-files:
-      any-glob-to-any-file:
+- changed-files:
+    - any-glob-to-any-file:
         - '**/*.yaml'
         - '**/*.yml'
 
 json:
-  - changed-files:
-      any-glob-to-any-file: '**/*.json'
+- changed-files:
+    - any-glob-to-any-file: '**/*.json'
 
 markdown:
-  - changed-files:
-      any-glob-to-any-file: '**/*.md'
+- changed-files:
+    - any-glob-to-any-file: '**/*.md'
 
 docker:
-  - changed-files:
-      any-glob-to-any-file: '**/Dockerfile'
+- changed-files:
+    - any-glob-to-any-file: '**/Dockerfile'
 
 shell:
-  - changed-files:
-      any-glob-to-any-file: '**/*.sh'
+- changed-files:
+    - any-glob-to-any-file: '**/*.sh'
 
 dependencies:
-  - changed-files:
-      any-glob-to-any-file: 'poetry.lock'
+- changed-files:
+    - any-glob-to-any-file: 'poetry.lock'
 
 documentation:
-  - changed-files:
-      any-glob-to-any-file:
+- changed-files:
+    - any-glob-to-any-file:
         - 'docs/**'
         - 'README.md'
 
 tests:
-  - changed-files:
-      any-glob-to-any-file: 'tests/**'
+- changed-files:
+    - any-glob-to-any-file: 'tests/**'
 
 release:
-  - changed-files:
-      any-glob-to-any-file: 'version.py'
+- changed-files:
+    - any-glob-to-any-file: 'version.py'
