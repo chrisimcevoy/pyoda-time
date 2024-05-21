@@ -27,7 +27,7 @@ from ..._local_time import LocalTime
 from ...globalization._pyoda_format_info import _PyodaFormatInfo
 from ...utility._csharp_compatibility import _sealed
 from ...utility._preconditions import _Preconditions
-from .._format_helper import FormatHelper
+from .._format_helper import _FormatHelper
 from .._i_partial_pattern import _IPartialPattern
 from .._invalid_pattern_exception import InvalidPatternError
 from .._local_time_pattern import LocalTimePattern
@@ -440,31 +440,31 @@ class _SteppedPatternBuilder(Generic[TResult]):
         if count == 2 and assume_non_negative and assume_fits_in_count:
 
             def format_action(value: TResult, sb: StringBuilder) -> None:
-                FormatHelper.format_2_digits_non_negative(selector(value), sb)
+                _FormatHelper._format_2_digits_non_negative(selector(value), sb)
         elif count == 4 and assume_fits_in_count:
 
             def format_action(value: TResult, sb: StringBuilder) -> None:
-                FormatHelper.format_4_digits_value_fits(selector(value), sb)
+                _FormatHelper._format_4_digits_value_fits(selector(value), sb)
         elif assume_non_negative:
 
             def format_action(value: TResult, sb: StringBuilder) -> None:
-                FormatHelper.left_pad_non_negative(selector(value), count, sb)
+                _FormatHelper._left_pad_non_negative(selector(value), count, sb)
         else:
 
             def format_action(value: TResult, sb: StringBuilder) -> None:
-                FormatHelper.left_pad(selector(value), count, sb)
+                _FormatHelper._left_pad(selector(value), count, sb)
 
         self._add_format_action(format_action)
 
     def _add_format_fraction(self, width: int, scale: int, selector: Callable[[TResult], int]) -> None:
         def format_action(value: TResult, sb: StringBuilder) -> None:
-            FormatHelper._append_fraction(selector(value), width, scale, sb)
+            _FormatHelper._append_fraction(selector(value), width, scale, sb)
 
         self._add_format_action(format_action)
 
     def _add_format_fraction_truncate(self, width: int, scale: int, selector: Callable[[TResult], int]) -> None:
         def format_action(value: TResult, sb: StringBuilder) -> None:
-            FormatHelper._append_fraction_truncate(selector(value), width, scale, sb)
+            _FormatHelper._append_fraction_truncate(selector(value), width, scale, sb)
 
         self._add_format_action(format_action)
 
