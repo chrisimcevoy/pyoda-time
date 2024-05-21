@@ -12,6 +12,7 @@ from pyoda_time.text._value_cursor import _ValueCursor
 from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
+from pyoda_time.utility._csharp_compatibility import _towards_zero_division
 
 T = TypeVar("T")
 
@@ -265,4 +266,22 @@ class _TimePatternHelper:
         am_pm_setter: Callable[[_ParseBucket[T], int], None],
         builder: _SteppedPatternBuilder[T],
     ) -> None:
-        raise NotImplementedError
+        if count == 1:
+            specified_designator = specified_designator[0]
+
+        def parse_action(cursor: _ValueCursor, bucket: _ParseBucket[T]) -> ParseResult[T] | None:
+            value: int = (
+                specified_designator_value
+                if cursor._match_case_insensitive(specified_designator, True)
+                else 1 - specified_designator_value
+            )
+            am_pm_setter(bucket, value)
+            return None
+
+        def format_action(value: T, sb: StringBuilder) -> None:
+            # Only append anything if it's the non-empty designator.
+            if _towards_zero_division(hour_of_day_getter(value), 12) == specified_designator_value:
+                sb.append(specified_designator)
+
+        builder._add_parse_action(parse_action)
+        builder._add_format_action(format_action)

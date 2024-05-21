@@ -148,6 +148,13 @@ class _LocalTimePatternMeta(type):
         @property
         def _variable_precision_iso_pattern_impl(self) -> IPattern[LocalTime]:
             if self.__variable_precision_iso_pattern_impl is None:
+                # Declared outside of the lock being acquired because the properties
+                # it contains *also* try to acquire the lock.
+                patterns = [
+                    self._extended_iso_pattern_impl,
+                    self._hour_minute_iso_pattern_impl,
+                    self._hour_iso_pattern_impl,
+                ]
                 with self.__lock:
                     if self.__variable_precision_iso_pattern_impl is None:
 
@@ -159,12 +166,6 @@ class _LocalTimePatternMeta(type):
 
                         def format_predicate_for_hour_iso_pattern(time: LocalTime) -> bool:
                             return time.minute == 0 and time.second == 0 and time.nanosecond_of_second == 0
-
-                        patterns = [
-                            self._extended_iso_pattern_impl,
-                            self._hour_minute_iso_pattern_impl,
-                            self._hour_iso_pattern_impl,
-                        ]
 
                         format_predicates = [
                             format_predicate_for_extended_iso_pattern,

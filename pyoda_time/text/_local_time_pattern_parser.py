@@ -20,6 +20,15 @@ from pyoda_time.text.patterns._time_pattern_helper import _TimePatternHelper
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _private, _sealed, _towards_zero_division
 
 
+def hours_12_getter(value: LocalTime) -> int:
+    return value.clock_hour_of_half_day
+
+
+def hours_12_setter(bucket: _ParseBucket[LocalTime], value: int) -> None:
+    assert isinstance(bucket, _LocalTimePatternParser._LocalTimeParseBucket)
+    bucket._hours_12 = value
+
+
 def hours_24_getter(value: LocalTime) -> int:
     return value.hour
 
@@ -45,6 +54,11 @@ def seconds_getter(value: LocalTime) -> int:
 def seconds_setter(bucket: _ParseBucket[LocalTime], value: int) -> None:
     assert isinstance(bucket, _LocalTimePatternParser._LocalTimeParseBucket)
     bucket._seconds = value
+
+
+def am_pm_setter(bucket: _ParseBucket[LocalTime], value: int) -> None:
+    assert isinstance(bucket, _LocalTimePatternParser._LocalTimeParseBucket)
+    bucket._am_pm = value
 
 
 def nanosecond_of_second_getter(value: LocalTime) -> int:
@@ -74,14 +88,16 @@ class _LocalTimePatternParser(_IPatternParser[LocalTime]):
     __pattern_character_handlers: Final[
         Mapping[str, Callable[[_PatternCursor, _SteppedPatternBuilder[LocalTime]], None]]
     ] = {
-        "%": lambda _, __: exec("raise NotImplementedError"),
-        "'": lambda _, __: exec("raise NotImplementedError"),
-        '"': lambda _, __: exec("raise NotImplementedError"),
-        "\\": lambda _, __: exec("raise NotImplementedError"),
+        "%": _SteppedPatternBuilder._handle_percent,
+        "'": _SteppedPatternBuilder._handle_quote,
+        '"': _SteppedPatternBuilder._handle_quote,
+        "\\": _SteppedPatternBuilder._handle_backslash,
         ".": _TimePatternHelper._create_period_handler(9, nanosecond_of_second_getter, fractional_seconds_setter),
-        ";": lambda _, __: exec("raise NotImplementedError"),
+        ";": _TimePatternHelper._create_comma_dot_handler(9, nanosecond_of_second_getter, fractional_seconds_setter),
         ":": _handle_colon,
-        "h": lambda _, __: exec("raise NotImplementedError"),
+        "h": _SteppedPatternBuilder._handle_padded_field(
+            2, _PatternFields.HOURS_12, 1, 12, hours_12_getter, hours_12_setter, LocalTime
+        ),
         "H": _SteppedPatternBuilder._handle_padded_field(
             2, _PatternFields.HOURS_24, 0, 23, hours_24_getter, hours_24_setter, LocalTime
         ),
@@ -91,9 +107,9 @@ class _LocalTimePatternParser(_IPatternParser[LocalTime]):
         "s": _SteppedPatternBuilder._handle_padded_field(
             2, _PatternFields.SECONDS, 0, 59, seconds_getter, seconds_setter, LocalTime
         ),
-        "f": lambda _, __: exec("raise NotImplementedError"),
-        "F": lambda _, __: exec("raise NotImplementedError"),
-        "t": lambda _, __: exec("raise NotImplementedError"),
+        "f": _TimePatternHelper._create_fraction_handler(9, nanosecond_of_second_getter, fractional_seconds_setter),
+        "F": _TimePatternHelper._create_fraction_handler(9, nanosecond_of_second_getter, fractional_seconds_setter),
+        "t": _TimePatternHelper._create_am_pm_handler(hours_24_getter, am_pm_setter),
     }
 
     @classmethod
