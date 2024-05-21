@@ -31,7 +31,7 @@ class StringBuilder:
 
     @length.setter
     def length(self, value: int) -> None:
-        assert 0 < value <= self.length
+        assert 0 <= value <= self.length
         self.__string = self.__string[:value]
 
     def append(self, string: str) -> Self:

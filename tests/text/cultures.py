@@ -23,6 +23,10 @@ class _CulturesMeta(type):
         return [CultureInfo.read_only(culture) for culture in CultureInfo.get_cultures(CultureTypes.SPECIFIC_CULTURES)]
 
     @property
+    def invariant(cls) -> CultureInfo:
+        return CultureInfo.invariant_culture
+
+    @property
     def en_us(self) -> CultureInfo:
         return CultureInfo.read_only(CultureInfo("en-US"))
 

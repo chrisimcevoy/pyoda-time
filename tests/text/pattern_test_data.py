@@ -117,5 +117,14 @@ class PatternTestData(Generic[T]):
 
     # TODO: def __repr__() & delete parametrize ids= in tests
 
+    @property
+    def value_pattern_text(self) -> str | None:
+        """Returns the pattern text to use when formatting the value for the test name.
+
+        Defaults to null, implying the default pattern for the type, but can be overridden to provide a more fine-
+        grained pattern. This property is only used if the value implements IFormattable.
+        """
+        return None
+
     def format_message(self, message: str, parameters: list[Any]) -> str:
         return message.format(*parameters)
