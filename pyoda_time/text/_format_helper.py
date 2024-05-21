@@ -5,11 +5,11 @@ from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _CsharpConstants, _towards_zero_division
 
 
-class FormatHelper:
+class _FormatHelper:
     """Provides helper methods for formatting values using pattern strings."""
 
     @staticmethod
-    def format_2_digits_non_negative(value: int, output_buffer: StringBuilder) -> None:
+    def _format_2_digits_non_negative(value: int, output_buffer: StringBuilder) -> None:
         """Formats the given value to two digits, left-padding with '0' if necessary.
 
         It is assumed that the value is in the range [0, 100). This is usually used for month, day-of-month, hour,
@@ -21,7 +21,7 @@ class FormatHelper:
         output_buffer.append(f"{value:02}")
 
     @staticmethod
-    def format_4_digits_value_fits(value: int, output_buffer: StringBuilder) -> None:
+    def _format_4_digits_value_fits(value: int, output_buffer: StringBuilder) -> None:
         """Formats the given value to two digits, left-padding with '0' if necessary.
 
         It is assumed that the value is in the range [-9999, 10000). This is usually used for year values. If the value
@@ -36,7 +36,7 @@ class FormatHelper:
         output_buffer.append(f"{value:04}")
 
     @classmethod
-    def left_pad(cls, value: int, length: int, output_buffer: StringBuilder) -> None:
+    def _left_pad(cls, value: int, length: int, output_buffer: StringBuilder) -> None:
         """Formats the given value left padded with zeros.
 
         Left pads with zeros the value into a field of ``length`` characters. If the value
@@ -51,7 +51,7 @@ class FormatHelper:
         # TODO: Preconditions.DebugCheckArgumentRange(nameof(length), length, 1, MaximumPaddingLength);
         # TODO: unchecked
         if value >= 0:
-            cls.left_pad_non_negative(value, length, output_buffer)
+            cls._left_pad_non_negative(value, length, output_buffer)
             return
         output_buffer.append("-")
         # Special case, as we can't use Math.Abs.
@@ -60,10 +60,10 @@ class FormatHelper:
                 output_buffer.append("000000"[16 - length :])
             output_buffer.append("2147483648")
             return
-        cls.left_pad_non_negative(-value, length, output_buffer)
+        cls._left_pad_non_negative(-value, length, output_buffer)
 
     @staticmethod
-    def left_pad_non_negative(value: int, length: int, output_buffer: StringBuilder) -> None:
+    def _left_pad_non_negative(value: int, length: int, output_buffer: StringBuilder) -> None:
         """Formats the given value left padded with zeros. The value is assumed to be non-negative.
 
         Left pads with zeros the value into a field of ``length`` characters. If the value
@@ -155,3 +155,13 @@ class FormatHelper:
         # Check and remove a preceding decimal point if necessary
         elif output_buffer.length > 0 and output_buffer[output_buffer.length - 1] == ".":
             output_buffer.length -= 1
+
+    @classmethod
+    def _format_invariant(cls, value: int, output_buffer: StringBuilder) -> None:
+        """Formats the given value using the invariant culture, with no truncation or padding.
+
+        :param value: The value to format.
+        :param output_buffer: The output buffer to add the digits to.
+        """
+        # TODO: This is very, very different from the Noda Time implementation
+        output_buffer.append(str(value))
