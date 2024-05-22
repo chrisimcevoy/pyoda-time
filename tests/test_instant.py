@@ -2,10 +2,10 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
-import pytz
+from zoneinfo import ZoneInfo
 
 from pyoda_time import (
     CalendarSystem,
@@ -191,14 +191,14 @@ class TestInstant:
     def test_from_datetime_utc_invalid(self) -> None:
         with pytest.raises(ValueError):
             # Roughly equivalent to `DateTimeKind.Local`
-            tz = pytz.timezone("America/New_York")
-            Instant.from_datetime_utc(datetime(2011, 8, 18, 20, 53, 0, 0, tz))
+            zone_info = ZoneInfo("America/New_York")
+            Instant.from_datetime_utc(datetime(2011, 8, 18, 20, 53, 0, 0, zone_info))
         with pytest.raises(ValueError):
             # Roughly equivalent to `DateTimeKind.Unspecified`
             Instant.from_datetime_utc(datetime(2011, 8, 18, 20, 53, 0, 0))
 
     def test_from_datetime_utc_valid(self) -> None:
-        x = datetime(2011, 8, 18, 20, 53, 0, 0, pytz.UTC)
+        x = datetime(2011, 8, 18, 20, 53, 0, 0, tzinfo=UTC)
         expected = Instant.from_utc(2011, 8, 18, 20, 53)
         actual = Instant.from_datetime_utc(x)
         assert actual == expected
