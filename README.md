@@ -3,6 +3,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyoda-time)
 ![GitHub License](https://img.shields.io/github/license/chrisimcevoy/pyoda-time)
 [![Documentation Status](https://readthedocs.org/projects/pyoda-time/badge/?version=latest)](https://pyoda-time.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/github/chrisimcevoy/pyoda-time/graph/badge.svg?token=I1QQES7AVT)](https://codecov.io/github/chrisimcevoy/pyoda-time)
 
 # Pyoda Time
 
