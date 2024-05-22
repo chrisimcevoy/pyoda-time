@@ -1,6 +1,8 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
+from datetime import datetime, timedelta
+
 import pytest
 
 from pyoda_time import LocalTime, Offset, OffsetTime, Period, PyodaConstants
@@ -248,3 +250,23 @@ class TestLocalTimeConstruction:
             LocalTime.from_hours_since_midnight(-1)
         with pytest.raises(ValueError):  # TODO: ArgumentOutOfRangeException
             LocalTime.from_hours_since_midnight(PyodaConstants.HOURS_PER_DAY)
+
+
+class TestLocalTimeConversion:
+    def test_to_time_on_microsecond_boundary(self) -> None:
+        local_time = LocalTime(12, 34, 56).plus_microseconds(4567)
+        expected = (datetime(1, 1, 1, 12, 34, 56) + timedelta(microseconds=4567)).time()
+        actual = local_time.to_time()
+        assert actual == expected
+
+    def test_to_time_rounds_down(self) -> None:
+        local_time = LocalTime(12, 34, 56).plus_microseconds(4567).plus_nanoseconds(89)
+        expected = (datetime(1, 1, 1, 12, 34, 56) + timedelta(microseconds=4567)).time()
+        actual = local_time.to_time()
+        assert actual == expected
+
+    def test_from_time(self) -> None:
+        time_ = (datetime(1, 1, 1, 12, 34, 56) + timedelta(microseconds=4567)).time()
+        expected = LocalTime(12, 34, 56).plus_microseconds(4567)
+        actual = LocalTime.from_time(time_)
+        assert actual == expected

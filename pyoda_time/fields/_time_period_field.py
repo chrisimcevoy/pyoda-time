@@ -26,6 +26,12 @@ class _TimePeriodFieldMeta(type):
         return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_TICK)
 
     @property
+    def _microseconds(self) -> _TimePeriodField:
+        # TODO: Investigate where other _TimePeriodFields are used...
+        #  This one is not ported from Noda Time.
+        return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_MICROSECOND)
+
+    @property
     def _milliseconds(self) -> _TimePeriodField:
         return _TimePeriodField(PyodaConstants.NANOSECONDS_PER_MILLISECOND)
 
