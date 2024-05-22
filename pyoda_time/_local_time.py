@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import datetime
 import functools
 from typing import TYPE_CHECKING, Generator, final, overload
 
@@ -478,6 +479,16 @@ class LocalTime(metaclass=_LocalTimeMeta):
 
         return _TimePeriodField._milliseconds._add_local_time(self, milliseconds)
 
+    def plus_microseconds(self, microseconds: int) -> LocalTime:
+        """Returns a new LocalTime representing the current value with the given number of microseconds added.
+
+        :param microseconds: The number of microseconds to add
+        :return: The current value plus the given number of microseconds.
+        """
+        from pyoda_time.fields._time_period_field import _TimePeriodField
+
+        return _TimePeriodField._microseconds._add_local_time(self, microseconds)
+
     def plus_ticks(self, ticks: int) -> LocalTime:
         """Returns a new LocalTime representing the current value with the given number of ticks added.
 
@@ -548,3 +559,32 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :return: The earlier time of ``x`` or ``y``.
         """
         return x if x < y else y
+
+    def to_time(self) -> datetime.time:
+        """Converts this value to an equivalent ``datetime.time``.
+
+        If the value does not fall on a microsecond boundary, it will be truncated to the earlier microsecond boundary.
+
+        :return: The equivalent ``datetime.time``.
+        """
+
+        return datetime.time(
+            hour=self.hour,
+            minute=self.minute,
+            second=self.second,
+            microsecond=_towards_zero_division(self.nanosecond_of_second, PyodaConstants.NANOSECONDS_PER_MICROSECOND),
+        )
+
+    @classmethod
+    def from_time(cls, time: datetime.time) -> LocalTime:
+        """Constructs a ``LocalTime`` from a ``datetime.time``.
+
+        :param time: The time of day to convert.
+        :return: The ``LocalTime`` equivalent.
+        """
+        return cls.from_ticks_since_midnight(
+            time.hour * PyodaConstants.TICKS_PER_HOUR
+            + time.minute * PyodaConstants.TICKS_PER_MINUTE
+            + time.second * PyodaConstants.TICKS_PER_SECOND
+            + time.microsecond * PyodaConstants.TICKS_PER_MICROSECOND
+        )
