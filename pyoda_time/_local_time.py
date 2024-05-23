@@ -26,17 +26,11 @@ __all__ = ["LocalTime"]
 
 
 class _LocalTimeMeta(type):
-    __midnight: LocalTime | None = None
-    __noon: LocalTime | None = None
-    __max_value: LocalTime | None = None
-
     @property
     @functools.cache
     def midnight(self) -> LocalTime:
         """Local time at midnight, i.e. 0 hours, 0 minutes, 0 seconds."""
-        if self.__midnight is None:
-            self.__midnight = LocalTime(hour=0, minute=0, second=0)
-        return self.__midnight
+        return LocalTime(hour=0, minute=0, second=0)
 
     @property
     def min_value(cls) -> LocalTime:
@@ -47,9 +41,7 @@ class _LocalTimeMeta(type):
     @functools.cache
     def noon(self) -> LocalTime:
         """Local time at noon, i.e. 12 hours, 0 minutes, 0 seconds."""
-        if self.__noon is None:
-            self.__noon = LocalTime(hour=12, minute=0, second=0)
-        return self.__noon
+        return LocalTime(hour=12, minute=0, second=0)
 
     @property
     @functools.cache
@@ -59,9 +51,7 @@ class _LocalTimeMeta(type):
         This is useful if you have to use an inclusive upper bound for some reason. In general, it's better to use an
         exclusive upper bound, in which case use midnight of the following day.
         """
-        if cls.__max_value is None:
-            cls.__max_value = LocalTime._ctor(nanoseconds=PyodaConstants.NANOSECONDS_PER_DAY - 1)
-        return cls.__max_value
+        return LocalTime._ctor(nanoseconds=PyodaConstants.NANOSECONDS_PER_DAY - 1)
 
 
 @final
