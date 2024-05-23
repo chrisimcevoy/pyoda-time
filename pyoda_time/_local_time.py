@@ -528,6 +528,9 @@ class LocalTime(metaclass=_LocalTimeMeta):
             raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
         return self.__nanoseconds - other.__nanoseconds
 
+    def __hash__(self) -> int:
+        return hash(self.__nanoseconds)
+
     def plus_hours(self, hours: int) -> LocalTime:
         """Returns a new LocalTime representing the current value with the given number of hours added.
 
@@ -658,6 +661,22 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :return: The earlier time of ``x`` or ``y``.
         """
         return x if x < y else y
+
+    # region Formatting
+
+    def __repr__(self) -> str:
+        from pyoda_time._compatibility._culture_info import CultureInfo
+        from pyoda_time.text import LocalTimePattern
+
+        return LocalTimePattern._bcl_support.format(self, None, CultureInfo.current_culture)
+
+    def __format__(self, format_spec: str) -> str:
+        from pyoda_time._compatibility._culture_info import CultureInfo
+        from pyoda_time.text import LocalTimePattern
+
+        return LocalTimePattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)
+
+    # endregion
 
     def to_time(self) -> datetime.time:
         """Converts this value to an equivalent ``datetime.time``.
