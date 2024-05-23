@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import datetime
 import functools
-from typing import TYPE_CHECKING, Generator, final, overload
+from typing import TYPE_CHECKING, Callable, Generator, final, overload
 
 from ._pyoda_constants import PyodaConstants
 from .utility._csharp_compatibility import (
@@ -604,6 +604,9 @@ class LocalTime(metaclass=_LocalTimeMeta):
         from .fields._time_period_field import _TimePeriodField
 
         return _TimePeriodField._nanoseconds._add_local_time(self, nanoseconds)
+
+    def with_(self, adjuster: Callable[[LocalTime], LocalTime]) -> LocalTime:
+        return _Preconditions._check_not_null(adjuster, "adjuster")(self)
 
     def with_offset(self, offset: Offset) -> OffsetTime:
         """Returns an ``OffsetTime`` for this time-of-day with the given offset.
