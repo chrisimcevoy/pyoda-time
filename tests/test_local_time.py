@@ -2,10 +2,11 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from datetime import datetime, timedelta
+from typing import cast
 
 import pytest
 
-from pyoda_time import LocalTime, Offset, OffsetTime, Period, PyodaConstants
+from pyoda_time import CalendarSystem, LocalDate, LocalDateTime, LocalTime, Offset, OffsetTime, Period, PyodaConstants
 
 
 class TestLocalTime:
@@ -270,3 +271,130 @@ class TestLocalTimeConversion:
         expected = LocalTime(12, 34, 56).plus_microseconds(4567)
         actual = LocalTime.from_time(time_)
         assert actual == expected
+
+
+class TestLocalTimeOperators:
+    def test_addition_with_period(self) -> None:
+        start = LocalTime(3, 30)
+        period = Period.from_hours(2) + Period.from_seconds(1)
+        expected = LocalTime(5, 30, 1)
+        assert start + period == expected
+
+    def test_addition_wraps_at_midnight(self) -> None:
+        start = LocalTime(22, 0)
+        period = Period.from_hours(3)
+        expected = LocalTime(1, 0)
+        assert start + period == expected
+
+    def test_addition_with_null_period_raises_type_error(self) -> None:
+        start = LocalTime(12, 0)
+        with pytest.raises(TypeError):
+            start + cast(Period, None)
+
+    def test_subtraction_with_period(self) -> None:
+        start = LocalTime(5, 30, 1)
+        period = Period.from_hours(2) + Period.from_seconds(1)
+        expected = LocalTime(3, 30, 0)
+        assert start - period == expected
+
+    def test_subtraction_wraps_at_midnight(self) -> None:
+        start = LocalTime(1, 0, 0)
+        period = Period.from_hours(3)
+        expected = LocalTime(22, 0, 0)
+        assert start - period == expected
+
+    def test_subtraction_with_null_period_raises_type_error(self) -> None:
+        start = LocalTime(12, 0)
+        with pytest.raises(TypeError):
+            start - cast(Period, None)
+
+    def test_addition_period_with_date(self) -> None:
+        time = LocalTime(20, 30)
+        period = Period.from_days(1)
+        with pytest.raises(ValueError):
+            LocalTime.add(time, period)
+
+    def test_subtraction_period_with_time(self) -> None:
+        time = LocalTime(20, 30)
+        period = Period.from_days(1)
+        with pytest.raises(ValueError):
+            LocalTime.subtract(time, period)
+
+    def test_period_addition_method_equivalents(self) -> None:
+        start = LocalTime(20, 30)
+        period = Period.from_hours(3) + Period.from_minutes(10)
+        assert LocalTime.add(start, period) == start + period
+        assert start.plus(period) == start + period
+
+    def test_period_subtraction_method_equivalents(self) -> None:
+        start = LocalTime(20, 30)
+        period = Period.from_hours(3) + Period.from_minutes(10)
+        end = start + period
+        assert LocalTime.subtract(start, period) == start - period
+        assert start.minus(period) == start - period
+
+        assert end - start == period
+        assert LocalTime.subtract(end, start) == period
+        assert end.minus(start) == period
+
+    def test_comparison_operators(self) -> None:
+        time_1 = LocalTime(10, 30, 45)
+        time_2 = LocalTime(10, 30, 45)
+        time_3 = LocalTime(10, 30, 50)
+
+        assert time_1 == time_2
+        assert not time_1 == time_3
+        assert not time_1 != time_2
+        assert time_1 != time_3
+
+        assert not time_1 < time_2
+        assert time_1 < time_3
+        assert not time_2 < time_1
+        assert not time_3 < time_1
+
+        assert time_1 <= time_2
+        assert time_1 <= time_3
+        assert time_2 <= time_1
+        assert not time_3 <= time_1
+
+        assert not time_1 > time_2
+        assert not time_1 > time_3
+        assert not time_2 > time_1
+
+        assert time_1 >= time_2
+        assert not time_1 >= time_3
+        assert time_2 >= time_1
+        assert time_3 >= time_1
+
+    def test_comparison_ignores_original_calendar(self) -> None:
+        date_time_1 = LocalDateTime(1900, 1, 1, 10, 30, 0)
+        date_time_2 = date_time_1.with_calendar(CalendarSystem.julian)
+
+        # Calendar information is propagated into LocalDate, but not into LocalTime
+        assert not date_time_1.date == date_time_2.date
+        assert date_time_1.time_of_day == date_time_2.time_of_day
+
+    def test_compare_to(self) -> None:
+        time_1 = LocalTime(10, 30, 45)
+        time_2 = LocalTime(10, 30, 45)
+        time_3 = LocalTime(10, 30, 50)
+
+        assert time_1.compare_to(time_2) == 0
+        assert time_1.compare_to(time_3) < 0
+        assert time_3.compare_to(time_2) > 0
+
+    # TODO: This one is redundant in pyoda time:
+    #  `public void IComparableCompareTo()`
+
+    def test_i_comparable_to_null_positive(self) -> None:
+        instance = LocalTime(10, 30, 45)
+        result = instance.compare_to(None)
+        assert result > 0
+
+    def test_i_comparable_compare_to_wrong_type_argument_exception(self) -> None:
+        # TODO: This is necessarily different to Noda Time, but still worth doing.
+        instance = LocalTime(10, 30, 45)
+        arg = LocalDate(2012, 3, 6)
+        with pytest.raises(TypeError) as e:
+            instance.compare_to(arg)  # type: ignore
+        assert str(e.value) == "LocalTime cannot be compared to LocalDate"
