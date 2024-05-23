@@ -164,7 +164,8 @@ class YearMonth:
         """
         if other is None:
             return 1
-        _Preconditions._check_argument(isinstance(other, YearMonth), "other", "Object must be of type YearMonth.")
+        if not isinstance(other, YearMonth):
+            raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
         _Preconditions._check_argument(
             self.__calendar_ordinal == other.__calendar_ordinal,
             "other",

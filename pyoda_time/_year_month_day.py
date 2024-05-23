@@ -73,7 +73,8 @@ class _YearMonthDay:
     def compare_to(self, other: _YearMonthDay | None) -> int:
         if other is None:
             return 1
-        # In Noda Time, this method calls `int.CompareTo(otherInt)`
+        if not isinstance(other, _YearMonthDay):
+            raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
         return self.__value - other.__value
 
     def equals(self, other: _YearMonthDay) -> bool:

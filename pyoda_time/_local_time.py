@@ -369,6 +369,50 @@ class LocalTime(metaclass=_LocalTimeMeta):
         """The nanosecond of this local time within the day, in the range 0 to 86,399,999,999,999 inclusive."""
         return self.__nanoseconds
 
+    def __add__(self, other: Period) -> LocalTime:
+        """Creates a new local time by adding a period to an existing time.
+
+        The period must not contain any date-related units (days etc.) with non-zero values.
+
+        :param other: The period to add
+        :return: The result of adding the period to the time, wrapping via midnight if necessary
+        """
+        from ._period import Period
+
+        if not isinstance(other, Period):
+            return NotImplemented  # type: ignore[unreachable]
+
+        _Preconditions._check_not_null(other, "other")
+        _Preconditions._check_argument(
+            not other.has_date_component, "other", "Cannot add a period with a date component to a time"
+        )
+        return (
+            self.plus_hours(other.hours)
+            .plus_minutes(other.minutes)
+            .plus_seconds(other.seconds)
+            .plus_milliseconds(other.milliseconds)
+            .plus_ticks(other.ticks)
+            .plus_nanoseconds(other.nanoseconds)
+        )
+
+    @staticmethod
+    def add(time: LocalTime, period: Period) -> LocalTime:
+        """Adds the specified period to the time. Friendly alternative to ``+``.
+
+        :param time: The time to add the period to
+        :param period: The period to add. Must not contain any (non-zero) date units.
+        :return: The sum of the given time and period
+        """
+        return time + period
+
+    def plus(self, period: Period) -> LocalTime:
+        """Adds the specified period to this time. Fluent alternative to ``+``.
+
+        :param period: The period to add. Must not contain any (non-zero) date units.
+        :return: The sum of this time and the given period
+        """
+        return self + period
+
     @overload
     def __sub__(self, local_time: LocalTime) -> Period: ...
 
@@ -393,9 +437,59 @@ class LocalTime(metaclass=_LocalTimeMeta):
             )
 
         if isinstance(other, LocalTime):
-            return Period.between(self, other)
+            return Period.between(other, self)
 
         return NotImplemented  # type: ignore[unreachable]
+
+    @staticmethod
+    @overload
+    def subtract(time: LocalTime, period: Period, /) -> LocalTime:
+        """Subtracts the specified period from the time. Friendly alternative to ``-``.
+
+        :param time: The time to subtract the period from
+        :param period: The period to subtract. Must not contain any (non-zero) date units.
+        :return: The result of subtracting the given period from the time.
+        """
+        ...
+
+    @staticmethod
+    @overload
+    def subtract(lhs: LocalTime, rhs: LocalTime, /) -> Period:
+        """Subtracts one time from another, returning the result as a ``Period`` with units of years, months and days.
+
+        This is simply a convenience method for calling ``Period.between(LocalTime,LocalTime)``.
+
+        :param lhs: The time to subtract from
+        :param rhs: The time to subtract
+        :return: The result of subtracting one time from another.
+        """
+        ...
+
+    @staticmethod
+    def subtract(lhs: LocalTime, rhs: LocalTime | Period, /) -> LocalTime | Period:
+        return lhs - rhs
+
+    @overload
+    def minus(self, period: Period, /) -> LocalTime:
+        """Subtracts the specified period from this time. Fluent alternative to ``-``.
+
+        :param period: The period to subtract. Must not contain any (non-zero) date units.
+        :return: The result of subtracting the given period from this time.
+        """
+        ...
+
+    @overload
+    def minus(self, time: LocalTime, /) -> Period:
+        """Subtracts the specified time from this time, returning the result as a ``Period``. Fluent alternative to
+        ``-``.
+
+        :param time: The time to subtract from this
+        :return: The difference between the specified time and this one
+        """
+        ...
+
+    def minus(self, period_or_time: Period | LocalTime, /) -> Period | LocalTime:
+        return self - period_or_time
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, LocalTime):
@@ -430,6 +524,8 @@ class LocalTime(metaclass=_LocalTimeMeta):
     def compare_to(self, other: LocalTime | None) -> int:
         if other is None:
             return 1
+        if not isinstance(other, LocalTime):
+            raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
         return self.__nanoseconds - other.__nanoseconds
 
     def plus_hours(self, hours: int) -> LocalTime:
