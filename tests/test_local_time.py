@@ -7,6 +7,8 @@ from typing import cast
 import pytest
 
 from pyoda_time import CalendarSystem, LocalDate, LocalDateTime, LocalTime, Offset, OffsetTime, Period, PyodaConstants
+from pyoda_time._time_adjusters import TimeAdjusters
+from pyoda_time.utility._csharp_compatibility import _CsharpConstants
 
 
 class TestLocalTime:
@@ -398,3 +400,77 @@ class TestLocalTimeOperators:
         with pytest.raises(TypeError) as e:
             instance.compare_to(arg)  # type: ignore
         assert str(e.value) == "LocalTime cannot be compared to LocalDate"
+
+
+class TestLocalTimePseudomutators:
+    def test_plus_hours_simple(self) -> None:
+        start = LocalTime(12, 15, 8)
+        expected_forward = LocalTime(14, 15, 8)
+        expected_backward = LocalTime(10, 15, 8)
+        assert start.plus_hours(2) == expected_forward
+        assert start.plus_hours(-2) == expected_backward
+
+    def test_plus_hours_crossing_day_boundary(self) -> None:
+        start = LocalTime(12, 15, 8)
+        expected = LocalTime(8, 15, 8)
+        assert start.plus_hours(20) == expected
+        assert start.plus_hours(20).plus_hours(-20) == start
+
+    def test_plus_hours_crossing_several_days_boundary(self) -> None:
+        # Christmas day + 10 days and 1 hour
+        start = LocalTime(12, 15, 8)
+        expected = LocalTime(13, 15, 8)
+        assert start.plus_hours(241) == expected
+        assert start.plus_hours(241).plus_hours(-241) == start
+
+    # Having tested that hours cross boundaries correctly, the other time unit
+    # tests are straightforward
+    def test_plus_minutes_simple(self) -> None:
+        start = LocalTime(12, 15, 8)
+        expected_forward = LocalTime(12, 17, 8)
+        expected_backward = LocalTime(12, 13, 8)
+        assert start.plus_minutes(2) == expected_forward
+        assert start.plus_minutes(-2) == expected_backward
+
+    def test_plus_seconds_simple(self) -> None:
+        start = LocalTime(12, 15, 8)
+        expected_forward = LocalTime(12, 15, 18)
+        expected_backward = LocalTime(12, 14, 58)
+        assert start.plus_seconds(10) == expected_forward
+        assert start.plus_seconds(-10) == expected_backward
+
+    def test_plus_milliseconds_simple(self) -> None:
+        start = LocalTime(12, 15, 8, 300)
+        expected_forward = LocalTime(12, 15, 8, 700)
+        expected_backward = LocalTime(12, 15, 7, 900)
+        assert start.plus_milliseconds(400) == expected_forward
+        assert start.plus_milliseconds(-400) == expected_backward
+
+    def test_plus_ticks_simple(self) -> None:
+        start = LocalTime.from_hour_minute_second_millisecond_tick(12, 15, 8, 300, 7500)
+        expected_forward = LocalTime.from_hour_minute_second_millisecond_tick(12, 15, 8, 301, 1500)
+        expected_backward = LocalTime.from_hour_minute_second_millisecond_tick(12, 15, 8, 300, 3500)
+        assert start.plus_ticks(4000) == expected_forward
+        assert start.plus_ticks(-4000) == expected_backward
+
+    def test_plus_ticks_long(self) -> None:
+        assert PyodaConstants.TICKS_PER_DAY > _CsharpConstants.INT_MAX_VALUE
+        start = LocalTime(12, 15, 8)
+        expected_forward = LocalTime(12, 15, 9)
+        expected_backward = LocalTime(12, 15, 7)
+        assert start.plus_ticks(PyodaConstants.TICKS_PER_DAY + PyodaConstants.TICKS_PER_SECOND) == expected_forward
+        assert start.plus_ticks(-PyodaConstants.TICKS_PER_DAY - PyodaConstants.TICKS_PER_SECOND) == expected_backward
+
+    def test_with(self) -> None:
+        start = LocalTime.from_hour_minute_second_millisecond_tick(12, 15, 8, 100, 1234)
+        expected = LocalTime(12, 15, 8)
+        assert start.with_(TimeAdjusters.truncate_to_second) == expected
+
+    def test_plus_minutes_would_overflow_naively(self) -> None:
+        start = LocalTime(12, 34, 56)
+        # Very big value, which just wraps round a *lot* and adds one minute.
+        # There's no way we could compute that many nanoseconds.
+        value = (PyodaConstants.NANOSECONDS_PER_DAY << 15) + 1
+        expected = LocalTime(12, 35, 56)
+        actual = start.plus_minutes(value)
+        assert actual == expected
