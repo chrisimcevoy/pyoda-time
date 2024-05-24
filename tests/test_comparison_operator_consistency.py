@@ -15,6 +15,7 @@ from pyoda_time import (
     DateInterval,
     Duration,
     Instant,
+    IsoDayOfWeek,
     LocalDate,
     LocalTime,
     Offset,
@@ -30,6 +31,7 @@ from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
 from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._transition import _Transition
 from pyoda_time.time_zones._transition_mode import _TransitionMode
+from pyoda_time.time_zones._zone_recurrence import _ZoneRecurrence
 from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset
 from pyoda_time.time_zones.cldr import MapZone
 
@@ -51,6 +53,13 @@ VALUES = [
     _YearMonthDay._ctor(raw_value=1),
     _YearMonthDayCalendar._ctor(year_month_day=1, calendar_ordinal=_CalendarOrdinal.BADI),
     ZoneInterval(name="", start=Instant.min_value, end=Instant.max_value, wall_offset=Offset.zero, savings=Offset.zero),
+    _ZoneRecurrence(
+        "name",
+        Offset.zero,
+        _ZoneYearOffset._ctor(_TransitionMode.UTC, 10, 31, int(IsoDayOfWeek.WEDNESDAY), True, LocalTime.midnight),
+        1971,
+        2009,
+    ),
     _ZoneYearOffset._ctor(_TransitionMode.UTC, 1, 1, 1, True, LocalTime.midnight),
 ]
 

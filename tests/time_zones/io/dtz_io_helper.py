@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pyoda_time import Instant, Offset
+from pyoda_time.time_zones._zone_recurrence import _ZoneRecurrence
 from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset
 from pyoda_time.time_zones.io._date_time_zone_reader import _DateTimeZoneReader
 from pyoda_time.time_zones.io._date_time_zone_writer import _DateTimeZoneWriter
@@ -101,8 +102,12 @@ class _DtzIoHelper:
         assert actual == expected
         self.__io_stream.assert_end_of_stream()
 
-    def test_zone_recurrence(self, expected: object) -> None:
-        raise NotImplementedError
+    def test_zone_recurrence(self, expected: _ZoneRecurrence) -> None:
+        self.reset()
+        expected._write(self.__writer)
+        actual = _ZoneRecurrence.read(self._reader)
+        assert actual == expected
+        self.__io_stream.assert_end_of_stream()
 
     def test_zone_year_offset(self, expected: _ZoneYearOffset) -> None:
         self.reset()
