@@ -28,6 +28,7 @@ from pyoda_time._local_instant import _LocalInstant
 from pyoda_time._year_month_day import _YearMonthDay
 from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
 from pyoda_time.time_zones import ZoneInterval
+from pyoda_time.time_zones._transition import _Transition
 from pyoda_time.time_zones._transition_mode import _TransitionMode
 from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset
 from pyoda_time.time_zones.cldr import MapZone
@@ -45,6 +46,7 @@ VALUES = [
     Offset.zero,
     OffsetTime(LocalTime.midnight, Offset.zero),
     Period.zero,
+    _Transition._ctor(Instant.max_value, Offset.zero),
     YearMonth(year=1, month=1),
     _YearMonthDay._ctor(raw_value=1),
     _YearMonthDayCalendar._ctor(year_month_day=1, calendar_ordinal=_CalendarOrdinal.BADI),
