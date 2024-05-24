@@ -136,7 +136,7 @@ class _ZoneYearOffset:
     def __repr__(self) -> str:
         return (
             f"ZoneYearOffset["
-            f"mode:{self.mode} "
+            f"mode:{self.mode.name} "
             f"monthOfYear:{self.__month_of_year} "
             f"dayOfMonth:{self.__day_of_month} "
             f"dayOfWeek:{self.__day_of_week} "
