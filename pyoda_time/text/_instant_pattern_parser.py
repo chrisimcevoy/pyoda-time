@@ -31,7 +31,7 @@ class _InstantPatternParser(_IPatternParser[Instant]):
 
     __GENERAL_PATTERN_TEXT: Final[str] = "uuuu'-'MM'-'dd'T'HH':'mm':'ss'Z'"
     _BEFORE_MIN_VALUE_TEXT: Final[str] = "StartOfTime"
-    _AFTER_MIN_VALUE_TEXT: Final[str] = "EndOfTime"
+    _AFTER_MAX_VALUE_TEXT: Final[str] = "EndOfTime"
 
     __local_template_value: LocalDateTime
     __two_digit_year_max: int
@@ -81,7 +81,7 @@ class _InstantPatternParser(_IPatternParser[Instant]):
                 return self.__pattern.format(value.in_utc().local_date_time)
             if value == Instant._before_min_value():
                 return _InstantPatternParser._BEFORE_MIN_VALUE_TEXT
-            return _InstantPatternParser._AFTER_MIN_VALUE_TEXT
+            return _InstantPatternParser._AFTER_MAX_VALUE_TEXT
 
         def append_format(self, value: Instant, builder: StringBuilder) -> StringBuilder:
             return self.__pattern.append_format(value.in_utc().local_date_time, builder)
