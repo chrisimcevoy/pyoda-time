@@ -3,9 +3,7 @@
 # as found in the LICENSE.txt file.
 from typing import cast
 
-import helpers
 import pytest
-from time_zones.io.dtz_io_helper import _DtzIoHelper
 
 from pyoda_time import Duration, Instant, IsoDayOfWeek, LocalTime, Offset, PyodaConstants
 from pyoda_time.calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
@@ -14,6 +12,9 @@ from pyoda_time.time_zones._transition_mode import _TransitionMode
 from pyoda_time.time_zones._zone_recurrence import _ZoneRecurrence
 from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants
+
+from .. import helpers
+from .io.dtz_io_helper import _DtzIoHelper
 
 
 class TestZoneRecurrence:
