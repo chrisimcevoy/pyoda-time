@@ -191,7 +191,20 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
 
     @property
     def _instant_pattern_parser(self) -> _FixedFormatInfoPatternParser[Instant]:
-        raise NotImplementedError
+        if self.__instant_pattern_parser is None:
+            with self.__FIELD_LOCK:
+                if self.__instant_pattern_parser is None:
+                    from pyoda_time.text import InstantPattern, LocalDatePattern
+                    from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+                    from pyoda_time.text._instant_pattern_parser import _InstantPatternParser
+
+                    self.__instant_pattern_parser = _FixedFormatInfoPatternParser(
+                        _InstantPatternParser._ctor(
+                            InstantPattern._DEFAULT_TEMPLATE_VALUE, LocalDatePattern._DEFAULT_TWO_DIGIT_YEAR_MAX
+                        ),
+                        self,
+                    )
+        return self.__instant_pattern_parser
 
     @property
     def _local_time_pattern_parser(self) -> _FixedFormatInfoPatternParser[LocalTime]:
