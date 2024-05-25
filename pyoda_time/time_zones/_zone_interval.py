@@ -146,9 +146,10 @@ class ZoneInterval:
             end = Instant._after_max_value()
 
         _Preconditions._check_not_null(name, "name")
-        _Preconditions._check_argument(
-            start < end, "start", f"The start Instant must be less than the end Instant. start: {start}; end: {end}"
-        )
+        if start >= end:  # Needed to prevent infinite recursion calling Instant.__repr__
+            _Preconditions._check_argument(
+                start < end, "start", f"The start Instant must be less than the end Instant. start: {start}; end: {end}"
+            )
         self.__name: Final[str] = name
         self.__raw_start: Final[Instant] = start
         self.__raw_end: Final[Instant] = end
@@ -187,6 +188,7 @@ class ZoneInterval:
 
     def _contains(self, local_instant: _LocalInstant) -> bool:
         """Determines whether this period contains the given LocalInstant in its range."""
+        # TODO: why is this not implemented in __contains__ above?
         # Implementation of ``internal bool Contains(LocalInstant localInstant)``
         return self.__local_start <= local_instant < self.__local_end
 

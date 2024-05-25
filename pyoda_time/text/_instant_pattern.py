@@ -67,7 +67,7 @@ class __CombinedMeta(_ProtocolMeta, _InstantPatternMeta):
 class InstantPattern(IPattern[Instant], metaclass=__CombinedMeta):
     """Represents a pattern for parsing and formatting ``Instant`` values."""
 
-    __DEFAULT_TEMPLATE_VALUE: Final[Instant] = Instant.from_utc(2000, 1, 1, 0, 0)
+    _DEFAULT_TEMPLATE_VALUE: Final[Instant] = Instant.from_utc(2000, 1, 1, 0, 0)
 
     __pattern: IPattern[Instant]
     __pattern_text: str
@@ -164,7 +164,7 @@ class InstantPattern(IPattern[Instant], metaclass=__CombinedMeta):
         return cls.__create(
             pattern_text,
             _PyodaFormatInfo._get_format_info(culture_info),
-            cls.__DEFAULT_TEMPLATE_VALUE,
+            cls._DEFAULT_TEMPLATE_VALUE,
             LocalDatePattern._DEFAULT_TWO_DIGIT_YEAR_MAX,
         )
 
@@ -182,7 +182,7 @@ class InstantPattern(IPattern[Instant], metaclass=__CombinedMeta):
         return cls.__create(
             pattern_text,
             _PyodaFormatInfo.current_info,
-            cls.__DEFAULT_TEMPLATE_VALUE,
+            cls._DEFAULT_TEMPLATE_VALUE,
             LocalDatePattern._DEFAULT_TWO_DIGIT_YEAR_MAX,
         )
 
@@ -198,7 +198,7 @@ class InstantPattern(IPattern[Instant], metaclass=__CombinedMeta):
         return cls.__create(
             pattern_text,
             _PyodaFormatInfo.invariant_info,
-            cls.__DEFAULT_TEMPLATE_VALUE,
+            cls._DEFAULT_TEMPLATE_VALUE,
             LocalDatePattern._DEFAULT_TWO_DIGIT_YEAR_MAX,
         )
 

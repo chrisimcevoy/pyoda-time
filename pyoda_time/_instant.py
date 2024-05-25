@@ -472,13 +472,8 @@ class Instant(metaclass=_InstantMeta):
         )
         return ZonedDateTime._ctor(offset_date_time=offset_date_time, zone=DateTimeZone.utc)
 
-    def __str__(self) -> str:
-        if not self._is_valid:
-            if self == self._before_min_value():
-                # TODO: Instant._before_min_value.__str__()
-                return super().__str__()
-            if self == self._after_max_value():
-                # TODO: Instant._after_max_value.__str__()
-                return super().__str__()
-        ldt = self.in_utc().local_date_time
-        return f"{ldt.year:0>4}-{ldt.month:0>2}-{ldt.day:0>2}T{ldt.hour:0>2}:{ldt.minute:0>2}:{ldt.second:0>2}Z"
+    def __repr__(self) -> str:
+        from pyoda_time._compatibility._culture_info import CultureInfo
+        from pyoda_time.text import InstantPattern
+
+        return InstantPattern._bcl_support.format(self, None, CultureInfo.current_culture)
