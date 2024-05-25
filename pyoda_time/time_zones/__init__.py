@@ -9,6 +9,7 @@ __all__ = [
     "TzdbZone1970Location",
     "TzdbZoneLocation",
     "ZoneInterval",
+    "ZoneLocalMapping",
 ]
 
 from . import cldr, io
@@ -16,3 +17,4 @@ from ._i_date_time_zone_source import IDateTimeZoneSource
 from ._tzdb_zone_1970_location import TzdbZone1970Location
 from ._tzdb_zone_location import TzdbZoneLocation
 from ._zone_interval import ZoneInterval
+from ._zone_local_mapping import ZoneLocalMapping
