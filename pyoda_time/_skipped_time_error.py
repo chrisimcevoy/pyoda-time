@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from typing import final
 
-from pyoda_time import DateTimeZone, LocalDateTime
+from pyoda_time._date_time_zone import DateTimeZone
+from pyoda_time._local_date_time import LocalDateTime
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions
 

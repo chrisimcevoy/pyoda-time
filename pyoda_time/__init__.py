@@ -11,6 +11,7 @@ __all__: list[str] = [
     "text",
     "time_zones",
     "utility",
+    "AmbiguousTimeError",
     "CalendarSystem",
     "DateAdjusters",
     "DateInterval",
@@ -43,6 +44,7 @@ from . import (
     time_zones,
     utility,
 )
+from ._ambiguous_time_error import AmbiguousTimeError
 from ._calendar_system import CalendarSystem
 from ._date_adjusters import DateAdjusters
 from ._date_interval import DateInterval
