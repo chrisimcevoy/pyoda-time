@@ -1,10 +1,16 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from pyoda_time._date_time_zone import DateTimeZone
-from pyoda_time._local_date_time import LocalDateTime
-from pyoda_time._zoned_date_time import ZonedDateTime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from pyoda_time._date_time_zone import DateTimeZone
+    from pyoda_time._local_date_time import LocalDateTime
+    from pyoda_time._zoned_date_time import ZonedDateTime
 
 
 class AmbiguousTimeError(ValueError):
