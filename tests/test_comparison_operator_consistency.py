@@ -37,6 +37,8 @@ from pyoda_time.time_zones._zone_recurrence import _ZoneRecurrence
 from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset
 from pyoda_time.time_zones.cldr import MapZone
 
+from .time_zones.test_standard_daylight_alternating_map import TEST_MAP as standard_daylight_alternating_map
+
 VALUES = [
     DateInterval(LocalDate.min_iso_value, LocalDate.max_iso_value),
     Duration.zero,
@@ -51,6 +53,7 @@ VALUES = [
     OffsetDateTime(LocalDateTime(), Offset.zero),
     OffsetTime(LocalTime.midnight, Offset.zero),
     Period.zero,
+    standard_daylight_alternating_map,
     _Transition._ctor(Instant.max_value, Offset.zero),
     YearMonth(year=1, month=1),
     _YearMonthDay._ctor(raw_value=1),
