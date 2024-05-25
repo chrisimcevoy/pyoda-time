@@ -83,7 +83,7 @@ class _LocalInstant:
         """
         from . import Instant
 
-        return Instant._MIN_DAYS < self._days_since_epoch < Instant._MAX_DAYS
+        return Instant._MIN_DAYS <= self._days_since_epoch <= Instant._MAX_DAYS
 
     @property
     def _time_since_local_epoch(self) -> Duration:
