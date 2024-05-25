@@ -74,6 +74,14 @@ class ZonedDateTime:
         self.__zone: DateTimeZone = _Preconditions._check_not_null(zone, "zone")
 
     @property
+    def zone(self) -> DateTimeZone:
+        """Gets the time zone associated with this value.
+
+        :return: The time zone associated with this value.
+        """
+        return self.__zone or DateTimeZone.utc
+
+    @property
     def local_date_time(self) -> LocalDateTime:
         return self.__offset_date_time.local_date_time
 
