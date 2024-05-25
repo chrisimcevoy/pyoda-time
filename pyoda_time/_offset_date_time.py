@@ -121,3 +121,17 @@ class OffsetDateTime:
             self.__offset_time._offset_nanoseconds
         )
         return elapsed_time
+
+    # region Operators
+
+    def __eq__(self, other: object) -> bool:
+        """Implements the operator == (equality). See the type documentation for a description of equality semantics.
+
+        :param other: The value to compare this offset date/time with.
+        :return: True if the given value is another offset date/time equal to this one; false otherwise..
+        """
+        if not isinstance(other, OffsetDateTime):
+            return NotImplemented
+        return self.__local_date == other.__local_date and self.__offset_time == other.__offset_time
+
+    # endregion

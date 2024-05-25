@@ -11,7 +11,7 @@ from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
-    from . import Period, ZonedDateTime
+    from . import Offset, OffsetDateTime, Period, ZonedDateTime
     from ._iso_day_of_week import IsoDayOfWeek
     from ._local_date import LocalDate
     from ._local_instant import _LocalInstant
@@ -375,6 +375,19 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         return LocalDateTime._ctor(local_date=date, local_time=time)
 
     # endregion
+
+    def with_offset(self, offset: Offset) -> OffsetDateTime:
+        """Returns an ``OffsetDateTime`` for this local date/time with the given offset.
+
+        This method is purely a convenient alternative to calling the ``OffsetDateTime`` constructor directly.
+
+        :param offset: The offset to apply.
+        :return: The result of this local date/time offset by the given amount.
+        """
+        from ._offset_date_time import OffsetDateTime
+        from ._offset_time import OffsetTime
+
+        return OffsetDateTime._ctor(local_date=self.__date, offset_time=OffsetTime(self.__time, offset))
 
     def in_utc(self) -> ZonedDateTime:
         """Returns the mapping of this local date/time within ``DateTimeZone.Utc``.
