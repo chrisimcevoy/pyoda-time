@@ -58,3 +58,34 @@ jobs:
 
       - name: Run pre-commit hooks
         run: poetry run pre-commit run -a
+
+  sphinx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Generate html docs
+        run: make docs.sphinx.html
+
+      - name: Check for unstaged files
+        run: |
+          if [[ $(git status --porcelain) ]]; then
+            echo "Unstaged files detected. Please run `make docs.sphinx.html` and commit the generated files."
+            git status --porcelain
+            exit 1
+          fi
