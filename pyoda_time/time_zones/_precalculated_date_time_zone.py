@@ -10,6 +10,7 @@ from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap
 from pyoda_time.time_zones._standard_daylight_alternating_map import _StandardDaylightAlternatingMap
 from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
+from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from pyoda_time.utility._csharp_compatibility import _sealed, _towards_zero_division
 from pyoda_time.utility._preconditions import _Preconditions
 
@@ -53,10 +54,17 @@ class _PrecalculatedDateTimeZone(DateTimeZone):
             )
         else:
             self.__first_tail_zone_interval = None
-        self.__validate_periods(intervals, tail_zone)
+        self._validate_periods(intervals, tail_zone)
 
     @staticmethod
-    def __validate_periods(periods: list[ZoneInterval], tail_zone: _IZoneIntervalMap | None) -> None:
+    def _validate_periods(periods: list[ZoneInterval], tail_zone: _IZoneIntervalMap | None) -> None:
+        """Validates that all the periods before the tail zone make sense. We have to start at the beginning of time,
+        and then have adjoining periods. This is only called in the constructors.
+
+        This is only called from the constructors, but is internal to make it easier to test.
+
+        :raises ValueError: The periods specified are invalid.
+        """
         _Preconditions._check_argument(len(periods) > 0, "periods", "No periods specified in precalculated time zone")
         _Preconditions._check_argument(
             not periods[0].has_start,
@@ -111,6 +119,36 @@ class _PrecalculatedDateTimeZone(DateTimeZone):
         raise RuntimeError(f"Instant {instant} did not exist in time zone {self.id}")
 
     # region I/O
+
+    def _write(self, writer: _IDateTimeZoneWriter) -> None:
+        """Writes the time zone to the specified writer.
+
+        :param writer: The writer to write to.
+        """
+        _Preconditions._check_not_null(writer, "writer")
+
+        # We used to create a pool of strings just for this zone. This was more efficient
+        # for some zones, as it meant that each string would be written out with just a single
+        # byte after the pooling. Optimizing the string pool globally instead allows for
+        # roughly the same efficiency, and simpler code here.
+        writer.write_count(len(self.__periods))
+        previous: Instant | None = None
+        for period in self.__periods:
+            writer.write_zone_interval_transition(previous, previous := period._raw_start)
+            writer.write_string(period.name)
+            writer.write_offset(period.wall_offset)
+            writer.write_offset(period.savings)
+
+        writer.write_zone_interval_transition(previous, self.__tail_zone_start)
+        # We could just check whether we've got to the end of the stream, but this
+        # feels slightly safer.
+        writer.write_byte(0 if self.__tail_zone is None else 1)
+        if self.__tail_zone is not None:
+            # TODO: In Noda Time, this is done with a cast...
+            # This is the only kind of zone we support in the new format. Enforce that...
+            if not isinstance(self.__tail_zone, _StandardDaylightAlternatingMap):
+                raise RuntimeError(f"Only {_StandardDaylightAlternatingMap.__name__} is supported")
+            self.__tail_zone._write(writer)
 
     @classmethod
     def _read(cls, reader: _IDateTimeZoneReader, id_: str) -> DateTimeZone:
