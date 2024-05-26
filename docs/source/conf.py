@@ -64,10 +64,12 @@ autodoc_default_options = {
     "special-members": ",".join(
         [
             "__add__",
+            "__contains__",
             "__eq__",
             "__ge__",
             "__gt__",
             "__init__",
+            "__iter__",
             "__le__",
             "__lt__",
             "__neg__",
