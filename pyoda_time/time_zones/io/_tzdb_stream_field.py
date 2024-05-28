@@ -47,8 +47,10 @@ class _TzdbStreamField:
 
     @classmethod
     def _read_fields(cls, stream: BinaryIO) -> Generator[_TzdbStreamField, None, None]:
-        field_id = stream.read(1)
-        if field_id:
+        while True:
+            field_id = stream.read(1)
+            if not field_id:
+                break
             id_ = _TzdbStreamFieldId(field_id[0])
             # Read 7-bit encoded length
             length = _DateTimeZoneReader._ctor(stream, None).read_count()

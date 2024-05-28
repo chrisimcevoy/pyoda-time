@@ -15,6 +15,7 @@ from pyoda_time.utility._csharp_compatibility import (
     _int64_overflow,
     _private,
     _sealed,
+    _to_lookup,
 )
 
 
@@ -130,3 +131,19 @@ def test_int32_overflow(value: int, expected: int) -> None:
 )
 def test_int64_overflow(value: int, expected: int) -> None:
     assert _int64_overflow(value) == expected
+
+
+def test_to_lookup() -> None:
+    actual = _to_lookup(
+        {
+            "foo": "bar",
+            "spam": "bar",
+            "eggs": "bar",
+            "baz": "spam eggs",
+        }
+    )
+    expected = {
+        "bar": ["foo", "spam", "eggs"],
+        "spam eggs": ["baz"],
+    }
+    assert actual == expected

@@ -45,6 +45,10 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
 
     _UTC_ID: Final[str] = "UTC"
 
+    @classmethod
+    def for_offset(cls, offset: Offset) -> DateTimeZone:
+        raise NotImplementedError
+
     def __init__(self, id_: str, is_fixed: bool, min_offset: Offset, max_offset: Offset) -> None:
         """Initializes a new instance of the DateTimeZone class.
 

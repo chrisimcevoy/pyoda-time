@@ -32,6 +32,7 @@ from pyoda_time._local_instant import _LocalInstant
 from pyoda_time._year_month_day import _YearMonthDay
 from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
 from pyoda_time.time_zones import ZoneInterval
+from pyoda_time.time_zones._fixed_date_time_zone import _FixedDateTimeZone
 from pyoda_time.time_zones._transition import _Transition
 from pyoda_time.time_zones._transition_mode import _TransitionMode
 from pyoda_time.time_zones._zone_recurrence import _ZoneRecurrence
@@ -43,6 +44,7 @@ from .time_zones.test_standard_daylight_alternating_map import TEST_MAP as stand
 VALUES = [
     DateInterval(LocalDate.min_iso_value, LocalDate.max_iso_value),
     Duration.zero,
+    _FixedDateTimeZone(Offset.zero, None, None),
     Instant.max_value,
     Interval(),
     _LocalInstant.after_max_value(),
