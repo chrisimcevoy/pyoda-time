@@ -4,11 +4,12 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, final
 
 from ._iso_day_of_week import IsoDayOfWeek
 from ._local_date import LocalDate
 from ._period import Period
+from .utility._csharp_compatibility import _private, _sealed
 from .utility._preconditions import _Preconditions
 
 
@@ -35,6 +36,9 @@ class __DateAdjustersMeta(type):
         )
 
 
+@final
+@_sealed
+@_private
 class DateAdjusters(metaclass=__DateAdjustersMeta):
     """Factory class for date adjusters: functions from ``LocalDate`` to ``LocalDate``,
     which can be applied to ``LocalDate``, ``LocalDateTime``, and ``OffsetDateTime``.
