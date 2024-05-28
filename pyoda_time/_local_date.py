@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator, final, overload
+from typing import TYPE_CHECKING, Callable, Generator, final, overload
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._calendar_system import CalendarSystem
@@ -397,6 +397,50 @@ class LocalDate(metaclass=_LocalDateMeta):
 
         return _DatePeriodFields._weeks_field.add(self, weeks)
 
+    def next(self, target_day_of_week: IsoDayOfWeek) -> LocalDate:
+        """Returns the next ``LocalDate`` falling on the specified ``IsoDayOfWeek``.
+
+        This is a strict "next" - if this date on already falls on the target day of the week, the returned value will
+        be a week later.
+
+        :param target_day_of_week: The ISO day of the week to return the next date of.
+        :return: The next ``LocalDate`` falling on the specified day of the week.
+        :raises RuntimeError: The underlying calendar doesn't use ISO days of the week.
+        :raises ValueError: ``target_day_of_week`` is not a valid day of the week (Monday to Sunday).
+        """
+        if target_day_of_week < IsoDayOfWeek.MONDAY or target_day_of_week > IsoDayOfWeek.SUNDAY:
+            raise ValueError(
+                f"target_day_of_week must be in the range [{IsoDayOfWeek.MONDAY} to {IsoDayOfWeek.SUNDAY}]"
+            )
+        # This will throw the desired exception for calendars with different week systems.
+        this_day = self.day_of_week
+        difference = target_day_of_week - this_day
+        if difference <= 0:
+            difference += 7
+        return self.plus_days(difference)
+
+    def previous(self, target_day_of_week: IsoDayOfWeek) -> LocalDate:
+        """Returns the previous ``LocalDate`` falling on the specified ``IsoDayOfWeek``.
+
+        This is a strict "previous" - if this date on already falls on the target day of the week, the returned value
+        will be a week earlier.
+
+        :param target_day_of_week: The ISO day of the week to return the previous date of.
+        :return: The previous ``LocalDate`` falling on the specified day of the week.
+        :raises RuntimeError: The underlying calendar doesn't use ISO days of the week.
+        :raises ValueError: ``target_day_of_week`` is not a valid day of the week (Monday to Sunday).
+        """
+        if target_day_of_week < IsoDayOfWeek.MONDAY or target_day_of_week > IsoDayOfWeek.SUNDAY:
+            raise ValueError(
+                f"target_day_of_week must be in the range [{IsoDayOfWeek.MONDAY} to {IsoDayOfWeek.SUNDAY}]"
+            )
+        # This will throw the desired exception for calendars with different week systems.
+        this_day = self.day_of_week
+        difference = target_day_of_week - this_day
+        if difference >= 0:
+            difference -= 7
+        return self.plus_days(difference)
+
     def at(self, time: LocalTime) -> LocalDateTime:
         """Combines this ``LocalDate`` with the given ``LocalTime`` into a single ``LocalDateTime``.
 
@@ -406,6 +450,17 @@ class LocalDate(metaclass=_LocalDateMeta):
         :return: The ``LocalDateTime`` representation of the given time on this date.
         """
         return self + time
+
+    def with_(self, adjuster: Callable[[LocalDate], LocalDate]) -> LocalDate:
+        """Returns this date, with the given adjuster applied to it.
+
+        If the adjuster attempts to construct an invalid date (such as by trying to set a day-of-month of 30 in
+        February), any exception thrown by that construction attempt will be propagated through this method.
+
+        :param adjuster: The adjuster to apply.
+        :return: The adjusted date.
+        """
+        return _Preconditions._check_not_null(adjuster, "adjuster")(self)
 
     def __iter__(self) -> Generator[int, None, None]:
         """Deconstructs the current instance into its components.
