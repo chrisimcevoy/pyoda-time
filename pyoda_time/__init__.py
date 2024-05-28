@@ -12,6 +12,7 @@ __all__: list[str] = [
     "time_zones",
     "utility",
     "AmbiguousTimeError",
+    "AnnualDate",
     "CalendarSystem",
     "DateAdjusters",
     "DateInterval",
@@ -50,6 +51,7 @@ from . import (
 # classes which uses PyodaConstants (e.g. Interval) don't blow up.
 from ._pyoda_constants import PyodaConstants  # isort: skip
 from ._ambiguous_time_error import AmbiguousTimeError
+from ._annual_date import AnnualDate
 from ._calendar_system import CalendarSystem
 from ._date_adjusters import DateAdjusters
 from ._date_interval import DateInterval
