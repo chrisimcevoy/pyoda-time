@@ -6,13 +6,18 @@ from __future__ import annotations
 
 import datetime
 import decimal
-from typing import Any, Final, Literal, TypeVar
+from collections import defaultdict
+from collections.abc import Mapping
+from types import MappingProxyType
+from typing import Any, Final, Literal, Sequence, TypeVar
 
 __all__: list[str] = []
 
 SEALED_CLASSES: Final[list[type]] = []
 _T = TypeVar("_T")
 _Ttype = TypeVar("_Ttype", bound=type)
+_TKey = TypeVar("_TKey")
+_TValue = TypeVar("_TValue")
 
 
 def _as_span(text: str | None, start: int) -> str:
@@ -42,6 +47,15 @@ def _to_ticks(dt: datetime.datetime) -> int:
     """Get a value akin to C#'s DateTime.Ticks property from a python datetime."""
     # Gratefully stolen from https://stackoverflow.com/a/29368771
     return int((dt - datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds() * 10000000)
+
+
+def _to_lookup(mapping: Mapping[_TKey, _TValue]) -> MappingProxyType[_TValue, Sequence[_TKey]]:
+    """Produces a mapping of value->keys, aking to the `.ToLookup()` in dotnet."""
+    # TODO: Make this work for other collections, not just dict.
+    lookup = defaultdict(list)
+    for k, v in mapping.items():
+        lookup[v].append(k)
+    return MappingProxyType(lookup)
 
 
 def _sealed(cls: _Ttype) -> _Ttype:

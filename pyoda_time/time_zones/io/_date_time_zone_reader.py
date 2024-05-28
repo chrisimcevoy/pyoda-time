@@ -142,7 +142,12 @@ class _DateTimeZoneReader(_IDateTimeZoneReader):
 
         :return: The ``dict[TKey,TValue]`` value from the stream.
         """
-        results = {self.read_string(): self.read_string() for _ in range(self.read_count())}
+        results = {}
+        count = self.read_count()
+        for _ in range(count):
+            key = self.read_string()
+            value = self.read_string()
+            results[key] = value
         return results
 
     def read_zone_interval_transition(self, previous: Instant | None) -> Instant:

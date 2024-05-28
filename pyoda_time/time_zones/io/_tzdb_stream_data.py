@@ -3,15 +3,19 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-import io
 import struct
 import types
 from typing import Any, BinaryIO, Callable, Final, Sequence, TypeVar, final
 
+from pyoda_time import DateTimeZone
 from pyoda_time.time_zones import TzdbZoneLocation
+from pyoda_time.time_zones._cached_date_time_zone import _CachedDateTimeZone
+from pyoda_time.time_zones._fixed_date_time_zone import _FixedDateTimeZone
+from pyoda_time.time_zones._precalculated_date_time_zone import _PrecalculatedDateTimeZone
 from pyoda_time.time_zones._tzdb_zone_1970_location import TzdbZone1970Location
 from pyoda_time.time_zones.cldr import WindowsZones
 from pyoda_time.time_zones.io._date_time_zone_reader import _DateTimeZoneReader
+from pyoda_time.time_zones.io._date_time_zone_writer import _DateTimeZoneWriter
 from pyoda_time.time_zones.io._tzdb_stream_field import _TzdbStreamField
 from pyoda_time.time_zones.io._tzdb_stream_field_id import _TzdbStreamFieldId
 from pyoda_time.utility import InvalidPyodaDataError
@@ -120,6 +124,29 @@ class _TzdbStreamData:
         """Returns the TZDB version string."""
         return self.__tzdb_version
 
+    @property
+    def tzdb_id_map(self) -> types.MappingProxyType[str, str]:
+        """Returns the TZDB ID dictionary (alias to canonical ID)."""
+        return self.__tzdb_id_map
+
+    @property
+    def windows_mapping(self) -> WindowsZones:
+        """Returns the Windows mapping dictionary.
+
+        (As the type is immutable, it can be exposed directly to callers.)
+        """
+        return self.__windows_mapping
+
+    @property
+    def zone_locations(self) -> Sequence[TzdbZoneLocation] | None:
+        """Returns the zone locations for the source, or null if no location data is available."""
+        return self.__zone_locations
+
+    @property
+    def zone_1970_locations(self) -> Sequence[TzdbZone1970Location] | None:
+        """Returns the "zone 1970" locations for the source, or null if no such location data is available."""
+        return self.__zone_1970_locations
+
     def __init__(self, builder: _Builder) -> None:
         self.__string_pool: Sequence[str] = self._check_not_null(builder._string_pool, "string pool")
         mutable_id_map = self._check_not_null(builder._tzdb_id_map, "TZDB alias map")
@@ -132,7 +159,30 @@ class _TzdbStreamData:
         # Add in the canonical IDs as mappings to themselves
         for zone_id in self.__zone_fields:
             mutable_id_map[zone_id] = zone_id
-        self.__tzdb_id_map = types.MappingProxyType(mutable_id_map)
+        self.__tzdb_id_map: types.MappingProxyType[str, str] = types.MappingProxyType(mutable_id_map)
+
+    def create_zone(self, id_: str, canonical_id: str) -> DateTimeZone:
+        """Creates the ``DateTimeZone`` for the given canonical ID, which will definitely be one of the values of the
+        TzdbAliases dictionary.
+
+        :param id_: ID for the returned zone, which may be an alias.
+        :param canonical_id: Canonical ID for zone data
+        :return: The created ``DateTimeZone`` for the given ID.
+        """
+        _Preconditions._check_not_null(id_, "id_")
+        _Preconditions._check_not_null(canonical_id, "canonical_id")
+        with self.__zone_fields[canonical_id]._create_stream() as stream:
+            reader = _DateTimeZoneReader._ctor(stream, self.__string_pool)
+            # Skip over the ID before the zone data itself
+            reader.read_string()
+            type_ = _DateTimeZoneWriter._DateTimeZoneType(reader.read_byte())
+            match type_:
+                case _DateTimeZoneWriter._DateTimeZoneType.FIXED:
+                    return _FixedDateTimeZone.read(reader, id_)
+                case _DateTimeZoneWriter._DateTimeZoneType.PRECALCULATED:
+                    return _CachedDateTimeZone._for_zone(_PrecalculatedDateTimeZone._read(reader, id_))
+                case _:
+                    raise InvalidPyodaDataError(f"Unknown time zone type {type_.name}")
 
     @staticmethod
     def _check_not_null(input_: T | None, name: str) -> T:
@@ -144,8 +194,7 @@ class _TzdbStreamData:
     def _from_stream(cls, stream: BinaryIO) -> _TzdbStreamData:
         _Preconditions._check_not_null(stream, "stream")
 
-        with io.BytesIO(stream.read()) as reader:
-            version = struct.unpack("i", reader.read(4))[0]
+        version = struct.unpack("i", stream.read(4))[0]
         if version != cls.__ACCEPTED_VERSION:
             raise InvalidPyodaDataError(f"Unable to read stream with version {version}")
 
