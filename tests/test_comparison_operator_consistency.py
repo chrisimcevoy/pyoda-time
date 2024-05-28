@@ -12,6 +12,7 @@ import pytest
 
 import pyoda_time
 from pyoda_time import (
+    AnnualDate,
     DateInterval,
     Duration,
     Instant,
@@ -42,6 +43,7 @@ from pyoda_time.time_zones.cldr import MapZone
 from .time_zones.test_standard_daylight_alternating_map import TEST_MAP as standard_daylight_alternating_map
 
 VALUES = [
+    AnnualDate(),
     DateInterval(LocalDate.min_iso_value, LocalDate.max_iso_value),
     Duration.zero,
     _FixedDateTimeZone(Offset.zero, None, None),

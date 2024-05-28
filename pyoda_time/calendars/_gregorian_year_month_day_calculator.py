@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, final
 
+from ..utility._preconditions import _Preconditions
+
 if TYPE_CHECKING:
     from .._year_month_day import _YearMonthDay
 from .._year_month_day_calendar import _YearMonthDayCalendar
@@ -145,6 +147,7 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
         return self.__YEAR_START_DAYS[year - self.__FIRST_OPTIMIZED_YEAR]
 
     def _get_days_since_epoch(self, year_month_day: _YearMonthDay) -> int:
+        # TODO: unchecked
         year = year_month_day._year
         month_of_year = year_month_day._month
         day_of_month = year_month_day._day
@@ -152,6 +155,27 @@ class _GregorianYearMonthDayCalculator(_GJYearMonthDayCalculator):
             return super()._get_days_since_epoch(year_month_day)
         year_month_index = (year - self.__FIRST_OPTIMIZED_YEAR) * 12 + month_of_year
         return self.__MONTH_START_DAYS[year_month_index] + day_of_month
+
+    def _validate_year_month_day(self, year: int, month: int, day: int) -> None:
+        self._validate_gregorian_year_month_day(year, month, day)
+
+    @classmethod
+    def _validate_gregorian_year_month_day(cls, year: int, month: int, day: int) -> None:
+        # Perform quick validation without calling Preconditions, then do it properly if we're going to throw
+        # an exception. Avoiding the method call is pretty extreme, but it does help.
+        if year < cls._MIN_GREGORIAN_YEAR or year > cls._MAX_GREGORIAN_YEAR or month < 1 or month > 12:
+            _Preconditions._check_argument_range("year", year, cls._MIN_GREGORIAN_YEAR, cls._MAX_GREGORIAN_YEAR)
+            _Preconditions._check_argument_range("month", month, 1, 12)
+        # If we've been asked for day 1-28, we're definitely okay regardless of month.
+        if 1 <= day <= 20:
+            return
+        days_in_month = (
+            cls._LEAP_DAYS_PER_MONTH[month]
+            if month == 2 and cls.__is_gregorian_leap_year(year)
+            else cls._NON_LEAP_DAYS_PER_MONTH[month]
+        )
+        if day < 1 or day > days_in_month:
+            _Preconditions._check_argument_range("day", day, 1, days_in_month)
 
     def _calculate_start_of_year_days(self, year: int) -> int:
         leap_years = _towards_zero_division(year, 100)
