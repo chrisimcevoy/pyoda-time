@@ -18,6 +18,7 @@ from pyoda_time import (
     PyodaConstants,
     YearMonth,
 )
+from pyoda_time.text import LocalDateTimePattern
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants
 
 # June 19th 2010, 2:30:15am
@@ -617,11 +618,24 @@ class TestPeriod:
         with pytest.raises(OverflowError):
             Period.between(min_value, max_value, PeriodUnits.NANOSECONDS)
 
-    @pytest.mark.skip(reason="Requires LocalDateTimePattern")
+    @pytest.mark.parametrize(
+        "start_text,end_text,units,expected_forward,expected_backward",
+        [
+            ("2015-02-28T16:00:00", "2016-02-29T08:00:00", PeriodUnits.YEARS, 1, 0),
+            ("2015-02-28T16:00:00", "2016-02-29T08:00:00", PeriodUnits.MONTHS, 12, -11),
+            ("2015-02-28T16:00:00", "2016-02-29T08:00:00", PeriodUnits.MONTHS, 12, -11),
+            ("2014-01-01T16:00:00", "2014-01-03T08:00:00", PeriodUnits.HOURS, 40, -40),
+        ],
+    )
     def test_between_local_date_time_awkward_time_of_day_with_single_unit(
         self, start_text: str, end_text: str, units: PeriodUnits, expected_forward: int, expected_backward: int
     ) -> None:
-        raise NotImplementedError
+        start: LocalDateTime = LocalDateTimePattern.extended_iso.parse(start_text).value
+        end: LocalDateTime = LocalDateTimePattern.extended_iso.parse(end_text).value
+        forward: Period = Period.between(start, end, units)
+        assert forward.to_builder()[units] == expected_forward
+        backward: Period = Period.between(end, start, units)
+        assert backward.to_builder()[units] == expected_backward
 
     def test_between_local_date_time_same_value(self) -> None:
         start = LocalDateTime(2014, 1, 1, 16, 0, 0)
