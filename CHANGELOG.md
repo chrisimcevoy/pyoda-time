@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.8.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.7.1...v0.8.0) (2024-05-28)
+
+
+### Features
+
+* `LocalTime` pseudomutator tests ([#128](https://github.com/chrisimcevoy/pyoda-time/issues/128)) ([7419cf8](https://github.com/chrisimcevoy/pyoda-time/commit/7419cf8a49daae7484cd7c0d043577595acc14bf))
+* baseline `TzdbDateTimeZoneSource` functionality ([#146](https://github.com/chrisimcevoy/pyoda-time/issues/146)) ([7e05fd3](https://github.com/chrisimcevoy/pyoda-time/commit/7e05fd3e2db29c1471ebff198760d78c6cb3e3f6))
+* implement `__hash__`, `__repr__` and `__format__` for `LocalTime` ([#129](https://github.com/chrisimcevoy/pyoda-time/issues/129)) ([4a5a403](https://github.com/chrisimcevoy/pyoda-time/commit/4a5a403ddc0fad26beed8701b286e657604fdd40))
+* implement `LocalTime` conversions ([#121](https://github.com/chrisimcevoy/pyoda-time/issues/121)) ([79a2152](https://github.com/chrisimcevoy/pyoda-time/commit/79a2152cd4d135a95df857301c95ad7e4e1c55f7))
+* implement `LocalTime` operators ([#127](https://github.com/chrisimcevoy/pyoda-time/issues/127)) ([f23df54](https://github.com/chrisimcevoy/pyoda-time/commit/f23df54dc9da8e88940e63c20924e94eb4fc7f79))
+* port `AmbiguousTimeException` ([#136](https://github.com/chrisimcevoy/pyoda-time/issues/136)) ([fbd4c6f](https://github.com/chrisimcevoy/pyoda-time/commit/fbd4c6f260bfb5f97dd9ec6f67269abb788edcc9))
+* port `AnnualDate` ([#151](https://github.com/chrisimcevoy/pyoda-time/issues/151)) ([8b8751e](https://github.com/chrisimcevoy/pyoda-time/commit/8b8751eb7783ecf1db09ed02e372c7ba8cc55960))
+* port `DateAdjusters` ([#150](https://github.com/chrisimcevoy/pyoda-time/issues/150)) ([4931381](https://github.com/chrisimcevoy/pyoda-time/commit/4931381ed0fd60af3c2741338b13b9cfba842099))
+* port `FormatHelper` ([#119](https://github.com/chrisimcevoy/pyoda-time/issues/119)) ([3ffdccd](https://github.com/chrisimcevoy/pyoda-time/commit/3ffdccd7d93e75d899e88fb8ecc0398376688166))
+* port `IDateTimeZoneSource` ([#140](https://github.com/chrisimcevoy/pyoda-time/issues/140)) ([f8e7b93](https://github.com/chrisimcevoy/pyoda-time/commit/f8e7b9381aa2a524bed889cfdb8c01798682ae2b))
+* port `Interval` ([#142](https://github.com/chrisimcevoy/pyoda-time/issues/142)) ([91572a0](https://github.com/chrisimcevoy/pyoda-time/commit/91572a0ef6a7b35c27f140cdd80f491c14675664))
+* port `LocalInstant` ([#132](https://github.com/chrisimcevoy/pyoda-time/issues/132)) ([da186b0](https://github.com/chrisimcevoy/pyoda-time/commit/da186b0d616bcdd3b8b6331048e70eae97c9efcc))
+* port `LocalTimePattern` ([#120](https://github.com/chrisimcevoy/pyoda-time/issues/120)) ([5a57268](https://github.com/chrisimcevoy/pyoda-time/commit/5a5726808f2373dc38256deb92e503c9e4f40d35))
+* port `OffsetTime` ([#137](https://github.com/chrisimcevoy/pyoda-time/issues/137)) ([1d71816](https://github.com/chrisimcevoy/pyoda-time/commit/1d718166a0ca8b4d666d5b6657cb091d65b84bbd))
+* port `PreCalculatedDateTimeZone` ([#144](https://github.com/chrisimcevoy/pyoda-time/issues/144)) ([8e3326c](https://github.com/chrisimcevoy/pyoda-time/commit/8e3326c9805b70fca373a05fc80ca3346847ca2a))
+* port `SkippedTimeException` ([#135](https://github.com/chrisimcevoy/pyoda-time/issues/135)) ([ea5b9bd](https://github.com/chrisimcevoy/pyoda-time/commit/ea5b9bdb0770f3c950d0ef0837a07e28bd2619dd))
+* port `TimeAdjusters` ([3622f7d](https://github.com/chrisimcevoy/pyoda-time/commit/3622f7d3a16e2749e99f93793697415c59dfd7b6))
+* port `Transition` ([#131](https://github.com/chrisimcevoy/pyoda-time/issues/131)) ([da43ae3](https://github.com/chrisimcevoy/pyoda-time/commit/da43ae31c339c055cda5add169409f850dcc34a9))
+* port `TransitionMode` enum ([#115](https://github.com/chrisimcevoy/pyoda-time/issues/115)) ([a876393](https://github.com/chrisimcevoy/pyoda-time/commit/a8763933d50beddcb7dadf39f9d8f907de6de01b))
+* port `ZoneLocalMapping`, `PrecalculatedDateTimeZone` & `StandardDaylightAlternatingMap` ([#141](https://github.com/chrisimcevoy/pyoda-time/issues/141)) ([7394039](https://github.com/chrisimcevoy/pyoda-time/commit/7394039743b424154dd6cb1cfc8bd77b720cc13c))
+* port `ZoneRecurrence` ([#134](https://github.com/chrisimcevoy/pyoda-time/issues/134)) ([7222e10](https://github.com/chrisimcevoy/pyoda-time/commit/7222e106c7e446dbf6ea2a24b1aad58e6b313f05))
+* port `ZoneYearOffset` ([#130](https://github.com/chrisimcevoy/pyoda-time/issues/130)) ([5830937](https://github.com/chrisimcevoy/pyoda-time/commit/5830937e3b16dfeb888f831fb39b7c9d72ce1353))
+* use `InstantPattern` in `Instant.__repr__` ([#139](https://github.com/chrisimcevoy/pyoda-time/issues/139)) ([a126278](https://github.com/chrisimcevoy/pyoda-time/commit/a1262789c3d2b0f1217123684ceef29455217854))
+
+
+### Bug Fixes
+
+* `_LocalInstant._is_valid` ([84db8d0](https://github.com/chrisimcevoy/pyoda-time/commit/84db8d07c04fa7178e764ac0f06bce158dde3476))
+
 ## [0.7.1](https://github.com/chrisimcevoy/pyoda-time/compare/v0.7.0...v0.7.1) (2024-05-17)
 
 

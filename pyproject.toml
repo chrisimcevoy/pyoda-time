@@ -23,7 +23,7 @@ warn_unused_ignores = true
 
 [tool.poetry]
 name = "pyoda-time"
-version = "0.7.1"
+version = "0.8.0"
 description = "An alternative datetime library for Python."
 authors = ["Christopher McEvoy <12284065+chrisimcevoy@users.noreply.github.com>"]
 license = "Apache-2.0"
