@@ -108,9 +108,17 @@ class AnnualDate:
         """
         return hash(self.__value)
 
-    # TODO: [requires AnnualDatePattern]
-    #  def __repr__(self) -> str:
-    #  def __format__(self, format_spec: str) -> str
+    def __repr__(self) -> str:
+        from ._compatibility._culture_info import CultureInfo
+        from .text import AnnualDatePattern
+
+        return AnnualDatePattern._bcl_support.format(self, None, CultureInfo.current_culture)
+
+    def __format__(self, format_spec: str) -> str:
+        from ._compatibility._culture_info import CultureInfo
+        from .text import AnnualDatePattern
+
+        return AnnualDatePattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)
 
     def equals(self, other: AnnualDate) -> bool:
         """Compares this annual date with the specified one for equality.

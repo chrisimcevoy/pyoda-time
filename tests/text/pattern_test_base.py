@@ -14,8 +14,6 @@ T = TypeVar("T")
 class PatternTestBase(ABC, Generic[T]):
     @staticmethod
     def test_invalid_patterns(invalid_pattern_data: PatternTestData[T]) -> None:
-        if invalid_pattern_data.pattern == "hh":
-            pass
         invalid_pattern_data.test_invalid_pattern()
 
     @staticmethod

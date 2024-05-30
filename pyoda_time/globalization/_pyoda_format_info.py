@@ -14,6 +14,7 @@ from ..calendars import Era
 from ..utility._cache import _Cache
 
 if TYPE_CHECKING:
+    from .._annual_date import AnnualDate
     from .._duration import Duration
     from .._instant import Instant
     from .._local_date import LocalDate
@@ -97,7 +98,7 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
         # TODO: self.__offset_date_pattern_parser: _FixedFormatInfoPatternParser[OffsetDate] | None = None
         self.__offset_time_pattern_parser: _FixedFormatInfoPatternParser[OffsetTime] | None = None
         self.__zoned_date_time_pattern_parser: _FixedFormatInfoPatternParser[ZonedDateTime] | None = None
-        # TODO: self.__annual_date_pattern_parser: _FixedFormatInfoPatternParser[AnnualDate] | None = None
+        self.__annual_date_pattern_parser: _FixedFormatInfoPatternParser[AnnualDate] | None = None
         self.__year_month_pattern_parser: _FixedFormatInfoPatternParser[YearMonth] | None = None
 
     def __ensure_months_initialized(self) -> None:
@@ -262,8 +263,23 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
     #  internal FixedFormatInfoPatternParser<OffsetDate> OffsetDatePatternParser
     #  internal FixedFormatInfoPatternParser<OffsetTime> OffsetTimePatternParser
     #  internal FixedFormatInfoPatternParser<ZonedDateTime> ZonedDateTimePatternParser
-    #  internal FixedFormatInfoPatternParser<AnnualDate> AnnualDatePatternParser
     #  internal FixedFormatInfoPatternParser<YearMonth> YearMonthPatternParser
+
+    @property
+    def _annual_date_pattern_parser(self) -> _FixedFormatInfoPatternParser[AnnualDate]:
+        if self.__annual_date_pattern_parser is None:
+            with self.__FIELD_LOCK:
+                if self.__annual_date_pattern_parser is None:
+                    from pyoda_time.text import AnnualDatePattern
+                    from pyoda_time.text._annual_date_pattern_parser import _AnnualDatePatternParser
+
+                    from ..text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+
+                    self.__annual_date_pattern_parser = _FixedFormatInfoPatternParser(
+                        _AnnualDatePatternParser._ctor(AnnualDatePattern._DEFAULT_TEMPLATE_VALUE),
+                        self,
+                    )
+        return self.__annual_date_pattern_parser
 
     @property
     def long_month_names(self) -> Sequence[str]:

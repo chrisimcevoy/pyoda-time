@@ -4,8 +4,11 @@
 import pytest
 
 from pyoda_time import AnnualDate, LocalDate
+from pyoda_time._compatibility._culture_info import CultureInfo
 
 from . import helpers
+from .culture_saver import CultureSaver
+from .text.cultures import Cultures
 
 
 class TestAnnualDate:
@@ -51,6 +54,24 @@ class TestAnnualDate:
             AnnualDate(6, 19), AnnualDate(6, 19), AnnualDate(6, 20), AnnualDate(7, 1)
         )
 
-    # TODO: [requires AnnualDatePattern]
-    #  def test_to_string
-    #  def test_to_string_with_format
+    def test_to_string(self) -> None:
+        assert str(AnnualDate(2, 1)) == "02-01"
+        assert str(AnnualDate(2, 10)) == "02-10"
+        assert str(AnnualDate(12, 1)) == "12-01"
+        assert str(AnnualDate(12, 20)) == "12-20"
+
+    @pytest.mark.parametrize(
+        "pattern_text,culture,expected",
+        [
+            ("G", Cultures.fr_fr, "02-01"),
+            ("", Cultures.fr_fr, "02-01"),
+            ("MM/dd", Cultures.fr_fr, "02/01"),
+            ("MM/dd", Cultures.fr_ca, "02-01"),
+        ],
+    )
+    def test_to_string_with_format(self, pattern_text: str | None, culture: CultureInfo, expected: str) -> None:
+        # TODO: This is very different from Noda Time, which tests IFormattable.ToString()
+        #  The Noda Time test also has a None case...
+        annual_date = AnnualDate(2, 1)
+        with CultureSaver.set_cultures(culture):
+            assert f"{annual_date:{pattern_text}}"
