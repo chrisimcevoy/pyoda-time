@@ -4,6 +4,7 @@
 
 __all__: list[str] = [
     "patterns",
+    "AnnualDatePattern",
     "InstantPattern",
     "InvalidPatternError",
     "LocalDatePattern",
@@ -14,6 +15,7 @@ __all__: list[str] = [
     "UnparsableValueError",
 ]
 
+from ._annual_date_pattern import AnnualDatePattern
 from ._instant_pattern import InstantPattern
 from ._invalid_pattern_exception import InvalidPatternError
 from ._local_date_pattern import LocalDatePattern
