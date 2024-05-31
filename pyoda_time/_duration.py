@@ -64,11 +64,28 @@ class _DurationMeta(type):
 class Duration(metaclass=_DurationMeta):
     """Represents a fixed (and calendar-independent) length of time."""
 
-    # TODO: Noda Time's Duration class defines MaxDays as `(1 << 24) - 1` and MinDays as
-    #  `~MaxDays`. However, that range is not sufficiently large for timedelta conversion.
-    #  The thinking here is to retain the flavour of the Noda Time implementation, while
-    #  accommodating the range of the standard way of representing durations in Python.
-    _MAX_DAYS: Final[int] = (1 << 30) - 1
+    # Implementation note:
+    #
+    # Noda Time's `Duration` far exceeds the range of the equivalent BCL type, namely `TimeSpan`.
+    # `TimeSpan` has a range of approximately 292 years, whereas `Duration` in Noda Time has a range
+    # of over 20,000 years.
+    #
+    # In Python's standard library, the equivalent type is `datetime.timedelta`, which has a range
+    # from -86,399,999,913,600,000,000 microseconds to 86,399,999,999,999,999,999 microseconds,
+    # or about 2.7 billion years! This far exceeds the ranges of both Noda Time's `Duration` and
+    # the BCL's `TimeSpan`.
+    #
+    # It is unlikely that many (if any) users will need Pyoda Time's `Duration` to support a range
+    # much larger than that of `timedelta`. However, it should at least support conversion to and
+    # from `timedelta.min` and `timedelta.max`, in the same way that Noda Time's `Duration` supports
+    # conversion to and from `TimeSpan.MinValue` and `TimeSpan.MaxValue`.
+    #
+    # With that in mind, I have tried to retain the defining characteristics of this type from the
+    # mother project, while extending its range to accommodate the range of `timedelta`. Mostly this
+    # just involves increasing the "max days" sufficiently, and then dealing with the ramifications
+    # for DurationPattern[Parser] tests around the extremes...
+
+    _MAX_DAYS: Final[int] = (1 << 30) - 1  # In Noda Time, this is `(1 << 24) - 1`
     _MIN_DAYS: Final[int] = ~_MAX_DAYS
 
     _MIN_NANOSECONDS: Final[int] = _MIN_DAYS * PyodaConstants.NANOSECONDS_PER_DAY
@@ -392,7 +409,17 @@ class Duration(metaclass=_DurationMeta):
 
     # region Formatting
 
-    # TODO: Duration.ToString() [requires DurationPattern]
+    def __repr__(self) -> str:
+        from ._compatibility._culture_info import CultureInfo
+        from .text import DurationPattern
+
+        return DurationPattern._bcl_support.format(self, None, CultureInfo.current_culture)
+
+    def __format__(self, format_spec: str) -> str:
+        from ._compatibility._culture_info import CultureInfo
+        from .text import DurationPattern
+
+        return DurationPattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)
 
     # endregion Formatting
 
@@ -819,19 +846,19 @@ class Duration(metaclass=_DurationMeta):
             return cls._ctor(days=days, nano_of_day=nano_of_day)
 
     @classmethod
-    def from_timedelta(cls, time_delta: datetime.timedelta) -> Duration:
+    def from_timedelta(cls, timedelta: datetime.timedelta) -> Duration:
         """Returns a ``Duration`` that represents the same number of microseconds as the given ``datetime.timedelta``.
 
-        :param time_delta: The ``datetime.timedelta`` to convert.
+        :param timedelta: The ``datetime.timedelta`` to convert.
         :return: A new Duration with the same number of microseconds as the given ``datetime.timedelta``.
         """
         # Note that we don't use `cls.from_seconds(timedelta.total_seconds())` here.
         # That is because `total_seconds()` loses microsecond accuracy for deltas > 270 years.
         # https://docs.python.org/3/library/datetime.html#datetime.timedelta.total_seconds
         return (
-            Duration.from_days(time_delta.days)
-            + Duration.from_seconds(time_delta.seconds)
-            + Duration.from_microseconds(time_delta.microseconds)
+            Duration.from_days(timedelta.days)
+            + Duration.from_seconds(timedelta.seconds)
+            + Duration.from_microseconds(timedelta.microseconds)
         )
 
     def to_timedelta(self) -> datetime.timedelta:

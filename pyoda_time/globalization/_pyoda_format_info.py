@@ -180,6 +180,17 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
     #  internal FixedFormatInfoPatternParser<Duration> DurationPatternParser
 
     @property
+    def _duration_pattern_parser(self) -> _FixedFormatInfoPatternParser[Duration]:
+        if self.__duration_pattern_parser is None:
+            with self.__FIELD_LOCK:
+                if self.__duration_pattern_parser is None:
+                    from ..text._duration_pattern_parser import _DurationPatternParser
+                    from ..text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+
+                    self.__duration_pattern_parser = _FixedFormatInfoPatternParser(_DurationPatternParser(), self)
+        return self.__duration_pattern_parser
+
+    @property
     def _offset_pattern_parser(self) -> _FixedFormatInfoPatternParser[Offset]:
         if self.__offset_pattern_parser is None:
             with self.__FIELD_LOCK:

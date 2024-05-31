@@ -64,7 +64,7 @@ class PatternTestData(Generic[T]):
         assert self.message is None
         pattern: IPattern[T] = self.create_pattern()
         actual = pattern.format(self.value)
-        assert actual == self.text
+        assert actual == self.text, f"{actual} == {self.text}"
 
         if self.standard_pattern is not None:
             assert self.text == self.standard_pattern.format(self.value)
