@@ -206,6 +206,8 @@ class _SteppedPatternBuilder(Generic[TResult]):
     def _add_format_action(self, format_action: Callable[[TResult, StringBuilder], None]) -> None:
         self.__format_actions.append(format_action)
 
+    # Noda Time has an AddParseInt64ValueAction here, but we don't need that in Python.
+
     def _add_parse_value_action(
         self,
         minimum_digits: int,
