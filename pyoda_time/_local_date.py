@@ -482,4 +482,10 @@ class LocalDate(metaclass=_LocalDateMeta):
 
         return LocalDatePattern._bcl_support.format(self, None, CultureInfo.current_culture)
 
+    def __format__(self, format_spec: str) -> str:
+        from ._compatibility._culture_info import CultureInfo
+        from .text import LocalDatePattern
+
+        return LocalDatePattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)
+
     # endregion
