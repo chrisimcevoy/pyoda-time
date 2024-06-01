@@ -477,3 +477,9 @@ class Instant(metaclass=_InstantMeta):
         from pyoda_time.text import InstantPattern
 
         return InstantPattern._bcl_support.format(self, None, CultureInfo.current_culture)
+
+    def __format__(self, format_spec: str) -> str:
+        from pyoda_time._compatibility._culture_info import CultureInfo
+        from pyoda_time.text import InstantPattern
+
+        return InstantPattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)

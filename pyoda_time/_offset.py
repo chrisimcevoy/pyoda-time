@@ -443,7 +443,12 @@ class Offset(metaclass=_OffsetMeta):
 
     # endregion
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         from .text import OffsetPattern
 
         return OffsetPattern._bcl_support.format(self, None, CultureInfo.current_culture)
+
+    def __format__(self, format_spec: str) -> str:
+        from .text import OffsetPattern
+
+        return OffsetPattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)
