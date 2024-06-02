@@ -112,11 +112,14 @@ class __CultureInfoMeta(type):
     @staticmethod
     def _get_default_locale_name() -> str | None:
         """Return the name of the default ICU Locale."""
-        # Much like .NET defers to their ICU interop layer.
+        # TODO: In .NET this calls into native code (GlobalizationNative_GetDefaultLocaleName)
+        #  https://source.dot.net/#System.Private.CoreLib/src/libraries/Common/src/Interop/Interop.Locale.cs,20
+        #  https://github.com/dotnet/runtime/blob/d1747a74705a49700d7c568fdb568704c2bbad58/src/native/libs/System.Globalization.Native/pal_locale.c#L215C9-L258
+        #  We shouldn't need to str.replace() below...
         locale: icu.Locale = icu.Locale.getDefault()
         if locale is None:
             return None
-        return str(locale.getName())
+        return str(locale.getName()).replace("_", "-")
 
     @staticmethod
     def __get_culture_by_name(name: str) -> CultureInfo:
