@@ -5,7 +5,8 @@ from __future__ import annotations
 
 from typing import final
 
-from pyoda_time import Instant, Offset
+from pyoda_time._instant import Instant
+from pyoda_time._offset import Offset
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 
 

@@ -4,7 +4,7 @@
 import threading
 from typing import Final, final
 
-from pyoda_time import IDateTimeZoneProvider
+from pyoda_time._i_date_time_zone_provider import IDateTimeZoneProvider
 from pyoda_time.time_zones._tzdb_date_time_zone_source import TzdbDateTimeZoneSource
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 

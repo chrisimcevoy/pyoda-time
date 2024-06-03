@@ -17,7 +17,7 @@ from ._i_date_period_field import _IDatePeriodField
 @final
 class _MonthsPeriodField(_IDatePeriodField):
     def add(self, local_date: LocalDate, value: int) -> LocalDate:
-        from pyoda_time import LocalDate
+        from pyoda_time._local_date import LocalDate
 
         calendar = local_date.calendar
         calculator = calendar._year_month_day_calculator

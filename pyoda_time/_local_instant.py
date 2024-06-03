@@ -197,7 +197,8 @@ class _LocalInstant:
         from pyoda_time.text import LocalDateTimePattern
 
         pattern = LocalDateTimePattern.create_with_invariant_culture("uuuu-MM-ddTHH:mm:ss.FFFFFFFFF 'LOC'")
-        from pyoda_time import LocalDateTime, LocalTime
+        from pyoda_time._local_date_time import LocalDateTime
+        from pyoda_time._local_time import LocalTime
 
         utc = LocalDateTime._ctor(
             local_date=date,

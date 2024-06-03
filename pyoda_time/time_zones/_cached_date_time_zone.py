@@ -5,7 +5,8 @@ from __future__ import annotations
 
 from typing import final
 
-from pyoda_time import DateTimeZone, Instant
+from pyoda_time._date_time_zone import DateTimeZone
+from pyoda_time._instant import Instant
 from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._caching_zone_interval_map import _CachingZoneIntervalMap
 from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap

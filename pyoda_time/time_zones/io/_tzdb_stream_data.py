@@ -7,7 +7,7 @@ import struct
 import types
 from typing import Any, BinaryIO, Callable, Final, Sequence, TypeVar, final
 
-from pyoda_time import DateTimeZone
+from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time.time_zones import TzdbZoneLocation
 from pyoda_time.time_zones._cached_date_time_zone import _CachedDateTimeZone
 from pyoda_time.time_zones._fixed_date_time_zone import _FixedDateTimeZone

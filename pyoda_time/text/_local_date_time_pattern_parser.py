@@ -5,7 +5,10 @@ from __future__ import annotations
 
 from typing import Callable, Mapping, final
 
-from pyoda_time import CalendarSystem, LocalDate, LocalDateTime, LocalTime
+from pyoda_time._calendar_system import CalendarSystem
+from pyoda_time._local_date import LocalDate
+from pyoda_time._local_date_time import LocalDateTime
+from pyoda_time._local_time import LocalTime
 from pyoda_time.calendars import Era
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import ParseResult

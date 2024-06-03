@@ -397,7 +397,7 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         :return: The result of mapping this local date/time in UTC.
         """
         # TODO: Check if the use of local imports are really necessary...
-        from pyoda_time import OffsetTime
+        from pyoda_time._offset_time import OffsetTime
 
         from ._date_time_zone import DateTimeZone
         from ._offset_date_time import OffsetDateTime
