@@ -6,7 +6,10 @@ from __future__ import annotations
 
 from typing import BinaryIO, Sequence, final
 
-from pyoda_time import Duration, Instant, Offset, PyodaConstants
+from pyoda_time._duration import Duration
+from pyoda_time._instant import Instant
+from pyoda_time._offset import Offset
+from pyoda_time._pyoda_constants import PyodaConstants
 from pyoda_time.time_zones.io._date_time_zone_writer import _DateTimeZoneWriter
 from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
 from pyoda_time.utility import InvalidPyodaDataError

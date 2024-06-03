@@ -5,7 +5,8 @@ from __future__ import annotations
 
 from typing import Callable, Final, Mapping, cast, final
 
-from pyoda_time import Duration, PyodaConstants
+from pyoda_time._duration import Duration
+from pyoda_time._pyoda_constants import PyodaConstants
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import InvalidPatternError, ParseResult
 from pyoda_time.text._format_helper import _FormatHelper

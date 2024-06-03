@@ -5,7 +5,9 @@ from __future__ import annotations
 
 from typing import Self, final
 
-from pyoda_time import Duration, Instant, Offset
+from pyoda_time._duration import Duration
+from pyoda_time._instant import Instant
+from pyoda_time._offset import Offset
 from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap
 from pyoda_time.utility._csharp_compatibility import _private, _sealed

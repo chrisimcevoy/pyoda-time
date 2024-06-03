@@ -5,7 +5,8 @@ from __future__ import annotations
 
 from typing import final
 
-from pyoda_time import Instant, Offset
+from pyoda_time._instant import Instant
+from pyoda_time._offset import Offset
 from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._transition import _Transition
 from pyoda_time.time_zones._zone_recurrence import _ZoneRecurrence

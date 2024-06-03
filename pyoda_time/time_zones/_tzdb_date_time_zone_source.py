@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from importlib import resources
 from typing import BinaryIO, Iterable, Sequence, _ProtocolMeta, cast, final
 
-from pyoda_time import DateTimeZone
+from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time.time_zones import IDateTimeZoneSource, TzdbZone1970Location, TzdbZoneLocation
 from pyoda_time.time_zones.cldr import MapZone, WindowsZones
 from pyoda_time.time_zones.io._tzdb_stream_data import _TzdbStreamData

@@ -6,7 +6,9 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import BinaryIO, Final, final
 
-from pyoda_time import Instant, Offset, PyodaConstants
+from pyoda_time._instant import Instant
+from pyoda_time._offset import Offset
+from pyoda_time._pyoda_constants import PyodaConstants
 from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from pyoda_time.utility._csharp_compatibility import (
     _csharp_modulo,

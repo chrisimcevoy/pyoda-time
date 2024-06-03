@@ -5,8 +5,10 @@ from __future__ import annotations
 
 from typing import final
 
-from pyoda_time import CalendarSystem, Instant, Offset
+from pyoda_time._calendar_system import CalendarSystem
+from pyoda_time._instant import Instant
 from pyoda_time._local_instant import _LocalInstant
+from pyoda_time._offset import Offset
 from pyoda_time.calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
 from pyoda_time.time_zones._transition import _Transition
 from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset

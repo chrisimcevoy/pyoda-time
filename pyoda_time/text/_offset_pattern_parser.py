@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from typing import Callable, Final, Mapping, final
 
-from pyoda_time import PyodaConstants
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time._offset import Offset
+from pyoda_time._pyoda_constants import PyodaConstants
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import InvalidPatternError, ParseResult
 from pyoda_time.text._composite_pattern_builder import CompositePatternBuilder

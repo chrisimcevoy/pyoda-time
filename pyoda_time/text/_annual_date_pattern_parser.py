@@ -6,8 +6,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Callable, Final, final
 
-from pyoda_time import CalendarSystem
 from pyoda_time._annual_date import AnnualDate
+from pyoda_time._calendar_system import CalendarSystem
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import AnnualDatePattern, InvalidPatternError, ParseResult
 from pyoda_time.text._i_pattern import IPattern

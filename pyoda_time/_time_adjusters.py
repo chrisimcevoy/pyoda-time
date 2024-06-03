@@ -3,7 +3,7 @@
 # as found in the LICENSE.txt file.
 from typing import Callable, final
 
-from pyoda_time import LocalTime
+from pyoda_time._local_time import LocalTime
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 
 

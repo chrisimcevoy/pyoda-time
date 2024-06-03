@@ -5,7 +5,9 @@ from __future__ import annotations
 
 from typing import Callable, cast, final
 
-from pyoda_time import DateTimeZone, Instant, Offset
+from pyoda_time._date_time_zone import DateTimeZone
+from pyoda_time._instant import Instant
+from pyoda_time._offset import Offset
 from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap
 from pyoda_time.time_zones._standard_daylight_alternating_map import _StandardDaylightAlternatingMap

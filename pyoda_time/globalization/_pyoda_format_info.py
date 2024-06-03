@@ -223,7 +223,7 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
         if self.__local_time_pattern_parser is None:
             with self.__FIELD_LOCK:
                 if self.__local_time_pattern_parser is None:
-                    from pyoda_time import LocalTime
+                    from pyoda_time._local_time import LocalTime
                     from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
                     from pyoda_time.text._local_time_pattern_parser import _LocalTimePatternParser
 

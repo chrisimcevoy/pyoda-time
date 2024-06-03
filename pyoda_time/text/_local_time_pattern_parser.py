@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Callable, Final, Mapping, final
 
-from pyoda_time import LocalTime
+from pyoda_time._local_time import LocalTime
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import InvalidPatternError, ParseResult
 from pyoda_time.text._i_pattern import IPattern
