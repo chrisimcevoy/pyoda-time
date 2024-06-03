@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import abc
-import functools
+import threading
 from typing import Final, _ProtocolMeta
 
 from ._duration import Duration
@@ -13,17 +13,21 @@ from ._instant import Instant
 from ._local_date_time import LocalDateTime
 from ._local_instant import _LocalInstant
 from ._offset import Offset
+from ._pyoda_constants import PyodaConstants
 from .time_zones._i_zone_interval_map import _IZoneIntervalMap
 from .time_zones._zone_interval import ZoneInterval
 from .time_zones._zone_local_mapping import ZoneLocalMapping
+from .utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
 from .utility._preconditions import _Preconditions
 
 __all__ = ["DateTimeZone"]
 
 
 class _DateTimeZoneMeta(_ProtocolMeta, type):
+    __lock: Final[threading.Lock] = threading.Lock()
+    __utc: DateTimeZone | None = None
+
     @property
-    @functools.cache
     def utc(cls) -> DateTimeZone:
         """Gets the UTC (Coordinated Universal Time) time zone.
 
@@ -33,9 +37,13 @@ class _DateTimeZoneMeta(_ProtocolMeta, type):
 
         :return: The UTC ``DateTimeZone``.
         """
-        from .time_zones._fixed_date_time_zone import _FixedDateTimeZone
+        if not cls.__utc:
+            with cls.__lock:
+                if not cls.__utc:
+                    from .time_zones._fixed_date_time_zone import _FixedDateTimeZone
 
-        return _FixedDateTimeZone(Offset.zero)
+                    cls.__utc = _FixedDateTimeZone(Offset.zero)
+        return cls.__utc
 
 
 class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
@@ -44,10 +52,45 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
     """
 
     _UTC_ID: Final[str] = "UTC"
+    __FIXED_ZONE_CACHE_GRANULARITY_SECONDS: Final[int] = PyodaConstants.SECONDS_PER_MINUTE * 30
+    __FIXED_ZONE_CACHE_MINIMUM_SECONDS: Final[int] = -__FIXED_ZONE_CACHE_GRANULARITY_SECONDS * 12 * 2  # From UTC-12
+    __FIXED_ZONE_CACHE_SIZE: Final[int] = (12 + 15) * 2 + 1  # To UTC+15 inclusive
+
+    # Unlike in Noda Time, this cache is not built up-front, because doing so would require the ability to import
+    # _FixedDateTimeZone inside this class body, which is impossible in Python. This cache is only used by the
+    # `for_offset()` classmethod, so we just call `__build_fixed_zone_cache()` there instead.
+    __fixed_zone_cache: list[DateTimeZone] | None = None
 
     @classmethod
     def for_offset(cls, offset: Offset) -> DateTimeZone:
-        raise NotImplementedError
+        """Returns a fixed time zone with the given offset.
+
+        The returned time zone will have an ID of "UTC" if the offset is zero, or "UTC+/-Offset"
+        otherwise. In the former case, the returned instance will be equal to ``DateTimeZone.utc``.
+
+        Note also that this method is not required to return the same ``DateTimeZone`` instance for
+        successive requests for the same offset; however, all instances returned for a given offset will compare
+        as equal.
+
+        :param offset: The offset for the returned time zone
+        :return: A fixed time zone with the given offset.
+        """
+
+        # Unlike in Noda Time, build the cache if it is empty.
+        if not cls.__fixed_zone_cache:
+            cls.__fixed_zone_cache = cls.__build_fixed_zone_cache()
+
+        from .time_zones._fixed_date_time_zone import _FixedDateTimeZone
+
+        seconds: int = offset.seconds
+        if _csharp_modulo(seconds, cls.__FIXED_ZONE_CACHE_GRANULARITY_SECONDS) != 0:
+            return _FixedDateTimeZone(offset=offset)
+        index: int = _towards_zero_division(
+            seconds - cls.__FIXED_ZONE_CACHE_MINIMUM_SECONDS, cls.__FIXED_ZONE_CACHE_GRANULARITY_SECONDS
+        )
+        if index < 0 or index >= cls.__FIXED_ZONE_CACHE_SIZE:
+            return _FixedDateTimeZone(offset=offset)
+        return cls.__fixed_zone_cache[index]
 
     def __init__(self, id_: str, is_fixed: bool, min_offset: Offset, max_offset: Offset) -> None:
         """Initializes a new instance of the DateTimeZone class.
@@ -213,3 +256,33 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
         else:
             # Will definitely be valid - there can't be a gap after an infinite interval.
             return self.get_zone_interval(guess_interval.end)
+
+    # region Object overrides
+
+    def __repr__(self) -> str:
+        """Returns the ID of this time zone.
+
+        :return: The ID of this time zone.
+        """
+        return self.id
+
+    # endregion
+
+    @classmethod
+    def __build_fixed_zone_cache(cls) -> list[DateTimeZone]:
+        """Creates a fixed time zone for offsets -12 to +15 at every half hour, fixing the 0 offset as
+        DateTimeZone.utc."""
+        from .time_zones._fixed_date_time_zone import _FixedDateTimeZone
+
+        ret: list[DateTimeZone] = [
+            _FixedDateTimeZone(
+                offset=Offset.from_seconds(
+                    i * cls.__FIXED_ZONE_CACHE_GRANULARITY_SECONDS + cls.__FIXED_ZONE_CACHE_MINIMUM_SECONDS
+                )
+            )
+            for i in range(cls.__FIXED_ZONE_CACHE_SIZE)
+        ]
+        ret[
+            _towards_zero_division(-cls.__FIXED_ZONE_CACHE_MINIMUM_SECONDS, cls.__FIXED_ZONE_CACHE_GRANULARITY_SECONDS)
+        ] = cls.utc
+        return ret
