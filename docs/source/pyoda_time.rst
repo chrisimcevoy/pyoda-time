@@ -10,6 +10,7 @@ Subpackages
    pyoda_time.calendars
    pyoda_time.fields
    pyoda_time.globalization
+   pyoda_time.testing
    pyoda_time.text
    pyoda_time.time_zones
    pyoda_time.utility

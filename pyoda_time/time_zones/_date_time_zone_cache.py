@@ -1,16 +1,19 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from typing import Final, Iterable, final
+from __future__ import annotations
 
-from .._date_time_zone import DateTimeZone
+from typing import TYPE_CHECKING, Final, Iterable, final
+
 from .._i_date_time_zone_provider import IDateTimeZoneProvider
 from ..utility._csharp_compatibility import _sealed
 from ..utility._preconditions import _Preconditions
 from ._date_time_zone_not_found_error import DateTimeZoneNotFoundError
-from ._fixed_date_time_zone import _FixedDateTimeZone
-from ._i_date_time_zone_source import IDateTimeZoneSource
 from ._invalid_date_time_zone_source_error import InvalidDateTimeZoneSourceError
+
+if TYPE_CHECKING:
+    from .._date_time_zone import DateTimeZone
+    from ._i_date_time_zone_source import IDateTimeZoneSource
 
 
 @final
@@ -92,6 +95,8 @@ class DateTimeZoneCache(IDateTimeZoneProvider):
 
     def __getitem__(self, zone_id: str) -> DateTimeZone:
         if (zone := self.get_zone_or_none(zone_id)) is None:
+            from pyoda_time.time_zones._fixed_date_time_zone import _FixedDateTimeZone
+
             if (zone := _FixedDateTimeZone._get_fixed_zone_or_null(zone_id)) is None:
                 raise DateTimeZoneNotFoundError(f"Time zone {zone_id} is unknown to source {self.version_id}")
         return zone
