@@ -7,6 +7,7 @@ import pytest
 
 from pyoda_time import DateTimeZone, Offset, PyodaConstants
 from pyoda_time._date_time_zone_providers import DateTimeZoneProviders
+from pyoda_time.testing.time_zones import SingleTransitionDateTimeZone
 from pyoda_time.time_zones import (
     DateTimeZoneCache,
     DateTimeZoneNotFoundError,
@@ -14,8 +15,6 @@ from pyoda_time.time_zones import (
     InvalidDateTimeZoneSourceError,
 )
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo
-
-from ..testing.single_transition_date_time_zone import SingleTransitionDateTimeZone
 
 
 class DummyDateTimeZoneSource(IDateTimeZoneSource):

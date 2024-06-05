@@ -25,6 +25,7 @@ from pyoda_time import (
     OffsetDateTime,
     OffsetTime,
     Period,
+    SystemClock,
     YearMonth,
 )
 from pyoda_time._calendar_ordinal import _CalendarOrdinal
@@ -64,6 +65,7 @@ VALUES = [
     YearMonth(year=1, month=1),
     _YearMonthDay._ctor(raw_value=1),
     _YearMonthDayCalendar._ctor(year_month_day=1, calendar_ordinal=_CalendarOrdinal.BADI),
+    SystemClock.instance.in_utc().get_current_zoned_date_time(),  # ZonedDateTime
     ZoneInterval(name="", start=Instant.min_value, end=Instant.max_value, wall_offset=Offset.zero, savings=Offset.zero),
     _ZoneRecurrence(
         "name",

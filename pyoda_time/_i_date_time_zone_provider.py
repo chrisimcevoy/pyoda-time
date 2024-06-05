@@ -1,10 +1,13 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from abc import abstractmethod
-from typing import Iterable, Protocol
+from __future__ import annotations
 
-from pyoda_time._date_time_zone import DateTimeZone
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Iterable, Protocol
+
+if TYPE_CHECKING:
+    from pyoda_time._date_time_zone import DateTimeZone
 
 
 class IDateTimeZoneProvider(Protocol):

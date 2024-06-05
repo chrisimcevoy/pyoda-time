@@ -425,11 +425,12 @@ class Instant(metaclass=_InstantMeta):
             return _LocalInstant.after_max_value()
         return _LocalInstant._ctor(nanoseconds=as_duration)
 
-    def in_zone(self, zone: DateTimeZone, calendar: CalendarSystem) -> ZonedDateTime:
+    def in_zone(self, zone: DateTimeZone, calendar: CalendarSystem | None = None) -> ZonedDateTime:
         from . import ZonedDateTime
 
         _Preconditions._check_not_null(zone, "zone")
-        _Preconditions._check_not_null(calendar, "calendar")
+        if calendar is None:
+            return ZonedDateTime(instant=self, zone=zone)
         return ZonedDateTime(instant=self, zone=zone, calendar=calendar)
 
     @property

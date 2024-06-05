@@ -6,6 +6,7 @@ import io
 import pytest
 
 from pyoda_time import DateTimeZone, Duration, Instant, LocalDateTime, LocalTime, Offset
+from pyoda_time.testing.time_zones import SingleTransitionDateTimeZone
 from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._fixed_date_time_zone import _FixedDateTimeZone
 from pyoda_time.time_zones._precalculated_date_time_zone import _PrecalculatedDateTimeZone
@@ -16,8 +17,6 @@ from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset
 from pyoda_time.time_zones.io._date_time_zone_reader import _DateTimeZoneReader
 from pyoda_time.time_zones.io._date_time_zone_writer import _DateTimeZoneWriter
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants
-
-from ..testing.single_transition_date_time_zone import SingleTransitionDateTimeZone
 
 FIRST_INTERVAL = ZoneInterval(
     name="First",

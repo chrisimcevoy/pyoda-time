@@ -1,10 +1,19 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from pyoda_time import DateTimeZone, Instant, Offset
+from __future__ import annotations
+
+from typing import final
+
+from pyoda_time._date_time_zone import DateTimeZone
+from pyoda_time._instant import Instant
+from pyoda_time._offset import Offset
 from pyoda_time.time_zones import ZoneInterval
+from pyoda_time.utility._csharp_compatibility import _sealed
 
 
+@final
+@_sealed
 class SingleTransitionDateTimeZone(DateTimeZone):
     """Time zone with a single transition between two offsets.
 
