@@ -12,7 +12,7 @@ documentation:
         - 'docs/**'
         - '**/*.md'
 
-github:
+github_actions:
 - changed-files:
     - any-glob-to-any-file: '.github/**'
 
