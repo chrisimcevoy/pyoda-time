@@ -15,3 +15,4 @@ Module contents
 .. automodule:: pyoda_time.text
    :members:
    :undoc-members:
+   :show-inheritance:

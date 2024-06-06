@@ -7,3 +7,4 @@ Module contents
 .. automodule:: pyoda_time.text.patterns
    :members:
    :undoc-members:
+   :show-inheritance:

@@ -7,3 +7,4 @@ Module contents
 .. automodule:: pyoda_time.fields
    :members:
    :undoc-members:
+   :show-inheritance:
