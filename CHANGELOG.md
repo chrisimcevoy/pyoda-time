@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.9.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.8.0...v0.9.0) (2024-06-06)
+
+
+### Features
+
+* `DateTimeZoneCache`, `IDateTimeZoneProvider` & `DateTimeZoneProviders` ([#158](https://github.com/chrisimcevoy/pyoda-time/issues/158)) ([0c5b142](https://github.com/chrisimcevoy/pyoda-time/commit/0c5b142c4f5a76627d5ef3233eff11dad39cc020))
+* `IClock`, `SystemClock` & `ZonedClock` ([#162](https://github.com/chrisimcevoy/pyoda-time/issues/162)) ([cbb04af](https://github.com/chrisimcevoy/pyoda-time/commit/cbb04af116ef2cb4baf49294af1c24837707a071))
+* port `AnnualDatePattern` ([#152](https://github.com/chrisimcevoy/pyoda-time/issues/152)) ([d989c2b](https://github.com/chrisimcevoy/pyoda-time/commit/d989c2bde44d6e4a34a5687af6c792af91ed2e56))
+* port `DurationPattern` ([#155](https://github.com/chrisimcevoy/pyoda-time/issues/155)) ([ea5960f](https://github.com/chrisimcevoy/pyoda-time/commit/ea5960f0832a01f8c1aa51d1c24eccbb77bdc897))
+
+
+### Bug Fixes
+
+* **CultureInfo:** default locale name should contain hyphen rather than underscore ([#157](https://github.com/chrisimcevoy/pyoda-time/issues/157)) ([86769d2](https://github.com/chrisimcevoy/pyoda-time/commit/86769d2468f98edbc4cb488ba98ab1999bfb6ecc))
+* use patterns in types which have them ([#156](https://github.com/chrisimcevoy/pyoda-time/issues/156)) ([e43afe4](https://github.com/chrisimcevoy/pyoda-time/commit/e43afe45d36b37916830d5dd43185d53f918ae9f))
+
+
+### Documentation
+
+* change theme to furo ([#169](https://github.com/chrisimcevoy/pyoda-time/issues/169)) ([e7ec91c](https://github.com/chrisimcevoy/pyoda-time/commit/e7ec91cf8a7c362b7e8adb30c2c25384f55c207f))
+* dont generate modules.rst ([#166](https://github.com/chrisimcevoy/pyoda-time/issues/166)) ([6410c38](https://github.com/chrisimcevoy/pyoda-time/commit/6410c381e0407391655e7e7f28cebc45c5ecda02))
+* misc sphinx docs tidy-ups ([#165](https://github.com/chrisimcevoy/pyoda-time/issues/165)) ([ce56212](https://github.com/chrisimcevoy/pyoda-time/commit/ce56212d479cc6916acf57f79b3a7c6ba75c5144))
+
 ## [0.8.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.7.1...v0.8.0) (2024-05-28)
 
 
