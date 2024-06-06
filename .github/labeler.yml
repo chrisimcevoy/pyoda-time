@@ -30,7 +30,7 @@ nzd:
 
 release:
 - changed-files:
-    - any-glob-to-any-file: 'version.py'
+    - any-glob-to-any-file: 'CHANGELOG.md'
 
 reStructuredText:
 - changed-files:
