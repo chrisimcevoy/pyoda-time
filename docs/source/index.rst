@@ -3,14 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Pyoda Time's documentation!
+A better date and time API for Python
 ======================================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
    :caption: Contents:
 
-   pyoda_time
+   API<pyoda_time>
 
 
 

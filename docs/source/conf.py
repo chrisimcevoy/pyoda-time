@@ -38,19 +38,15 @@ html_static_path = ["_static"]
 
 html_favicon = "_static/favicon.ico"
 
-html_theme = "alabaster"
+html_theme = "furo"
 
 html_theme_options = {
-    "logo_name": True,
-    "logo": "pyoda-time.png",
-    "touch_icon": "pyoda-time.png",
-    "description": "A better date and time API for Python",
-    "fixed_sidebar": True,
-    "github_banner": True,
-    "github_user": "chrisimcevoy",
-    "github_repo": "pyoda-time",
-    "body_text_align": "left",
-    "logo_text_align": "center",
+    "sidebar_hide_name": False,
+    "light_logo": "pyoda-time.png",
+    "dark_logo": "pyoda-time.png",
+    "source_repository": "https://github.com/chrisimcevoy/pyoda-time/",
+    "source_branch": "main",
+    "source_directory": "docs/source",
 }
 
 # Autodoc configuration
@@ -152,7 +148,7 @@ def process_metaclass_properties(
                     else:
                         # It's a regular line of the docstring, so we add it as is.
                         paragraph = " ".join(line.strip() for line in paragraph.splitlines())
-                        doc_lines.append(f"      {paragraph}")
+                        doc_lines.append(f"   {paragraph}")
 
                     doc_lines.append("")
 
