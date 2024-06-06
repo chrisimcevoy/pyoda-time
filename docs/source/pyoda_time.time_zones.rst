@@ -5,7 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
 
    pyoda_time.time_zones.cldr
    pyoda_time.time_zones.io

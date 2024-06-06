@@ -40,8 +40,6 @@ class SystemClock(IClock, metaclass=__SystemClockMeta):
     your application, which should only depend on the interface.
     """
 
-    instance: SystemClock
-
     def get_current_instant(self) -> Instant:
         """Gets the current time as an ``Instant``.
 

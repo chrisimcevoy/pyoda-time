@@ -576,7 +576,7 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
 
     # region object overrides
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Converts this calendar system to text by simply returning its unique ID."""
         return self.id
 

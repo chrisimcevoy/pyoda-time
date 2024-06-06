@@ -2,6 +2,6 @@ pyoda_time
 ==========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
 
    pyoda_time
