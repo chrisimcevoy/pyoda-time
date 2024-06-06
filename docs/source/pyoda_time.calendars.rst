@@ -7,3 +7,4 @@ Module contents
 .. automodule:: pyoda_time.calendars
    :members:
    :undoc-members:
+   :show-inheritance:

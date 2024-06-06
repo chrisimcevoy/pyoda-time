@@ -10,7 +10,7 @@ Welcome to Pyoda Time's documentation!
    :maxdepth: 4
    :caption: Contents:
 
-   modules
+   pyoda_time
 
 
 
