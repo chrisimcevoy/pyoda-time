@@ -14,7 +14,7 @@ docs.sphinx.html:
 	# /docs/source for each public module in the pyoda_time package
 	# recursively. Those files will contain directives (e.g. :automodule:)
 	# which can later be handled by the autodoc extension.
-	poetry run sphinx-apidoc --no-toc -o docs/source pyoda_time
+	poetry run sphinx-apidoc --no-toc --no-headings --force -d 1 -o docs/source pyoda_time
 
 	@echo "Building html docs with sphinx-autodoc"
 	# Uses the sphinx Makefile in /docs to build the documentation.

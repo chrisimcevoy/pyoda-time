@@ -5,7 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    pyoda_time.calendars
    pyoda_time.fields
