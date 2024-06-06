@@ -61,6 +61,7 @@ html_theme_options = {
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
 autodoc_class_signature = "separated"
 autodoc_default_options = {
+    "show-inheritance": True,
     "special-members": ",".join(
         [
             "__add__",
@@ -130,17 +131,29 @@ def process_metaclass_properties(
                 ]
 
                 # Add the property docstring, formatted as reStructuredText field lists.
-                for line in property_docstring.splitlines():
+                for paragraph in property_docstring.split("\n\n"):
                     # Sphinx is really finicky about whitespace, so we
                     # need to take control of that here.
-                    line = line.strip()
+                    paragraph = paragraph.strip()
 
-                    if line.startswith(":"):
+                    if paragraph.startswith(":"):
                         # It's a field list, so we make sure it's properly indented.
-                        doc_lines.append(f"   {line}")
+                        current_field = ""
+                        for line in paragraph.splitlines():
+                            line = line.strip()
+                            if line.startswith(":"):
+                                if current_field:
+                                    doc_lines.append(f"   {current_field.strip()}")
+                                current_field = line
+                            else:
+                                current_field += " " + line
+                        doc_lines.append(f"   {current_field.strip()}")
+
                     else:
                         # It's a regular line of the docstring, so we add it as is.
-                        doc_lines.append(f"      {line}")
+                        paragraph = " ".join(line.strip() for line in paragraph.splitlines())
+                        doc_lines.append(f"      {paragraph}")
+
                     doc_lines.append("")
 
                 lines.extend(doc_lines)
