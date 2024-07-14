@@ -189,6 +189,16 @@ class LocalDate(metaclass=_LocalDateMeta):
     def _year_month_day(self) -> _YearMonthDay:
         return self.__year_month_day_calendar._to_year_month_day()
 
+    def at_midnight(self) -> LocalDateTime:
+        """Gets a ``LocalDateTime`` at midnight on the date represented by this local date.
+
+        :return: The ``LocalDateTime`` representing midnight on this local date, in the same calendar system.
+        """
+        from ._local_date_time import LocalDateTime
+        from ._local_time import LocalTime
+
+        return LocalDateTime._ctor(local_date=self, local_time=LocalTime.midnight)
+
     @classmethod
     def from_week_year_week_and_day(
         cls, week_year: int, week_of_week_year: int, day_of_week: IsoDayOfWeek

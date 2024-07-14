@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
+from zoneinfo import ZoneInfo
+
 if TYPE_CHECKING:
     from . import Instant
 
@@ -68,6 +70,10 @@ class PyodaConstants(metaclass=_PyodaConstantsMeta):
     TICKS_PER_HOUR: Final[int] = TICKS_PER_MINUTE * MINUTES_PER_HOUR
     TICKS_PER_DAY: Final[int] = TICKS_PER_HOUR * HOURS_PER_DAY
     TICKS_PER_WEEK: Final[int] = TICKS_PER_DAY * DAYS_PER_WEEK
+    _BCL_TICKS_AT_UNIX_EPOCH: Final[int] = 621355968000000000
+    """The number of ticks in a BCL DateTime at the Unix epoch."""
+    _BCL_DAYS_AT_UNIX_EPOCH: Final[int] = 719162
+    """The number of days in a BCL DateTime at the Unix epoch."""
 
     # Constants which are specific to Pyoda Time
     NANOSECONDS_PER_MICROSECOND: Final[int] = 1000
@@ -78,3 +84,4 @@ class PyodaConstants(metaclass=_PyodaConstantsMeta):
     MICROSECONDS_PER_HOUR: Final[int] = MICROSECONDS_PER_MINUTE * MINUTES_PER_HOUR
     MICROSECONDS_PER_DAY: Final[int] = MICROSECONDS_PER_HOUR * HOURS_PER_DAY
     MICROSECONDS_PER_WEEK: Final[int] = MICROSECONDS_PER_DAY * DAYS_PER_WEEK
+    _UTC_ZONE_INFO: Final[ZoneInfo] = ZoneInfo("UTC")

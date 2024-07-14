@@ -345,6 +345,13 @@ class LocalTime(metaclass=_LocalTimeMeta):
         return _csharp_modulo(millisecond_of_day, PyodaConstants.MILLISECONDS_PER_SECOND)
 
     @property
+    def microsecond(self) -> int:
+        """The microsecond of this local time within the second, in the range 0 to 999,999 inclusive."""
+        # TODO: unchecked
+        microsecond_of_day = _towards_zero_division(self.__nanoseconds, PyodaConstants.NANOSECONDS_PER_MICROSECOND)
+        return _csharp_modulo(microsecond_of_day, PyodaConstants.MICROSECONDS_PER_SECOND)
+
+    @property
     def tick_of_second(self) -> int:
         """The tick of this local time within the second, in the range 0 to 9,999,999 inclusive."""
         # TODO: unchecked
