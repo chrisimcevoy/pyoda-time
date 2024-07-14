@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import datetime
 import functools
-from typing import TYPE_CHECKING, Final, Self, final, overload
+from typing import TYPE_CHECKING, Final, Self, cast, final, overload
 
 from ._duration import Duration
 from ._pyoda_constants import PyodaConstants
@@ -95,7 +95,7 @@ class Instant(metaclass=_InstantMeta):
         return cls.__ctor(days=Duration._MAX_DAYS, deliberately_invalid=True)
 
     def __init__(self) -> None:
-        self.__duration = Duration.zero
+        self.__duration: Duration = Duration.zero
 
     @classmethod
     def _ctor(cls, *, days: int, nano_of_day: int) -> Instant:
@@ -316,6 +316,27 @@ class Instant(metaclass=_InstantMeta):
         """
         return (self - PyodaConstants.JULIAN_EPOCH).total_days
 
+    def to_datetime_utc(self) -> datetime.datetime:
+        """Constructs an aware ``datetime.datetime`` from this Instant which has a ``tzinfo`` of utc.
+
+        If the date and time is not on a microsecond boundary (the unit of granularity of datetime) the value will be
+        truncated towards the start of time.
+
+        :raises RuntimeError: The final date/time is outside the range of ``datetime.datetime``.
+        :return: A timezone-aware ``datetime.datetime`` representing the same instant in time as this value, in the UTC
+            timezone.
+        """
+        if self < PyodaConstants.BCL_EPOCH:
+            raise RuntimeError("Instant out of range for datetime")
+
+        epoch: datetime.datetime = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+        delta = datetime.timedelta(
+            days=self._days_since_epoch,
+            microseconds=_towards_zero_division(self._nanosecond_of_day, PyodaConstants.NANOSECONDS_PER_MICROSECOND),
+        )
+
+        return epoch + delta
+
     @classmethod
     def from_julian_date(cls, julian_date: float) -> Instant:
         """Converts a Julian Date representing the given number of days since ``PyodaConstants.JULIAN_EPOCH`` (noon on
@@ -327,22 +348,26 @@ class Instant(metaclass=_InstantMeta):
         return PyodaConstants.JULIAN_EPOCH + Duration.from_days(julian_date)
 
     @classmethod
-    def from_datetime_utc(cls, datetime: datetime.datetime) -> Instant:
-        """Converts a datetime.datetime into a new Instant representing the same instant in time.
+    def from_aware_datetime(cls, dt: datetime.datetime) -> Instant:
+        """Converts an aware ``datetime.datetime`` into a new Instant representing the same instant in time.
 
-        The datetime must have a truthy tzinfo, and must have a UTC offset of 0.
+        This is the Pyoda Time equivalent to ``FromDateTimeOffset()`` and ``FromDateTimeUtc()`` in Noda Time.
+
+        :param dt: Date and time value which must be timezone-aware.
+        :return: An ``Instant`` value representing the same instant in time as the given aware ``datetime.datetime``.
+        :raises ValueError: A timezone-naive datetime was provided.
         """
         from . import PyodaConstants
 
-        # TODO Precondition.CheckArgument
-        # TODO Better exceptions?
-        # Roughly equivalent to DateTimeKind.Local
-        if (utc_offset := datetime.utcoffset()) is not None and utc_offset.total_seconds() != 0:
-            raise ValueError()
-        # Roughly equivalent to DateTimeKind.Unspecified
-        if datetime.tzinfo is None:
-            raise ValueError()
-        return PyodaConstants.BCL_EPOCH.plus_ticks(_to_ticks(datetime))
+        _Preconditions._check_argument(
+            expession=dt.tzinfo is not None,
+            parameter="dt",
+            message="Instant.from_aware_datetime cannot accept a naive datetime.",
+        )
+        # We know tzinfo is not None because of the guard above.
+        # The cast is just to assuage mypy.
+        offset_timedelta: datetime.timedelta = cast(datetime.timezone, dt.tzinfo).utcoffset(dt)
+        return PyodaConstants.BCL_EPOCH.plus_ticks(_to_ticks(dt) - _to_ticks(offset_timedelta))
 
     @classmethod
     def from_utc(

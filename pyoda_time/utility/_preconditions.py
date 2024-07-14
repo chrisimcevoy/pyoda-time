@@ -35,18 +35,19 @@ class _Preconditions:
     def _throw_argument_out_of_range_exception(
         param_name: str, value: _T, min_inclusive: _T, max_inclusive: _T
     ) -> None:
-        raise ValueError(
-            f"Value should be in range [{min_inclusive}-{max_inclusive}]\n"
-            f"Parameter name: {param_name}\n"
-            f"Actual value was {value}"
-        )
+        e = ValueError(f"Value should be in range [{min_inclusive}-{max_inclusive}]")
+        e.add_note(f"Parameter name: {param_name}")
+        e.add_note(f"Actual value was {value}")
+        raise e
 
     @classmethod
     def _check_argument(cls, expession: bool, parameter: str, message: str, *message_args: Any) -> None:
         if not expession:
             if message_args:
                 message = message.format(*message_args)
-            raise ValueError(f"{message}\nParameter name: {parameter}")
+            e = ValueError(message)
+            e.add_note(f"Parameter name: {parameter}")
+            raise e
 
     @classmethod
     def _check_state(cls, expression: bool, message: str) -> None:
