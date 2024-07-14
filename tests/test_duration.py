@@ -16,6 +16,32 @@ from tests import helpers
 T = TypeVar("T")
 
 
+@pytest.mark.parametrize(
+    "duration_nanoseconds,timedelta_microseconds",
+    [
+        (1, 0),
+        (999, 0),
+        (1000, 1),
+        (1001, 1),
+        (1999, 1),
+        (2000, 2),
+        (2001, 2),
+        (-1, 0),
+        (-999, 0),
+        (-1000, -1),
+        (-1001, -1),
+        (-1999, -1),
+        (-2000, -2),
+        (-2001, -2),
+    ],
+)
+def test_to_timedelta_truncates_towards_zero(duration_nanoseconds: int, timedelta_microseconds: int) -> None:
+    expected = timedelta(microseconds=timedelta_microseconds)
+    actual = Duration.from_nanoseconds(duration_nanoseconds).to_timedelta()
+
+    assert actual == expected
+
+
 class TestDuration:
     def test_default_constructor(self) -> None:
         """Using the default constructor is equivalent to Duration.Zero."""

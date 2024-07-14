@@ -864,18 +864,15 @@ class Duration(metaclass=_DurationMeta):
     def to_timedelta(self) -> datetime.timedelta:
         """Returns a ``datetime.timedelta`` that represents the same number of microseconds as this ``Duration``.
 
-        If the number of nanoseconds in a duration is not a whole number of microseconds, it will be
-        passed to ``datetime.timedelta()`` as a fractional argument, and will be subject to the internal
-        summing/rounding behaviour documented at https://docs.python.org/3/library/datetime.html#datetime.timedelta.
-
-        If the duration can be resolved to a whole number of microseconds, then the conversion should not lose
-        information.
+        If the number of nanoseconds in a duration is not a whole number of microseconds, it will be truncated towards
+        zero. For instance, durations in the range [-999, 999] would all count as 0 microseconds.
 
         :return: A new TimeSpan with the same number of ticks as this Duration.
         """
 
         return datetime.timedelta(
-            days=self.__days, microseconds=self.__nano_of_day / PyodaConstants.NANOSECONDS_PER_MICROSECOND
+            days=self.days,
+            microseconds=_towards_zero_division(self.nanosecond_of_day, PyodaConstants.NANOSECONDS_PER_MICROSECOND),
         )
 
     def to_nanoseconds(self) -> int:
