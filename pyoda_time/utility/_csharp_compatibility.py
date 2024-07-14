@@ -43,10 +43,44 @@ def _towards_zero_division(x: int | float | decimal.Decimal, y: int | float | de
     return int((Decimal(x) / Decimal(y)).quantize(0, ROUND_DOWN))
 
 
-def _to_ticks(dt: datetime.datetime) -> int:
-    """Get a value akin to C#'s DateTime.Ticks property from a python datetime."""
-    # Gratefully stolen from https://stackoverflow.com/a/29368771
-    return int((dt - datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds() * 10000000)
+def _to_ticks(obj: datetime.datetime | datetime.timedelta) -> int:
+    """Simulate the ``Ticks`` property of various C# types.
+
+    For the equivalent of ``DateTime.Ticks``, pass a naive ``datetime``.
+    For the equivalent of ``DateTimeOffset.Ticks``, pass an aware ``datetime``.
+    For the equivalent of ``TimeSpan.Ticks``, pass a ``timedelta``.
+
+    Originally based on https://stackoverflow.com/a/29368771
+
+    See also:
+        - https://learn.microsoft.com/en-us/dotnet/api/system.datetime.ticks
+        - https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset.ticks
+        - https://learn.microsoft.com/en-us/dotnet/api/system.timespan.ticks
+    """
+
+    if isinstance((dt := obj), datetime.datetime):
+        if dt.tzinfo is not None:
+            # Treat an aware datetime like a DateTimeOffset, for which the Ticks property completely
+            # ignores the "DateTimeOffset.Offset" TimeSpan.
+            dt = dt.replace(tzinfo=None)
+        # Get the timedelta between the BCL epoch and the datetime provided.
+        bcl_epoch = datetime.datetime(1, 1, 1)
+        delta = dt - bcl_epoch
+    elif isinstance(obj, datetime.timedelta):
+        # Treat this as equivalent to the TimeSpan.Ticks TimeSpan.
+        delta = obj
+    else:
+        raise TypeError(f"{type(obj)} is not supported by this function.")
+
+    # Once we have our timedelta, we can calculate the ticks.
+    # Note we do not use total_seconds here because floating point arithmetic.
+    from pyoda_time import PyodaConstants
+
+    return (
+        delta.days * PyodaConstants.TICKS_PER_DAY
+        + delta.seconds * PyodaConstants.TICKS_PER_SECOND
+        + delta.microseconds * PyodaConstants.TICKS_PER_MICROSECOND
+    )
 
 
 def _to_lookup(mapping: Mapping[_TKey, _TValue]) -> MappingProxyType[_TValue, Sequence[_TKey]]:

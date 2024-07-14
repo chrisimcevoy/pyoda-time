@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from zoneinfo import ZoneInfo
@@ -178,30 +178,42 @@ class TestInstant:
         assert x == Instant.min(Instant.max_value, x) == min(Instant.max_value, x)
         assert x == Instant.min(x, Instant.max_value) == min(x, Instant.max_value)
 
-    # TODO def test_to_datetime_utc(self):
+    def test_to_datetime_utc(self) -> None:
+        x = Instant.from_utc(2011, 8, 18, 20, 53)
+        expected = datetime(2011, 8, 18, 20, 53, 0, tzinfo=UTC)
+        assert x.to_datetime_utc() == expected
 
-    # TODO def test_to_bcl_types_date_out_of_range(self):
+    def test_to_datetime_utc_out_of_range(self) -> None:
+        instant = Instant.from_utc(1, 1, 1, 0, 0).plus_nanoseconds(-1)
+        with pytest.raises(RuntimeError) as e:
+            instant.to_datetime_utc()
+        assert str(e.value) == "Instant out of range for datetime"
 
-    # TODO def test_to_bcl_types_truncate_nanos_towards_start_of_time(self):
+    @pytest.mark.parametrize("year", [100, 1900, 2900])
+    def test_to_datetime_utc_truncate_nanos_towards_start_of_time(self, year: int) -> None:
+        # Noda Time tests both ToDateTimeUtc() and ToDateTimeOffset() here.
+        # In Python, we just have to_datetime_utc().
+        instant = Instant.from_utc(year, 1, 1, 13, 15, 55).plus_nanoseconds(PyodaConstants.NANOSECONDS_PER_SECOND - 1)
+        expected_date_time_utc = datetime(year, 1, 1, 13, 15, 55, tzinfo=UTC) + timedelta(
+            microseconds=PyodaConstants.MICROSECONDS_PER_SECOND - 1
+        )
+        actual_date_time_utc = instant.to_datetime_utc()
+        assert actual_date_time_utc == expected_date_time_utc
 
-    # TODO def test_to_datetimeoffset(self):
-
-    # TODO def test_from_datetimeoffset(self):
-
-    def test_from_datetime_utc_invalid(self) -> None:
-        with pytest.raises(ValueError):
-            # Roughly equivalent to `DateTimeKind.Local`
-            zone_info = ZoneInfo("America/New_York")
-            Instant.from_datetime_utc(datetime(2011, 8, 18, 20, 53, 0, 0, zone_info))
-        with pytest.raises(ValueError):
-            # Roughly equivalent to `DateTimeKind.Unspecified`
-            Instant.from_datetime_utc(datetime(2011, 8, 18, 20, 53, 0, 0))
-
-    def test_from_datetime_utc_valid(self) -> None:
-        x = datetime(2011, 8, 18, 20, 53, 0, 0, tzinfo=UTC)
+    def test_from_aware_datetime(self) -> None:
         expected = Instant.from_utc(2011, 8, 18, 20, 53)
-        actual = Instant.from_datetime_utc(x)
-        assert actual == expected
+        dt_utc = datetime(2011, 8, 18, 20, 53, 0, 0, tzinfo=UTC)
+        dt_ny = datetime(2011, 8, 18, 16, 53, 0, 0, tzinfo=ZoneInfo("America/New_York"))
+
+        assert Instant.from_aware_datetime(dt_utc) == expected
+        assert Instant.from_aware_datetime(dt_ny) == expected
+
+    def test_from_aware_datetime_invalid(self) -> None:
+        with pytest.raises(ValueError) as e:
+            # Roughly equivalent to `DateTimeKind.Local` and `DateTimeKind.Unspecified`
+            Instant.from_aware_datetime(datetime(2011, 8, 18, 20, 53, 0, 0))
+        assert str(e.value) == "Instant.from_aware_datetime cannot accept a naive datetime."
+        assert e.value.__notes__ == ["Parameter name: dt"]
 
     def test_default_constructor(self) -> None:
         actual = Instant()
