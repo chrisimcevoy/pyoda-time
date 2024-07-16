@@ -37,9 +37,9 @@ class TestLocalDateTime:
 
     def test_to_naive_datetime_out_of_range(self) -> None:
         ldt = LocalDate(datetime.min.year, datetime.min.month, datetime.min.day).plus_days(-1).at_midnight()
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(RuntimeError) as e:
             ldt.to_naive_datetime()
-        assert str(e.value) == "year 0 is out of range"
+        assert str(e.value) == "LocalDateTime out of range of datetime"
 
     def test_from_naive_datetime(self) -> None:
         expected = LocalDateTime(2011, 8, 18, 20, 53)

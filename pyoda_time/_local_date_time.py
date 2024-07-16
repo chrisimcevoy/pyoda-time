@@ -212,6 +212,11 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
 
         gregorian = self.with_calendar(CalendarSystem.gregorian)
 
+        # In Noda Time, they measure the ticks since the BCL epoch here and throw if < 0.
+        # This is a bit simpler...
+        if gregorian.year <= datetime.datetime.min.year:
+            raise RuntimeError("LocalDateTime out of range of datetime")
+
         return datetime.datetime(
             year=gregorian.year,
             month=gregorian.month,
