@@ -4,11 +4,13 @@
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, final, overload
 
 from ._calendar_system import CalendarSystem
-from .utility._csharp_compatibility import _sealed
+from .utility._csharp_compatibility import _sealed, _to_ticks
 from .utility._preconditions import _Preconditions
+from .utility._tick_arithmetic import _TickArithmetic
 
 if TYPE_CHECKING:
     from . import Offset, OffsetDateTime, Period, ZonedDateTime
@@ -157,6 +159,11 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         return self.__time.millisecond
 
     @property
+    def microsecond(self) -> int:
+        """The microsecond of this local date and time within the second, in the range 0 to 999,999 inclusive."""
+        return self.__time.microsecond
+
+    @property
     def tick_of_second(self) -> int:
         """The tick of this local time within the second, in the range 0 to 9,999,999 inclusive."""
         return self.__time.tick_of_second
@@ -186,7 +193,39 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         """The date portion of this local date and time as a ``LocalDate``."""
         return self.__date
 
-    # TODO def to_datetime_unspecified(self):
+    def to_naive_datetime(self) -> datetime.datetime:
+        """Constructs a naive ``datetime.datetime`` from this value.
+
+        If the date and time is not on a microsecond boundary (the unit of granularity of ``datetime.datetime``) the
+        value will be truncated towards the start of time.
+
+        ``datetime.datetime`` uses the Gregorian calendar by definition, so the value is implicitly converted
+        to the Gregorian calendar first. The result will be on the same physical day,
+        but the values returned by the Year/Month/Day properties of the ``datetime.datetime`` may not
+        match the Year/Month/Day properties of this value.
+
+        :return: A ``datetime.datetime`` for the same date and time as this value.
+        """
+        # Implementation note:
+        # This function is intended to be roughly equivalent to ``LocalDateTime.ToDateTimeUnspecified()`` in Noda Time.
+        # But the way in which they are implemented is quite different.
+
+        gregorian = self.with_calendar(CalendarSystem.gregorian)
+
+        # In Noda Time, they measure the ticks since the BCL epoch here and throw if < 0.
+        # This is a bit simpler...
+        if gregorian.year <= datetime.datetime.min.year:
+            raise RuntimeError("LocalDateTime out of range of datetime")
+
+        return datetime.datetime(
+            year=gregorian.year,
+            month=gregorian.month,
+            day=gregorian.day,
+            hour=gregorian.hour,
+            minute=gregorian.minute,
+            second=gregorian.second,
+            microsecond=gregorian.microsecond,
+        )
 
     def _to_local_instant(self) -> _LocalInstant:
         from ._local_instant import _LocalInstant
@@ -267,11 +306,35 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
 
         return _TimePeriodField._nanoseconds._add_local_date_time(self, nanoseconds)
 
-    # @classmethod
-    # TODO: def from_datetime(cls, datetime: _datetime.datetime) -> LocalDateTime:
+    @classmethod
+    def from_naive_datetime(cls, dt: datetime.datetime, calendar: CalendarSystem = CalendarSystem.iso) -> LocalDateTime:
+        """Converts a timezone-naive ``datetime.datetime`` to a ``LocalDateTime``, optionally in a specified calendar.
 
-    # @classmethod
-    # TODO: def from_datetime(cls, datetime: _datetime.datetime, calendar: CalendarSystem) -> LocalDateTime:
+        :param dt: Timezone-naive datetime to convert into a Pyoda Time local date and time.
+        :param calendar: The calendar system to convert into.
+        :return: A new ``LocalDateTime`` with the same values as the specified ``datetime.datetime``.
+        :raises ValueError: If ``dt`` is a timezone-aware ``datetime.datetime``.
+        """
+        # Unlike Noda Time, we need to verify the tzinfo of the datetime.
+        # In C#, DateTime doesn't have this...
+        # They have DateTimeKind, but that is irrelevant.
+        # What is important is that it is a DateTime, not a DateTimeOffset.
+
+        _Preconditions._check_argument(
+            expession=dt.tzinfo is None,
+            parameter="datetime",
+            message="Invalid datetime.tzinfo for LocalDateTime.from_datetime_utc",
+        )
+        from pyoda_time._local_date import LocalDate
+        from pyoda_time._local_time import LocalTime
+        from pyoda_time._pyoda_constants import PyodaConstants
+
+        days, tick_of_day = _TickArithmetic.ticks_to_days_and_tick_of_day(_to_ticks(dt))
+        days -= PyodaConstants._BCL_DAYS_AT_UNIX_EPOCH
+        return cls._ctor(
+            local_date=LocalDate._ctor(days_since_epoch=days, calendar=calendar),
+            local_time=LocalTime._ctor(nanoseconds=tick_of_day * PyodaConstants.NANOSECONDS_PER_TICK),
+        )
 
     # region Implementation of IEquatable<LocalDateTime>
 
