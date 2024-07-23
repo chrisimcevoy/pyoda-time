@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, Callable, Generator, final, overload
 
 from ._calendar_ordinal import _CalendarOrdinal
@@ -497,5 +498,30 @@ class LocalDate(metaclass=_LocalDateMeta):
         from .text import LocalDatePattern
 
         return LocalDatePattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)
+
+    # endregion
+
+    # region date conversions
+
+    def to_date(self) -> datetime.date:
+        """Converts this object to a ``datetime.date``.
+
+        ``datetime.date`` uses the Gregorian calendar by definition, so the value is implicitly converted to the
+        Gregorian calendar first. The result will be on the same physical day, but the values returned by the
+        Year/Month/Day properties of the ``datetime.date`` may not match the Year/Month/Day properties of this value.
+
+        :return: A ``datetime.date`` value equivalent to this one.
+        """
+        return datetime.date(1970, 1, 1) + datetime.timedelta(days=self._days_since_epoch)
+
+    @classmethod
+    def from_date(cls, date: datetime.date) -> LocalDate:
+        """Constructs a ``LocalDate`` from a ``datetime.date``.
+
+        :param date: The date to convert.
+        :return: The ``LocalDate`` equivalent, which is always in the ISO calendar system.
+        """
+        days_since_epoch: int = (date - datetime.date(1970, 1, 1)).days
+        return cls._ctor(days_since_epoch=days_since_epoch)
 
     # endregion
