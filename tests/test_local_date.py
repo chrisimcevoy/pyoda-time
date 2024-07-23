@@ -1,6 +1,8 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
+import datetime
+
 import pytest
 
 from pyoda_time import CalendarSystem, IsoDayOfWeek, LocalDate, LocalDateTime, LocalTime
@@ -191,3 +193,38 @@ class TestLocalDateConstruction:
         assert date.year == year
         assert date.month == month
         assert date.day == date.day
+
+
+class TestLocalDateConversion:
+    def test_to_date_gregorian(self) -> None:
+        local_date = LocalDate(2011, 8, 5)
+        expected = datetime.date(2011, 8, 5)
+        actual = local_date.to_date()
+        assert actual == expected
+
+    def test_to_date_non_gregorian(self) -> None:
+        # Julian calendar is 13 days behind Gregorian calendar in the 21st century
+        local_date = LocalDate(2011, 8, 5, CalendarSystem.julian)
+        expected = datetime.date(2011, 8, 18)
+        actual = local_date.to_date()
+        assert actual == expected
+        # Unlike the equivalent test in Pyoda Time, we cannot test the stlib date
+        # with different calendars like they do for DateOnly in dotnet.
+
+    def test_to_date_out_of_range(self) -> None:
+        local_date = LocalDate(0, 12, 31)
+        with pytest.raises(OverflowError):
+            # TODO: Noda Time has the following comment:
+            #  "While ArgumentOutOfRangeException may not be the absolute ideal exception, it conveys
+            #  the right impression, and is consistent with what we do elsewhere."
+            #  I'm not sure that is accurate, for instance LocalDate.ToDate and LocalDateTime.ToDateTimeUnspecified both
+            #  throw InvalidOperationException...
+            #  In any case, LocalDate.ToDateOnly seems to defer to The DateOnly constructor rather than throwing itself.
+            #  So we are doing the same thing here, just allowing datetime.date() to raise.
+            local_date.to_date()
+
+    def test_from_date(self) -> None:
+        date = datetime.date(2011, 8, 18)
+        expected = LocalDate(2011, 8, 18)
+        actual = LocalDate.from_date(date)
+        assert actual == expected
