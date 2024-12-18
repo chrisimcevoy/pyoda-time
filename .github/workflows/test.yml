@@ -69,7 +69,7 @@ jobs:
 
       - name: Check for unstaged files
         run: |
-          if [[ $(git status --porcelain) ]]; then
+          if [[ $(git status --porcelain docs/) ]]; then
             echo "Unstaged files detected. Please run `make docs.sphinx.html` and commit the generated files."
             git status --porcelain
             exit 1
