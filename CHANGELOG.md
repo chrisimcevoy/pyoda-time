@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.1...v0.9.2) (2024-12-18)
+
+
+### Bug Fixes
+
+* license metadata ([57a1899](https://github.com/chrisimcevoy/pyoda-time/commit/57a1899c26aa6acd0f1e52d5f05a238a74dad2a4))
+
 ## [0.9.1](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.0...v0.9.1) (2024-12-18)
 
 
