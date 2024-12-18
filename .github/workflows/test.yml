@@ -43,7 +43,7 @@ jobs:
         run: uv python install
 
       - name: Run pre-commit hooks
-        run: poetry run pre-commit run -a
+        run: uv run pre-commit run -a
 
   sphinx:
     runs-on: ubuntu-latest
