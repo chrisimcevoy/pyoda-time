@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.0...v0.9.1) (2024-12-18)
+
+
+### Bug Fixes
+
+* uv build ([b56483f](https://github.com/chrisimcevoy/pyoda-time/commit/b56483f0b6d5f0a13b5ae7900f4170c69c5f9e99))
+
 ## [0.9.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.8.0...v0.9.0) (2024-12-18)
 
 
