@@ -2,9 +2,9 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from datetime import UTC, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import pytest
-from zoneinfo import ZoneInfo
 
 from pyoda_time import CalendarSystem, DateTimeZone, DateTimeZoneProviders, LocalDate, LocalDateTime, PyodaConstants
 

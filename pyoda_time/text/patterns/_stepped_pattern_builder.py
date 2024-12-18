@@ -3,14 +3,12 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping, Sequence
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Final,
     Generic,
-    Mapping,
     Protocol,
-    Sequence,
     TypeVar,
     final,
     overload,

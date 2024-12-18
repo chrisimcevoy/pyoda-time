@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -22,8 +22,8 @@ ISO: CalendarSystem = CalendarSystem.iso
 
 
 class TestIsoCalendarSystem:
-    UNIX_EPOCH_DATE_TIME = datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-    TIME_OF_GREAT_ACHIEVEMENT = datetime(2009, 11, 27, 18, 38, 25, 345 * 1000, tzinfo=timezone.utc) + timedelta(
+    UNIX_EPOCH_DATE_TIME = datetime(1970, 1, 1, 0, 0, 0, tzinfo=UTC)
+    TIME_OF_GREAT_ACHIEVEMENT = datetime(2009, 11, 27, 18, 38, 25, 345 * 1000, tzinfo=UTC) + timedelta(
         microseconds=8765 * 0.1
     )
 

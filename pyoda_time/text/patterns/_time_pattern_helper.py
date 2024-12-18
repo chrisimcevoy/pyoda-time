@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.text import ParseResult

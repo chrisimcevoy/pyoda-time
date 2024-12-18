@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Iterable, Protocol
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from pyoda_time._date_time_zone import DateTimeZone

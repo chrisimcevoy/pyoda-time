@@ -2,7 +2,8 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from typing import Callable, Final, Generic, TypeVar, final
+from collections.abc import Callable
+from typing import Final, Generic, TypeVar, final
 
 from ..._compatibility._i_format_provider import IFormatProvider
 from ...globalization._pyoda_format_info import _PyodaFormatInfo

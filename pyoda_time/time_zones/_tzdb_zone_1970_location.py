@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
 from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter

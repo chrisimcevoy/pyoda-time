@@ -1,7 +1,7 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from random import Random
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
@@ -32,7 +32,7 @@ def test_construction_raises() -> None:
 
 class TestSystemClock:
     def test_instance_now(self) -> None:
-        stdlib_now_ticks = _to_ticks(datetime.now(tz=timezone.utc))
+        stdlib_now_ticks = _to_ticks(datetime.now(tz=UTC))
         pyoda_ticks = SystemClock.instance.get_current_instant().to_unix_time_ticks()
         assert (pyoda_ticks - stdlib_now_ticks) < Duration.from_seconds(1).bcl_compatible_ticks
 

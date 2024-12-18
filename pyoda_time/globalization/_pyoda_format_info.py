@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 import threading
-from typing import TYPE_CHECKING, Final, Sequence, TypeVar, cast, final
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Final, TypeVar, cast, final
 
 from .._compatibility._culture_info import CultureInfo
 from .._compatibility._date_time_format_info import DateTimeFormatInfo
@@ -533,7 +534,7 @@ class _EraDescription:
         get_era_from_calendar: bool = (
             (era == Era.common and isinstance(calendar, GregorianCalendar))
             or (era == Era.anno_persico and isinstance(calendar, PersianCalendar))
-            or (era == Era.anno_hegirae and isinstance(calendar, (HijriCalendar, UmAlQuraCalendar)))
+            or (era == Era.anno_hegirae and isinstance(calendar, HijriCalendar | UmAlQuraCalendar))
         )
 
         if get_era_from_calendar:

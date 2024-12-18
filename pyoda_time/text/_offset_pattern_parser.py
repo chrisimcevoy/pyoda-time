@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import Callable, Final, Mapping, final
+from collections.abc import Callable, Mapping
+from typing import Final, final
 
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time._offset import Offset

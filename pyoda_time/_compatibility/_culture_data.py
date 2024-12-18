@@ -5,9 +5,10 @@
 from __future__ import annotations
 
 import copy
+from collections.abc import Sequence
 from enum import IntEnum
 from threading import Lock
-from typing import TYPE_CHECKING, Any, Final, Sequence, cast, overload
+from typing import TYPE_CHECKING, Any, Final, cast, overload
 
 import icu
 

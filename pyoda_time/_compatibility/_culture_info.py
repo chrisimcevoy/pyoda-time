@@ -8,7 +8,8 @@ import copy
 import itertools
 import string
 import threading
-from typing import Any, Final, Sequence, _ProtocolMeta
+from collections.abc import Sequence
+from typing import Any, Final, _ProtocolMeta
 
 import icu
 

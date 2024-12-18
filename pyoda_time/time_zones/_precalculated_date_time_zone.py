@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import Callable, cast, final
+from collections.abc import Callable
+from typing import cast, final
 
 from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time._instant import Instant

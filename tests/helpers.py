@@ -10,7 +10,8 @@ due to their 'Test' prefixes, the helpers are implemented here as
 module-level functions.
 """
 
-from typing import Any, Callable, Protocol, Sequence, TypeVar
+from collections.abc import Callable, Sequence
+from typing import Any, Protocol, TypeVar
 
 import pytest
 

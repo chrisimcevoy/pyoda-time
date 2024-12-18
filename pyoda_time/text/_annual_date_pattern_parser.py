@@ -3,8 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Callable, Final, final
+from collections.abc import Callable, Mapping
+from typing import Final, final
 
 from pyoda_time._annual_date import AnnualDate
 from pyoda_time._calendar_system import CalendarSystem

@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import Callable, Final, final, overload
+from collections.abc import Callable
+from typing import Final, final, overload
 
 from ._local_date import LocalDate
 from ._local_time import LocalTime

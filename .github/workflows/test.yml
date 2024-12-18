@@ -17,9 +17,14 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
 
       - name: Run tests
         run: uv run pytest --cov . --cov-report xml -n auto
@@ -38,9 +43,14 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
 
       - name: Run pre-commit hooks
         run: uv run pre-commit run -a
@@ -54,9 +64,14 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
 
       - name: Set up Python
         run: uv python install
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
 
       - name: Generate html docs
         run: make docs.sphinx.html

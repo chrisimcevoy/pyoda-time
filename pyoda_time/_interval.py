@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import Final, Generator, final
+from collections.abc import Generator
+from typing import Final, final
 
 from pyoda_time._duration import Duration
 from pyoda_time._instant import Instant

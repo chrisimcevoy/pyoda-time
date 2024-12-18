@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 import types
-from typing import Sequence, final
+from collections.abc import Sequence
+from typing import final
 
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions

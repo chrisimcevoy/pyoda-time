@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Sequence, TypeVar, final
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, TypeVar, final
 
 from pyoda_time._calendar_system import CalendarSystem
 from pyoda_time._compatibility._string_builder import StringBuilder

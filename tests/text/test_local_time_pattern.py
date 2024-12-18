@@ -1,7 +1,8 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from typing import Any, Final, Sequence
+from collections.abc import Sequence
+from typing import Any, Final
 
 import pytest
 from _pytest.fixtures import FixtureRequest

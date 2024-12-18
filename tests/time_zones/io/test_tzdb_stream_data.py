@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 import io
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 

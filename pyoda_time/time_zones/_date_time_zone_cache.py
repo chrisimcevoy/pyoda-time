@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Iterable, final
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Final, final
 
 from .._i_date_time_zone_provider import IDateTimeZoneProvider
 from ..utility._csharp_compatibility import _sealed

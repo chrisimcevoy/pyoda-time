@@ -3,9 +3,9 @@
 # as found in the LICENSE.txt file.
 
 from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
-from zoneinfo import ZoneInfo
 
 from pyoda_time import (
     CalendarSystem,

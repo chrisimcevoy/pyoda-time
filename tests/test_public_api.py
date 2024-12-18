@@ -3,8 +3,8 @@
 # as found in the LICENSE.txt file.
 import importlib
 import pkgutil
+from collections.abc import Generator
 from types import ModuleType
-from typing import Generator
 
 import pytest
 

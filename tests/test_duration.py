@@ -4,8 +4,9 @@
 """https://github.com/nodatime/nodatime/blob/main/src/NodaTime.Test/DurationTest.cs"""
 
 import sys
+from collections.abc import Callable
 from datetime import timedelta
-from typing import Callable, Final, TypeVar
+from typing import Final, TypeVar
 
 import pytest
 

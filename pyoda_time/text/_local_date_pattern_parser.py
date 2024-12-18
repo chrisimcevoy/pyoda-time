@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import Any, Callable, Final, final
+from collections.abc import Callable
+from typing import Any, Final, final
 
 from pyoda_time._calendar_ordinal import _CalendarOrdinal
 from pyoda_time._calendar_system import CalendarSystem

@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import Callable, final
+from collections.abc import Callable
+from typing import final
 
 from ._iso_day_of_week import IsoDayOfWeek
 from ._local_date import LocalDate

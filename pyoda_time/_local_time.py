@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import datetime
 import functools
-from typing import TYPE_CHECKING, Callable, Generator, final, overload
+from collections.abc import Callable, Generator
+from typing import TYPE_CHECKING, final, overload
 
 from ._pyoda_constants import PyodaConstants
 from .utility._csharp_compatibility import (

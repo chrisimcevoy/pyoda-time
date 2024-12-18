@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import struct
 import types
-from typing import Any, BinaryIO, Callable, Final, Sequence, TypeVar, final
+from collections.abc import Callable, Sequence
+from typing import Any, BinaryIO, Final, TypeVar, final
 
 from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time.time_zones import TzdbZoneLocation

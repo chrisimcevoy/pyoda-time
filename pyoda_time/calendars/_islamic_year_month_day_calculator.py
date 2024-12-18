@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Final, Generator, final
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, Final, final
 
 from ..utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
 from ._islamic_epoch import IslamicEpoch

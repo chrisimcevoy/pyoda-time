@@ -4,9 +4,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Final, Sequence, cast, final
+from typing import Final, cast, final
 
 from icu import DateFormatSymbols, DateTimePatternGenerator, Locale
 
