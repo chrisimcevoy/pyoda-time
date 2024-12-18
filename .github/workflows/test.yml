@@ -24,7 +24,7 @@ jobs:
         run: uv python install
 
       - name: Run tests
-        run: uv run pytest --cov . --cov-report xml -n auto
+        run: uv run --frozen pytest --cov . --cov-report xml -n auto
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5.1.1
@@ -47,7 +47,7 @@ jobs:
         run: uv python install
 
       - name: Run pre-commit hooks
-        run: uv run pre-commit run -a
+        run: uv run --frozen pre-commit run -a
 
   sphinx:
     runs-on: ubuntu-latest
