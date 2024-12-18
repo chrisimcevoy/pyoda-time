@@ -2,8 +2,9 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from collections import deque
+from collections.abc import Callable
 from threading import Lock
-from typing import Callable, Final, Generic, TypeVar, final
+from typing import Final, Generic, TypeVar, final
 
 from pyoda_time.utility._csharp_compatibility import _sealed
 

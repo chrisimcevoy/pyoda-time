@@ -3,8 +3,9 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
+from collections.abc import Callable, Generator, Sequence
 from io import BytesIO
-from typing import BinaryIO, Callable, Generator, Sequence, TypeVar, final
+from typing import BinaryIO, TypeVar, final
 
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 

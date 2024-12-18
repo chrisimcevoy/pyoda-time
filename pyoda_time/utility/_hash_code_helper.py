@@ -6,7 +6,7 @@ from __future__ import annotations
 
 __all__: list[str] = []
 
-from typing import Hashable
+from collections.abc import Hashable
 
 
 def _hash_code_helper(*values: Hashable) -> int:

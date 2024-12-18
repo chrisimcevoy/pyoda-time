@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, Sequence, _ProtocolMeta
+from collections.abc import Sequence
+from typing import Any, _ProtocolMeta
 
 from pyoda_time._compatibility._calendar import Calendar
 from pyoda_time._compatibility._calendar_id import _CalendarId

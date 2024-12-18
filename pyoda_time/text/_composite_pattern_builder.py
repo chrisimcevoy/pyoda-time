@@ -1,7 +1,8 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
-from typing import Callable, Final, Generic, Sequence, TypeVar, cast, final
+from collections.abc import Callable, Sequence
+from typing import Final, Generic, TypeVar, cast, final
 
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.text._i_partial_pattern import _IPartialPattern

@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import types
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from importlib import resources
-from typing import BinaryIO, Iterable, Sequence, _ProtocolMeta, cast, final
+from typing import BinaryIO, _ProtocolMeta, cast, final
 
 from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time.time_zones import IDateTimeZoneSource, TzdbZone1970Location, TzdbZoneLocation

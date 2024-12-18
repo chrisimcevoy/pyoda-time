@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
-
 from zoneinfo import ZoneInfo
 
 if TYPE_CHECKING:

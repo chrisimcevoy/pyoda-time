@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import Final, Sequence, final
+from collections.abc import Sequence
+from typing import Final, final
 
 from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
 from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter

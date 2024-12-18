@@ -7,9 +7,9 @@ from __future__ import annotations
 import datetime
 import decimal
 from collections import defaultdict
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from types import MappingProxyType
-from typing import Any, Final, Literal, Sequence, TypeVar
+from typing import Any, Final, Literal, TypeVar
 
 __all__: list[str] = []
 

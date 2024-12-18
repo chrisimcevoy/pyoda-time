@@ -2,13 +2,13 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
+from contextlib import AbstractContextManager
 from types import TracebackType
-from typing import ContextManager
 
 from pyoda_time._compatibility._culture_info import CultureInfo
 
 
-class _BothSaver(ContextManager[None]):
+class _BothSaver(AbstractContextManager[None]):
     """A context manager for temporarily changing cultures and which resets the culture on exit."""
 
     @property
@@ -60,7 +60,7 @@ class CultureSaver:
     @classmethod
     def set_cultures(
         cls, new_culture_info: CultureInfo, new_ui_culture_info: CultureInfo | None = None
-    ) -> ContextManager[None]:
+    ) -> AbstractContextManager[None]:
         """Sets both the UI and basic cultures of the current thread.
 
         :param new_culture_info: The new culture info.

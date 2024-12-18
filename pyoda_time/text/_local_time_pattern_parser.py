@@ -3,7 +3,8 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import Callable, Final, Mapping, final
+from collections.abc import Callable, Mapping
+from typing import Final, final
 
 from pyoda_time._local_time import LocalTime
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo

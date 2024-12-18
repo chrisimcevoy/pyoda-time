@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, final, overload
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, final, overload
 
 from .._calendar_system import CalendarSystem
 from ..calendars._era import Era

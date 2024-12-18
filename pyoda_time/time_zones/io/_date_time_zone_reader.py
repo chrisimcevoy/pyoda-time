@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import BinaryIO, Sequence, final
+from collections.abc import Sequence
+from typing import BinaryIO, final
 
 from pyoda_time._duration import Duration
 from pyoda_time._instant import Instant

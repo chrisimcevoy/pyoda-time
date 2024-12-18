@@ -329,7 +329,7 @@ class Instant(metaclass=_InstantMeta):
         if self < PyodaConstants.BCL_EPOCH:
             raise RuntimeError("Instant out of range for datetime")
 
-        epoch: datetime.datetime = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+        epoch: datetime.datetime = datetime.datetime(1970, 1, 1, tzinfo=datetime.UTC)
         delta = datetime.timedelta(
             days=self._days_since_epoch,
             microseconds=_towards_zero_division(self._nanosecond_of_day, PyodaConstants.NANOSECONDS_PER_MICROSECOND),

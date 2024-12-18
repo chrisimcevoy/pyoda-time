@@ -2,7 +2,8 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 import itertools
-from typing import Any, Final, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any, Final
 
 import pytest
 from _pytest.fixtures import FixtureRequest
