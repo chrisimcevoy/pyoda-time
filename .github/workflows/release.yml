@@ -42,7 +42,7 @@ jobs:
         run: uv python install
 
       - name: Build the project
-        run: uv build build
+        run: uv build
 
       - name: Publish (PyPI)
         if: ${{ matrix.environment=='pypi' }}
