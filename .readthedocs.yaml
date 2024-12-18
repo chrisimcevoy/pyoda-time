@@ -1,4 +1,4 @@
-# Based on https://docs.readthedocs.io/en/stable/build-customization.html#install-dependencies-with-poetry
+# Based on https://docs.readthedocs.io/en/stable/build-customization.html#install-dependencies-with-uv
 
 version: 2
 
@@ -6,13 +6,12 @@ build:
   os: "ubuntu-22.04"
   tools:
     python: "3.12"
-  jobs:
-    post_create_environment:
-      - pip install poetry
-    post_install:
-      # VIRTUAL_ENV needs to be set manually for now.
-      # See https://github.com/readthedocs/readthedocs.org/pull/11152/
-      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install
+  commands:
+    - asdf plugin add uv
+    - asdf install uv latest
+    - asdf global uv latest
+    - uv sync --extra docs --frozen
+    - uv run -m sphinx -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html
 
 sphinx:
   configuration: docs/source/conf.py
