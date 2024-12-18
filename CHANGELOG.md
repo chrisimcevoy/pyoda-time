@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.3](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.2...v0.9.3) (2024-12-18)
+
+
+### Bug Fixes
+
+* use hatch build backend ([9281bf3](https://github.com/chrisimcevoy/pyoda-time/commit/9281bf313d7d4943270ad7db905b7e01cc3f51c4))
+
 ## [0.9.2](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.1...v0.9.2) (2024-12-18)
 
 
