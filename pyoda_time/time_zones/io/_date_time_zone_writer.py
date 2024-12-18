@@ -151,7 +151,7 @@ class _DateTimeZoneWriter(_IDateTimeZoneWriter):
         self.write_milliseconds(offset.milliseconds)
 
     def write_dictionary(self, dictionary: dict[str, str]) -> None:
-        """Writes the given dictionary of string to string to the stream.
+        """Writes the given dictionary of string to the stream.
 
         :param dictionary: The dictionary to write.
         """
