@@ -12,7 +12,7 @@ Pyoda Time is a Python port of the dotnet package, Noda Time; The aim of the pro
 - **CPython Interpreter:** Version 3.12 or newer. Refer to the [installation guide](https://wiki.python.org/moin/BeginnersGuide/Download) and the [official downloads page](https://www.python.org/downloads/).
 - **Git Client:** Download from [https://git-scm.com/](https://git-scm.com/).
 - **GitHub Account:** Sign up at [https://github.com/join](https://github.com/join).
-- **Poetry:** For managing Python dependencies. Installation instructions at [https://python-poetry.org/](https://python-poetry.org/).
+- **uv:** For managing Python dependencies. Installation instructions at [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/).
 
 ### Project Structure
 
@@ -26,18 +26,17 @@ This convention helps to minimise the overhead in tracking parity with the mothe
 
 Before contributing code, please open an issue declaring the functionality you intend to implement.
 
-After setting up, you can [fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) and clone your fork locally. Running `poetry install` will install all project dependencies in a project-specific environment.
+After setting up, you can [fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) and clone your fork locally.
 
 Upon completing your changes, [create a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) for review and potential inclusion in the project.
 
 ### Useful Terminal Commands
 
-|             Command             |                    Description                     |
-|:-------------------------------:|:--------------------------------------------------:|
-|        `poetry install`         |           Installs project dependencies            |
-|       `poetry run pytest`       |                Runs the test suite                 |
-| `poetry run pre-commit install` |             Installs pre-commit hooks              |
-| `poetry run pre-commit run -a`  | Runs pre-commit checks against the entire codebase |
+|           Command           |                    Description                     |
+|:---------------------------:|:--------------------------------------------------:|
+|       `uv run pytest`       |                Runs the test suite                 |
+| `uv run pre-commit install` |             Installs pre-commit hooks              |
+| `uv run pre-commit run -a`  | Runs pre-commit checks against the entire codebase |
 
 ## Conventions for Porting C# Code to Python
 
