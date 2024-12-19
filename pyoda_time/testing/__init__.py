@@ -3,8 +3,8 @@
 # as found in the LICENSE.txt file.
 
 __all__ = [
-    "time_zones",
     "FakeClock",
+    "time_zones",
 ]
 
 from . import time_zones

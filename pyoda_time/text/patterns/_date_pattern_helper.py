@@ -150,7 +150,7 @@ class _DatePatternHelper:
                     text_values = self.__format_info.long_month_names
 
             def format_action(value: T, sb: StringBuilder) -> None:
-                sb.append(text_values[self.__getter(value)])
+                sb.append(text_values[self.__getter(value)])  # type: ignore[arg-type]
 
             return format_action
 

@@ -26,9 +26,9 @@ class FakeClock(IClock):
     """
 
     __slots__ = (
+        "__auto_advance",
         "__lock",
         "__now",
-        "__auto_advance",
     )
 
     def __init__(self, initial: Instant, auto_advance: Duration = Duration.zero) -> None:

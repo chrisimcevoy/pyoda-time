@@ -361,7 +361,7 @@ class _CultureData(metaclass=_CultureDataMeta):
             cd._iLanguage = CultureInfo._LOCALE_CUSTOM_UNSPECIFIED
             return cd
 
-        if len(culture_name) == 1 and culture_name[0] == "C" or culture_name[0] == "c":
+        if (len(culture_name) == 1 and culture_name[0] == "C") or culture_name[0] == "c":
             # Always map the "C" locale to Invariant to avoid mapping it to en_US_POSIX on Linux because POSIX
             # locale collation doesn't support case insensitive comparisons.
             # We do the same mapping on Windows for the sake of consistency.

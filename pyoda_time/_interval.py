@@ -31,7 +31,7 @@ class Interval:
     The default value of this type is an empty interval with a start and end of ``PyodaConstant.UNIX_EPOCH``.
     """
 
-    __slots__ = ("__start", "__end")
+    __slots__ = ("__end", "__start")
 
     def __init__(
         self, start: Instant | None = PyodaConstants.UNIX_EPOCH, end: Instant | None = PyodaConstants.UNIX_EPOCH

@@ -3,7 +3,6 @@
 # as found in the LICENSE.txt file.
 
 __all__: list[str] = [
-    "patterns",
     "AnnualDatePattern",
     "DurationPattern",
     "InstantPattern",
@@ -14,6 +13,7 @@ __all__: list[str] = [
     "OffsetPattern",
     "ParseResult",
     "UnparsableValueError",
+    "patterns",
 ]
 
 from ._annual_date_pattern import AnnualDatePattern

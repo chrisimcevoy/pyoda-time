@@ -5,13 +5,6 @@
 __version__ = "0.9.3"
 
 __all__: list[str] = [
-    "calendars",
-    "fields",
-    "globalization",
-    "testing",
-    "text",
-    "time_zones",
-    "utility",
     "AmbiguousTimeError",
     "AnnualDate",
     "CalendarSystem",
@@ -26,8 +19,8 @@ __all__: list[str] = [
     "Interval",
     "IsoDayOfWeek",
     "LocalDate",
-    "LocalTime",
     "LocalDateTime",
+    "LocalTime",
     "Offset",
     "OffsetDateTime",
     "OffsetTime",
@@ -41,6 +34,13 @@ __all__: list[str] = [
     "YearMonth",
     "ZonedClock",
     "ZonedDateTime",
+    "calendars",
+    "fields",
+    "globalization",
+    "testing",
+    "text",
+    "time_zones",
+    "utility",
 ]
 
 

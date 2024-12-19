@@ -6,9 +6,9 @@ __all__: list[str] = [
     "CalendarWeekRule",
     "Era",
     "HebrewMonthNumbering",
+    "IWeekYearRule",
     "IslamicEpoch",
     "IslamicLeapYearPattern",
-    "IWeekYearRule",
     "WeekYearRules",
 ]
 
