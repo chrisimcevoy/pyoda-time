@@ -6,6 +6,9 @@
   "ignorePaths": [
     "**/.python-version"
   ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
   "pre-commit": {
     "enabled": true
   }
