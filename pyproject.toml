@@ -67,6 +67,7 @@ fixable = ["ALL"]
 select = [
     "E",    # pycodestyle (error)
     "F",    # pyflakes
+    "FURB", # refurb
     "I",    # isort
     "RUF",  # ruff
     "UP",   # pyupgrade

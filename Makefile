@@ -1,6 +1,7 @@
-.PHONY: docs.sphinx.html
+.PHONY: docs.sphinx.html lint
 
-
+lint:
+	uv run --frozen pre-commit run -a
 
 docs.sphinx.html:
 	@echo "Cleaning build directory"

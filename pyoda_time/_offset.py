@@ -101,7 +101,7 @@ class Offset(metaclass=_OffsetMeta):
         :param y: The second offset
         :return: The greater offset of x and y.
         """
-        return x if x > y else y
+        return max(y, x)
 
     @staticmethod
     def min(x: Offset, y: Offset) -> Offset:
@@ -112,7 +112,7 @@ class Offset(metaclass=_OffsetMeta):
         :param y: The second offset
         :return: The lower offset of x and y.
         """
-        return x if x < y else y
+        return min(y, x)
 
     # region Operators
 
