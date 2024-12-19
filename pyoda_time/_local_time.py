@@ -658,7 +658,7 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param y: The second time to compare.
         :return: The later time of ``x`` or ``y``.
         """
-        return x if x > y else y
+        return max(y, x)
 
     @staticmethod
     def min(x: LocalTime, y: LocalTime) -> LocalTime:
@@ -668,7 +668,7 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param y: The second time to compare.
         :return: The earlier time of ``x`` or ``y``.
         """
-        return x if x < y else y
+        return min(y, x)
 
     # region Formatting
 
