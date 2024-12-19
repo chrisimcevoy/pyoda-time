@@ -3,8 +3,6 @@
 # as found in the LICENSE.txt file.
 
 __all__ = [
-    "cldr",
-    "io",
     "DateTimeZoneCache",
     "DateTimeZoneNotFoundError",
     "IDateTimeZoneSource",
@@ -13,6 +11,8 @@ __all__ = [
     "TzdbZoneLocation",
     "ZoneInterval",
     "ZoneLocalMapping",
+    "cldr",
+    "io",
 ]
 
 from . import cldr, io

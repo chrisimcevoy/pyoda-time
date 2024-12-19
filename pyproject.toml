@@ -63,10 +63,7 @@ warn_unused_ignores = true
 line-length = 120
 
 [tool.ruff.lint]
-# Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
-unfixable = []
-
 select = [
     "E",    # pycodestyle (error)
     "F",    # pyflakes
@@ -75,4 +72,5 @@ select = [
     "UP",   # pyupgrade
     "W",    # pycodestyle (warning)
 ]
+unfixable = []
 
