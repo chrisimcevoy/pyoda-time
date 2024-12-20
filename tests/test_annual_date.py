@@ -74,4 +74,4 @@ class TestAnnualDate:
         #  The Noda Time test also has a None case...
         annual_date = AnnualDate(2, 1)
         with CultureSaver.set_cultures(culture):
-            assert f"{annual_date:{pattern_text}}"
+            assert f"{annual_date:{pattern_text}}" == expected

@@ -239,11 +239,7 @@ class _CalendarData(metaclass=_CalendarDataMeta):
 
         # .NET expects that only the Japanese calendars have more than 1 era.
         # So for other calendars, only return the latest era.
-        if (
-            calendar_id != _CalendarId.JAPAN
-            and calendar_id != _CalendarId.JAPANESELUNISOLAR
-            and len(self._saEraNames) > 0
-        ):
+        if calendar_id not in (_CalendarId.JAPAN, _CalendarId.JAPANESELUNISOLAR) and len(self._saEraNames) > 0:
             # TODO: Do the same thing for short era names when/if that is implemented
             latest_era_name = self._saEraNames[-1]
             self._saEraNames = [latest_era_name]

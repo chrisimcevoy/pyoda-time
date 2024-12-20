@@ -22,7 +22,7 @@ class _GJEraCalculator(_EraCalculator):
         self.__max_year_of_ad = ymd_calculator._max_year
 
     def __validate_era(self, era: Era) -> None:
-        if era != Era.common and era != Era.before_common:
+        if era not in (Era.common, Era.before_common):
             _Preconditions._check_not_null(era, "era")
             _Preconditions._check_argument(
                 False, "era", "Era {} is not supported by this calendar; only BC and AD are supported", era.name

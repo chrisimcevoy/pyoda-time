@@ -115,9 +115,8 @@ class _ZoneYearOffset:
         if allow_negated and value < 0:
             if value < -maximum or -minimum < value:
                 failed = True
-        else:
-            if value < minimum or maximum < value:
-                failed = True
+        elif value < minimum or maximum < value:
+            failed = True
 
         if failed:
             range_ = (

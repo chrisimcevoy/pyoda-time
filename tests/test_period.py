@@ -605,7 +605,7 @@ class TestPeriod:
     def test_between_extreme_values(self, units: PeriodUnits) -> None:
         # TODO: In Noda Time, Nanoseconds overflows, but not in Pyoda Time
         # We can't use None, and Nanoseconds will *correctly* overflow.
-        if units == PeriodUnits.NONE or units == PeriodUnits.NANOSECONDS:
+        if units in (PeriodUnits.NONE, PeriodUnits.NANOSECONDS):
             return
         min_value = LocalDate.min_iso_value.at(LocalTime.min_value)
         max_value = LocalDate.max_iso_value.at(LocalTime.max_value)

@@ -64,8 +64,6 @@ class _YearMonthDayCalendar:
                 | int(calendar_ordinal)
             )
         elif year_month_day is not None and calendar_ordinal is not None:
-            year_month_day = year_month_day
-            calendar_ordinal = calendar_ordinal
             self.__value = (year_month_day << cls._CALENDAR_BITS) | int(calendar_ordinal)
         else:
             raise TypeError

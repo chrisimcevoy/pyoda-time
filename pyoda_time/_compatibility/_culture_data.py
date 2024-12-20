@@ -905,9 +905,8 @@ class _CultureData(metaclass=_CultureDataMeta):
                 if i < len(s):
                     if result is not None:
                         result.append(s[i])
-            else:
-                if result is not None:
-                    result.append(char)
+            elif result is not None:
+                result.append(char)
             i += 1
 
         if result is None:

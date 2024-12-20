@@ -94,7 +94,7 @@ class _PatternCursor(_TextCursor):
             elif current == "\\":
                 if not self.move_next():
                     raise InvalidPatternError(_TextErrorMessages.ESCAPE_AT_END_OF_STRING)
-            elif current == "'" or current == '"':
+            elif current in ("'", '"'):
                 # We really don't care about the value here. It's slightly inefficient to
                 # create the substring and then ignore it, but it's unlikely to be significant.
                 _ = self.get_quoted_string(current)

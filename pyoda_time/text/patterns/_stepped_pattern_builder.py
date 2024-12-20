@@ -123,8 +123,7 @@ class _SteppedPatternBuilder(Generic[TResult]):
                 if (
                     (ord("A") <= ord(current) <= ord("Z"))
                     or (ord("a") <= ord(current) <= ord("z"))
-                    or current == _PatternCursor._EMBEDDED_PATTERN_START
-                    or current == _PatternCursor._EMBEDDED_PATTERN_END
+                    or current in (_PatternCursor._EMBEDDED_PATTERN_START, _PatternCursor._EMBEDDED_PATTERN_END)
                 ):
                     raise InvalidPatternError(_TextErrorMessages.UNQUOTED_LITERAL, current)
 
@@ -483,7 +482,7 @@ class _SteppedPatternBuilder(Generic[TResult]):
         # This will be d (date-only), t (time-only), or < (date and time)
         # If it's anything else, we'll see the problem when we try to get the pattern.
         pattern_type: str = pattern.peek_next()
-        if pattern_type == "d" or pattern_type == "t":
+        if pattern_type in ("d", "t"):
             pattern.move_next()
 
         embedded_pattern_text = pattern.get_embedded_pattern()
