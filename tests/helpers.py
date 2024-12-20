@@ -184,7 +184,7 @@ def test_operator_comparison(
     """
     _validate_input(value, equal_value, greater_values, "greater_value")
 
-    assert not value > value
+    assert not value > value  # noqa
     assert not value > equal_value
     assert not equal_value > value
     with pytest.raises(TypeError) as e:
@@ -194,7 +194,7 @@ def test_operator_comparison(
         None > value
     assert str(e.value) == f"'>' not supported between instances of 'NoneType' and '{value.__class__.__name__}'"
 
-    assert not value < value
+    assert not value < value  # noqa
     assert not value < equal_value
     assert not equal_value < value
     with pytest.raises(TypeError) as e:
@@ -228,7 +228,7 @@ def test_operator_comparison_equality(
 
     test_operator_comparison(value, equal_value, *greater_values)
 
-    assert value >= value
+    assert value >= value  # noqa
     assert value >= equal_value
     assert equal_value >= value
 
@@ -239,7 +239,7 @@ def test_operator_comparison_equality(
         None >= value
     assert str(e.value) == f"'>=' not supported between instances of 'NoneType' and '{value.__class__.__name__}'"
 
-    assert value <= value
+    assert value <= value  # noqa
     assert value <= equal_value
     assert equal_value <= value
 
@@ -269,14 +269,14 @@ def test_operator_equality(value: T, equal_value: T, unequal_value: T) -> None:
     """
     _validate_input(value, equal_value, unequal_value, "unequal_value")
 
-    assert value == value
+    assert value == value  # noqa
     assert value == equal_value
     assert equal_value == value
     assert not value == unequal_value
     assert not value == None  # noqa
     assert not None == value  # noqa
 
-    assert not value != value
+    assert not value != value  # noqa
     assert not value != equal_value
     assert not equal_value != value
     assert value != unequal_value

@@ -143,11 +143,10 @@ class _DatePatternHelper:
                     text_values = self.__format_info.short_month_genitive_names
                 else:
                     text_values = self.__format_info.short_month_names
+            elif genitive:
+                text_values = self.__format_info.long_month_genitive_names
             else:
-                if genitive:
-                    text_values = self.__format_info.long_month_genitive_names
-                else:
-                    text_values = self.__format_info.long_month_names
+                text_values = self.__format_info.long_month_names
 
             def format_action(value: T, sb: StringBuilder) -> None:
                 sb.append(text_values[self.__getter(value)])  # type: ignore[arg-type]

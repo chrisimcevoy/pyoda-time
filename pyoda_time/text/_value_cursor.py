@@ -147,8 +147,7 @@ class _ValueCursor(_TextCursor):
         result = 0
         local_index = self.index
         max_index = local_index + maximum_digits
-        if max_index >= self.length:
-            max_index = self.length
+        max_index = min(self.length, max_index)
         while local_index < max_index:
             digit = self.value[local_index]
             if not digit.isdigit() or not "0" <= digit <= "9":
