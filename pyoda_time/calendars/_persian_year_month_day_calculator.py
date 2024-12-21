@@ -52,7 +52,7 @@ class _PersianYearMonthDayCalculator(_RegularYearMonthDayCalculator, abc.ABC):
         super().__init__(1, self._MAX_PERSIAN_YEAR, 12, self.__AVERAGE_DAYS_PER_10_YEARS, days_at_start_of_year_1)
         self.__start_of_year_in_days_cache: Final[list[int]] = []
         start_of_year = self._days_at_start_of_year_1 - self._get_days_in_year(0)
-        for year in range(0, self._max_year + 2):
+        for year in range(self._max_year + 2):
             self.__start_of_year_in_days_cache.append(start_of_year)
             start_of_year += self._get_days_in_year(year)
 

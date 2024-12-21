@@ -42,7 +42,7 @@ class TestZoneYearOffset:
     def test_construct_valid_days(self, day: int) -> None:
         _ZoneYearOffset._ctor(_TransitionMode.STANDARD, 1, day, 1, True, LocalTime.midnight)
 
-    @pytest.mark.parametrize("day_of_week", range(0, 8))
+    @pytest.mark.parametrize("day_of_week", range(8))
     def test_construct_valid_days_of_week(self, day_of_week: int) -> None:
         _ZoneYearOffset._ctor(_TransitionMode.STANDARD, 1, 1, day_of_week, True, LocalTime.midnight)
 

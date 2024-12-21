@@ -161,4 +161,3 @@ class _IoStream:
             """Flush the stream buffer."""
             # In this case, flush doesn't need to do anything because
             # we are directly writing to the buffer and not holding anything in a temporary storage.
-            pass

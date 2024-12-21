@@ -59,7 +59,6 @@ class OffsetTime:
     @overload
     def _ctor(cls, *, nanosecond_of_day_zero_offset: int) -> OffsetTime:
         """Constructor only used in specialist cases where we know the offset will be 0."""
-        ...
 
     @classmethod
     @overload

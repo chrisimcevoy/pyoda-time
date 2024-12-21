@@ -275,7 +275,6 @@ class LocalDate(metaclass=_LocalDateMeta):
         :param other: The time to add to the date
         :return: The sum of the given date and time
         """
-        ...
 
     def __add__(self, other: LocalTime | Period) -> LocalDateTime | LocalDate:
         from . import LocalDateTime, LocalTime, Period

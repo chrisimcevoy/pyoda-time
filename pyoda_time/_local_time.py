@@ -459,7 +459,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param period: The period to subtract. Must not contain any (non-zero) date units.
         :return: The result of subtracting the given period from the time.
         """
-        ...
 
     @staticmethod
     @overload
@@ -472,7 +471,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param rhs: The time to subtract
         :return: The result of subtracting one time from another.
         """
-        ...
 
     @staticmethod
     def subtract(lhs: LocalTime, rhs: LocalTime | Period, /) -> LocalTime | Period:
@@ -485,7 +483,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param period: The period to subtract. Must not contain any (non-zero) date units.
         :return: The result of subtracting the given period from this time.
         """
-        ...
 
     @overload
     def minus(self, time: LocalTime, /) -> Period:
@@ -495,7 +492,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param time: The time to subtract from this
         :return: The difference between the specified time and this one
         """
-        ...
 
     def minus(self, period_or_time: Period | LocalTime, /) -> Period | LocalTime:
         return self - period_or_time

@@ -126,7 +126,6 @@ class Duration(metaclass=_DurationMeta):
         validates its "days" parameter. Note that we could compute various parameters from nanosPerUnit, but we know
         them as compile-time constants, so there's no point in recomputing them on each call.
         """
-        ...
 
     @classmethod
     @overload
@@ -135,7 +134,6 @@ class Duration(metaclass=_DurationMeta):
 
         The value of the noValidation parameter is ignored completely; its name is just to be suggestive.
         """
-        ...
 
     @classmethod
     def __ctor(

@@ -87,6 +87,7 @@ select = [
     "FURB", # refurb
     "I",    # isort
     "PERF", # perflint
+    "PIE",  # flake8-pie
     "PL",   # pylint
     "RUF",  # ruff
     "TC",   # flake8-type-checking
