@@ -7,12 +7,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, overload
 
 from ._duration import Duration
-from ._instant import Instant
 from ._pyoda_constants import PyodaConstants
 
 if TYPE_CHECKING:
     from . import LocalDate, LocalDateTime, LocalTime, OffsetTime
     from ._calendar_system import CalendarSystem
+    from ._instant import Instant
     from ._offset import Offset
 
 

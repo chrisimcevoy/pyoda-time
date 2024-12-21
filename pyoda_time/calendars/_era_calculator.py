@@ -5,8 +5,10 @@
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 
-from ._era import Era
+if TYPE_CHECKING:
+    from ._era import Era
 
 
 class _EraCalculator(abc.ABC):

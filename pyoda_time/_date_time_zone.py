@@ -6,19 +6,21 @@ from __future__ import annotations
 
 import abc
 import threading
-from typing import Final, _ProtocolMeta
+from typing import TYPE_CHECKING, Final, _ProtocolMeta
 
 from ._duration import Duration
-from ._instant import Instant
-from ._local_date_time import LocalDateTime
-from ._local_instant import _LocalInstant
 from ._offset import Offset
 from ._pyoda_constants import PyodaConstants
 from .time_zones._i_zone_interval_map import _IZoneIntervalMap
-from .time_zones._zone_interval import ZoneInterval
 from .time_zones._zone_local_mapping import ZoneLocalMapping
 from .utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
 from .utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from ._instant import Instant
+    from ._local_date_time import LocalDateTime
+    from ._local_instant import _LocalInstant
+    from .time_zones._zone_interval import ZoneInterval
 
 __all__ = ["DateTimeZone"]
 

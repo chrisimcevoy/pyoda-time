@@ -4,20 +4,22 @@
 from __future__ import annotations
 
 import threading
-from typing import Final, _ProtocolMeta, cast, final
+from typing import TYPE_CHECKING, Final, _ProtocolMeta, cast, final
 
-from pyoda_time._compatibility._culture_info import CultureInfo
-from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time._local_time import LocalTime
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text._composite_pattern_builder import CompositePatternBuilder
-from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
-from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text.patterns._pattern_bcl_support import _PatternBclSupport
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from pyoda_time._compatibility._culture_info import CultureInfo
+    from pyoda_time._compatibility._string_builder import StringBuilder
+    from pyoda_time.text._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
+    from pyoda_time.text._parse_result import ParseResult
 
 
 class _LocalTimePatternMeta(type):

@@ -5,17 +5,18 @@
 from __future__ import annotations
 
 import functools
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, final, overload
 
-from .._calendar_system import CalendarSystem
-from ..calendars._era import Era
 from ..utility._csharp_compatibility import _private, _sealed
 from ..utility._preconditions import _Preconditions
 from ._text_error_messages import _TextErrorMessages
 from ._unparsable_value_error import UnparsableValueError
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from .._calendar_system import CalendarSystem
+    from ..calendars._era import Era
     from ._value_cursor import _ValueCursor
 
 

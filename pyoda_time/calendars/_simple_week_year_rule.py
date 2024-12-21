@@ -6,14 +6,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, final
 
-if TYPE_CHECKING:
-    from .._calendar_system import CalendarSystem
-    from .._local_date import LocalDate
-from .._iso_day_of_week import IsoDayOfWeek
 from ..utility._csharp_compatibility import _sealed, _towards_zero_division
 from ..utility._preconditions import _Preconditions
 from ._i_week_year_rule import IWeekYearRule
-from ._year_month_day_calculator import _YearMonthDayCalculator
+
+if TYPE_CHECKING:
+    from .._calendar_system import CalendarSystem
+    from .._iso_day_of_week import IsoDayOfWeek
+    from .._local_date import LocalDate
+    from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @_sealed

@@ -5,15 +5,18 @@
 from __future__ import annotations
 
 import types
-from collections.abc import Sequence
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions
 
-from ..io._i_date_time_zone_reader import _IDateTimeZoneReader
-from ..io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from ._map_zone import MapZone
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from ..io._i_date_time_zone_reader import _IDateTimeZoneReader
+    from ..io._i_date_time_zone_writer import _IDateTimeZoneWriter
 
 
 @final

@@ -8,8 +8,7 @@ import copy
 import itertools
 import string
 import threading
-from collections.abc import Sequence
-from typing import Any, Final, _ProtocolMeta
+from typing import TYPE_CHECKING, Any, Final, _ProtocolMeta
 
 import icu
 
@@ -18,7 +17,6 @@ from ._calendar import Calendar
 from ._calendar_id import _CalendarId
 from ._culture_data import _CultureData
 from ._culture_not_found_exception import CultureNotFoundError
-from ._culture_types import CultureTypes
 from ._date_time_format_info import DateTimeFormatInfo
 from ._globalization_mode import _GlobalizationMode
 from ._gregorian_calendar import GregorianCalendar
@@ -33,6 +31,11 @@ from ._taiwan_calendar import TaiwanCalendar
 from ._text_info import TextInfo
 from ._thai_buddhist_calendar import ThaiBuddhistCalendar
 from ._um_al_qura_calendar import UmAlQuraCalendar
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from ._culture_types import CultureTypes
 
 
 class __CultureInfoMeta(type):

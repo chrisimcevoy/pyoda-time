@@ -15,6 +15,8 @@ from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
     from . import Duration, LocalDate, LocalDateTime, LocalTime, PeriodBuilder, YearMonth
+    from ._calendar_system import CalendarSystem
+    from .fields._i_date_period_field import _IDatePeriodField
 
 __all__ = ["Period"]
 
@@ -321,7 +323,6 @@ class Period(metaclass=_PeriodMeta):
         :return: The period between the given date/times, using the given units.
         """
         from . import YearMonth
-        from ._calendar_system import CalendarSystem
         from ._local_date import LocalDate
         from ._local_date_time import LocalDateTime
         from ._local_time import LocalTime
@@ -572,7 +573,6 @@ class Period(metaclass=_PeriodMeta):
         cls, start: LocalDate, end: LocalDate, units: PeriodUnits
     ) -> tuple[LocalDate, int, int, int, int]:
         from .fields._date_period_fields import _DatePeriodFields
-        from .fields._i_date_period_field import _IDatePeriodField
 
         def units_between(
             masked_units: PeriodUnits, start_date: LocalDate, end_date: LocalDate, date_field: _IDatePeriodField

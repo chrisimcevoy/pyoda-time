@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING, Protocol
 from ._calendar_system import CalendarSystem
 from ._date_time_zone import DateTimeZone
 from ._date_time_zone_providers import DateTimeZoneProviders
-from ._instant import Instant
 
 if TYPE_CHECKING:
+    from ._instant import Instant
     from ._zoned_clock import ZonedClock
 
 

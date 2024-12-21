@@ -4,13 +4,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING
 
-from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
-from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from pyoda_time.utility import InvalidPyodaDataError
 from pyoda_time.utility._hash_code_helper import _hash_code_helper
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
+    from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
+    from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 
 
 class TzdbZone1970Location:

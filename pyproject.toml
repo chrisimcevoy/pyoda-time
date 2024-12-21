@@ -79,6 +79,7 @@ select = [
     "I",    # isort
     "PL",   # pylint
     "RUF",  # ruff
+    "TC",   # flake8-type-checking
     "UP",   # pyupgrade
     "W",    # pycodestyle (warning)
 ]

@@ -3,24 +3,27 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
-from typing import Final, cast, final
+from typing import TYPE_CHECKING, Final, cast, final
 
 from pyoda_time._duration import Duration
 from pyoda_time._pyoda_constants import PyodaConstants
-from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import InvalidPatternError, ParseResult
 from pyoda_time.text._format_helper import _FormatHelper
-from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._parse_bucket import _ParseBucket
 from pyoda_time.text._text_error_messages import _TextErrorMessages
 from pyoda_time.text.patterns._i_pattern_parser import _IPatternParser
-from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 from pyoda_time.text.patterns._time_pattern_helper import _TimePatternHelper
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping
+
+    from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
+    from pyoda_time.text._i_pattern import IPattern
+    from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 
 
 @final

@@ -4,12 +4,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Annotated, Final, final, overload
 
 from .calendars._badi_year_month_day_calculator import _BadiYearMonthDayCalculator
 from .calendars._coptic_year_month_day_calculator import _CopticYearMonthDayCalculator
-from .calendars._era_calculator import _EraCalculator
 from .calendars._g_j_era_calculator import _GJEraCalculator
 from .calendars._gregorian_year_month_day_calculator import _GregorianYearMonthDayCalculator
 from .calendars._hebrew_year_month_day_calculator import _HebrewYearMonthDayCalculator
@@ -18,11 +16,14 @@ from .calendars._julian_year_month_day_calculator import _JulianYearMonthDayCalc
 from .calendars._persian_year_month_day_calculator import _PersianYearMonthDayCalculator
 from .calendars._single_era_calculator import _SingleEraCalculator
 from .calendars._um_al_qura_year_month_day_calculator import _UmAlQuraYearMonthDayCalculator
-from .calendars._year_month_day_calculator import _YearMonthDayCalculator
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
+    from .calendars._era_calculator import _EraCalculator
+    from .calendars._year_month_day_calculator import _YearMonthDayCalculator
 
 from ._calendar_ordinal import _CalendarOrdinal
 from ._iso_day_of_week import IsoDayOfWeek

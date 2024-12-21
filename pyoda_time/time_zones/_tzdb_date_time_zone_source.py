@@ -4,17 +4,20 @@
 from __future__ import annotations
 
 import types
-from collections.abc import Iterable, Mapping, Sequence
 from importlib import resources
-from typing import BinaryIO, _ProtocolMeta, cast, final
+from typing import TYPE_CHECKING, BinaryIO, _ProtocolMeta, cast, final
 
-from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time.time_zones import IDateTimeZoneSource, TzdbZone1970Location, TzdbZoneLocation
 from pyoda_time.time_zones.cldr import MapZone, WindowsZones
 from pyoda_time.time_zones.io._tzdb_stream_data import _TzdbStreamData
 from pyoda_time.utility import InvalidPyodaDataError
 from pyoda_time.utility._csharp_compatibility import _private, _sealed, _to_lookup
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping, Sequence
+
+    from pyoda_time._date_time_zone import DateTimeZone
 
 
 class __TzdbDateTimeZoneSourceMeta(_ProtocolMeta):

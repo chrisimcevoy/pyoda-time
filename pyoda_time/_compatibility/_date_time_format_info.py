@@ -5,12 +5,15 @@
 from __future__ import annotations
 
 import copy
-from collections.abc import Sequence
-from typing import Any, _ProtocolMeta
+from typing import TYPE_CHECKING, Any, _ProtocolMeta
 
 from pyoda_time._compatibility._calendar import Calendar
-from pyoda_time._compatibility._calendar_id import _CalendarId
-from pyoda_time._compatibility._culture_data import _CultureData
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from pyoda_time._compatibility._calendar_id import _CalendarId
+    from pyoda_time._compatibility._culture_data import _CultureData
 
 
 class _DateTimeFormatInfoMeta(type):

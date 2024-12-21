@@ -6,11 +6,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
 
-from .._iso_day_of_week import IsoDayOfWeek
-
 if TYPE_CHECKING:
     from .. import LocalDate
     from .._calendar_system import CalendarSystem
+    from .._iso_day_of_week import IsoDayOfWeek
 
 
 class IWeekYearRule(Protocol):

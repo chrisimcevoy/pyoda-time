@@ -3,7 +3,7 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from pyoda_time._calendar_system import CalendarSystem
 from pyoda_time._local_date import LocalDate
@@ -12,11 +12,13 @@ from pyoda_time._local_time import LocalTime
 from pyoda_time._offset import Offset
 from pyoda_time._pyoda_constants import PyodaConstants
 from pyoda_time.time_zones._transition_mode import _TransitionMode
-from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
-from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from pyoda_time.utility._csharp_compatibility import _private, _sealed, _towards_zero_division
 from pyoda_time.utility._hash_code_helper import _hash_code_helper
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
+    from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 
 
 @final

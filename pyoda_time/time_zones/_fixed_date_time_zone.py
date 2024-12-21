@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING, final
 
 from ..utility._hash_code_helper import _hash_code_helper
 from ..utility._preconditions import _Preconditions
-from .io._i_date_time_zone_reader import _IDateTimeZoneReader
 
 if TYPE_CHECKING:
     from .. import Instant, Offset
     from . import ZoneInterval
+    from .io._i_date_time_zone_reader import _IDateTimeZoneReader
 
 from .._date_time_zone import DateTimeZone
 from ..utility._csharp_compatibility import _sealed

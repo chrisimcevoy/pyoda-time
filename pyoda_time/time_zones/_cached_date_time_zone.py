@@ -3,15 +3,17 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from pyoda_time._date_time_zone import DateTimeZone
-from pyoda_time._instant import Instant
-from pyoda_time.time_zones import ZoneInterval
 from pyoda_time.time_zones._caching_zone_interval_map import _CachingZoneIntervalMap
-from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from pyoda_time._instant import Instant
+    from pyoda_time.time_zones import ZoneInterval
+    from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap
 
 
 @final

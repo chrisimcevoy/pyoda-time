@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 import io
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -11,6 +11,9 @@ from pyoda_time.time_zones.io._tzdb_stream_data import _TzdbStreamData
 from pyoda_time.time_zones.io._tzdb_stream_field import _TzdbStreamField
 from pyoda_time.time_zones.io._tzdb_stream_field_id import _TzdbStreamFieldId
 from pyoda_time.utility import InvalidPyodaDataError
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class TestTzdbStreamData:

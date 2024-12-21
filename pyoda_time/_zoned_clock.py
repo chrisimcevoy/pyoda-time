@@ -3,19 +3,21 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from pyoda_time import Instant
-from pyoda_time._calendar_system import CalendarSystem
-from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time._i_clock import IClock
-from pyoda_time._local_date import LocalDate
-from pyoda_time._local_date_time import LocalDateTime
-from pyoda_time._local_time import LocalTime
-from pyoda_time._offset_date_time import OffsetDateTime
-from pyoda_time._zoned_date_time import ZonedDateTime
 from pyoda_time.utility._csharp_compatibility import _sealed
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from pyoda_time import Instant
+    from pyoda_time._calendar_system import CalendarSystem
+    from pyoda_time._date_time_zone import DateTimeZone
+    from pyoda_time._local_date import LocalDate
+    from pyoda_time._local_date_time import LocalDateTime
+    from pyoda_time._local_time import LocalTime
+    from pyoda_time._offset_date_time import OffsetDateTime
+    from pyoda_time._zoned_date_time import ZonedDateTime
 
 
 @final

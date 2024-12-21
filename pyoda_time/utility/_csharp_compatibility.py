@@ -5,11 +5,13 @@
 from __future__ import annotations
 
 import datetime
-import decimal
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
 from types import MappingProxyType
-from typing import Any, Final, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeVar
+
+if TYPE_CHECKING:
+    import decimal
+    from collections.abc import Mapping, Sequence
 
 __all__: list[str] = []
 

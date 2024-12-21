@@ -4,14 +4,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from ._iso_day_of_week import IsoDayOfWeek
 from ._local_date import LocalDate
-from ._period import Period
 from .utility._csharp_compatibility import _private, _sealed
 from .utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from ._period import Period
 
 
 class __DateAdjustersMeta(type):

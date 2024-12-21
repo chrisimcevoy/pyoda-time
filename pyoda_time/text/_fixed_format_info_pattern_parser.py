@@ -6,11 +6,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final, Generic, TypeVar, final
 
 from ..utility._csharp_compatibility import _sealed
-from ._i_pattern import IPattern
-from .patterns._i_pattern_parser import _IPatternParser
 
 if TYPE_CHECKING:
     from ..globalization._pyoda_format_info import _PyodaFormatInfo
+    from ._i_pattern import IPattern
+    from .patterns._i_pattern_parser import _IPatternParser
 
 T = TypeVar("T")
 

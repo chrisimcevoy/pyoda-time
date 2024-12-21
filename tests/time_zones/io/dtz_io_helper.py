@@ -3,16 +3,21 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from pyoda_time import Instant, Offset
+from typing import TYPE_CHECKING
+
 from pyoda_time.time_zones._zone_recurrence import _ZoneRecurrence
 from pyoda_time.time_zones._zone_year_offset import _ZoneYearOffset
 from pyoda_time.time_zones.io._date_time_zone_reader import _DateTimeZoneReader
 from pyoda_time.time_zones.io._date_time_zone_writer import _DateTimeZoneWriter
-from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
-from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from pyoda_time.utility._csharp_compatibility import _private
 
 from .io_stream import _IoStream
+
+if TYPE_CHECKING:
+    from pyoda_time._instant import Instant
+    from pyoda_time._offset import Offset
+    from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
+    from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 
 
 @_private

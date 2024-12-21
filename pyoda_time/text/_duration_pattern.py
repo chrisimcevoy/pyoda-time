@@ -3,17 +3,19 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import _ProtocolMeta, final
+from typing import TYPE_CHECKING, _ProtocolMeta, final
 
-from pyoda_time._compatibility._culture_info import CultureInfo
-from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time._duration import Duration
 from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text._i_pattern import IPattern
-from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text.patterns._pattern_bcl_support import _PatternBclSupport
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from pyoda_time._compatibility._culture_info import CultureInfo
+    from pyoda_time._compatibility._string_builder import StringBuilder
+    from pyoda_time.text._parse_result import ParseResult
 
 
 class __DurationPatternMeta(_ProtocolMeta):

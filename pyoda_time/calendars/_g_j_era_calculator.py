@@ -4,12 +4,14 @@
 
 from __future__ import annotations
 
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from ..utility._preconditions import _Preconditions
 from ._era import Era
 from ._era_calculator import _EraCalculator
-from ._year_month_day_calculator import _YearMonthDayCalculator
+
+if TYPE_CHECKING:
+    from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @final

@@ -3,28 +3,31 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any, Final, final
+from typing import TYPE_CHECKING, Any, Final, final
 
 from pyoda_time._calendar_ordinal import _CalendarOrdinal
 from pyoda_time._calendar_system import CalendarSystem
 from pyoda_time._local_date import LocalDate
 from pyoda_time._year_month_day_calendar import _YearMonthDayCalendar
-from pyoda_time.calendars._era import Era
-from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
-from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._invalid_pattern_exception import InvalidPatternError
 from pyoda_time.text._parse_bucket import _ParseBucket
 from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text._text_error_messages import _TextErrorMessages
-from pyoda_time.text._value_cursor import _ValueCursor
 from pyoda_time.text.patterns._date_pattern_helper import _DatePatternHelper
 from pyoda_time.text.patterns._i_pattern_parser import _IPatternParser
-from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _private, _sealed, _towards_zero_division
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pyoda_time.calendars._era import Era
+    from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
+    from pyoda_time.text._i_pattern import IPattern
+    from pyoda_time.text._value_cursor import _ValueCursor
+    from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 
 
 def year_getter(value: LocalDate) -> int:

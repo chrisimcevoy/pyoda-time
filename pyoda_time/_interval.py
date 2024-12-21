@@ -3,15 +3,18 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Generator
-from typing import Final, final
+from typing import TYPE_CHECKING, Final, final
 
-from pyoda_time._duration import Duration
 from pyoda_time._instant import Instant
 from pyoda_time._pyoda_constants import PyodaConstants
 from pyoda_time.utility._csharp_compatibility import _sealed
 from pyoda_time.utility._hash_code_helper import _hash_code_helper
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from pyoda_time._duration import Duration
 
 
 @final

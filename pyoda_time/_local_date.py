@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import datetime
-from collections.abc import Callable, Generator
 from typing import TYPE_CHECKING, final, overload
 
 from ._calendar_ordinal import _CalendarOrdinal
@@ -16,6 +15,8 @@ from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Generator
+
     from . import LocalDateTime, LocalTime, Period, YearMonth
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
