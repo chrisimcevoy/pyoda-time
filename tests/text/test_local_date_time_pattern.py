@@ -670,7 +670,7 @@ class TestLocalDateTimePattern(PatternTestBase[LocalDateTime]):
             ("12:01", ("12:01:00", "12:01:00.000000")),
             ("12:00:01", ("12:00:01.000000",)),
             ("12:00:01.123", ("12:00:01.123000", "12:00:01.123000000")),
-            ("12:00:01.123456789", tuple()),
+            ("12:00:01.123456789", ()),
         ],
     )
     def test_variable_precision_valid(self, canonical: str, alternatives: Iterable[str]) -> None:

@@ -41,9 +41,9 @@ class _UmAlQuraYearMonthDayCalculator(_RegularYearMonthDayCalculator):
         int(((1 - __COMPUTED_MIN_YEAR) / 10.0) * __AVERAGE_DAYS_PER_10_YEARS)
     )
 
-    __MONTH_LENGTHS: ClassVar[dict[int, int]] = dict()
-    __YEAR_LENGTHS: ClassVar[dict[int, int]] = dict()
-    __YEAR_START_DAYS: ClassVar[dict[int, int]] = dict()
+    __MONTH_LENGTHS: ClassVar[dict[int, int]] = {}
+    __YEAR_LENGTHS: ClassVar[dict[int, int]] = {}
+    __YEAR_START_DAYS: ClassVar[dict[int, int]] = {}
 
     @staticmethod
     def _ctor(

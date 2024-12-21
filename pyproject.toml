@@ -80,6 +80,7 @@ ignore = [
 ]
 select = [
     "ANN",  # flake8-annotations
+    "C4",   # flake8-comprehensions
     "E",    # pycodestyle (error)
     "F",    # pyflakes
     "FURB", # refurb
