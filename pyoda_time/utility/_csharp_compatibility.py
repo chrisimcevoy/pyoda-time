@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 __all__: list[str] = []
 
 SEALED_CLASSES: Final[list[type]] = []
-_T = TypeVar("_T")
+
 _Ttype = TypeVar("_Ttype", bound=type)
 _TKey = TypeVar("_TKey")
 _TValue = TypeVar("_TValue")
@@ -35,7 +35,7 @@ def _as_span(text: str | None, start: int) -> str:
     return text[start:]
 
 
-def _towards_zero_division(x: int | float | decimal.Decimal, y: int | float | decimal.Decimal) -> int:
+def _towards_zero_division(x: float | decimal.Decimal, y: float | decimal.Decimal) -> int:
     """Divide two numbers using "towards zero" rounding.
 
     This ensures that integer division produces the same result as it would do in C#.

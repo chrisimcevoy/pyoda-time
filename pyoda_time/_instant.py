@@ -110,13 +110,11 @@ class Instant(metaclass=_InstantMeta):
 
         Should only be called from FromTrustedDuration and FromUntrustedDuration.
         """
-        ...
 
     @classmethod
     @overload
     def __ctor(cls, *, days: int, deliberately_invalid: bool) -> Instant:
         """Constructor which should *only* be used to construct the invalid instances."""
-        ...
 
     @classmethod
     def __ctor(

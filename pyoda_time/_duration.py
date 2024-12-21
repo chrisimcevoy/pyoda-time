@@ -126,7 +126,6 @@ class Duration(metaclass=_DurationMeta):
         validates its "days" parameter. Note that we could compute various parameters from nanosPerUnit, but we know
         them as compile-time constants, so there's no point in recomputing them on each call.
         """
-        ...
 
     @classmethod
     @overload
@@ -135,7 +134,6 @@ class Duration(metaclass=_DurationMeta):
 
         The value of the noValidation parameter is ignored completely; its name is just to be suggestive.
         """
-        ...
 
     @classmethod
     def __ctor(
@@ -485,12 +483,12 @@ class Duration(metaclass=_DurationMeta):
         return self - other
 
     @overload
-    def __truediv__(self, other: int | float) -> Duration: ...
+    def __truediv__(self, other: float) -> Duration: ...
 
     @overload
     def __truediv__(self, other: Duration) -> float: ...
 
-    def __truediv__(self, other: int | float | Duration) -> Duration | float:
+    def __truediv__(self, other: float | Duration) -> Duration | float:
         # TODO: This is a dramatically simpler implementation for int/float than Noda Time.
         if isinstance(other, int | float):
             return self.from_nanoseconds(_towards_zero_division(self.total_nanoseconds, other))
@@ -500,38 +498,38 @@ class Duration(metaclass=_DurationMeta):
 
     @staticmethod
     @overload
-    def divide(left: Duration, right: int | float) -> Duration: ...
+    def divide(left: Duration, right: float) -> Duration: ...
 
     @staticmethod
     @overload
     def divide(left: Duration, right: Duration) -> float: ...
 
     @staticmethod
-    def divide(left: Duration, right: int | float | Duration) -> Duration | float:
+    def divide(left: Duration, right: float | Duration) -> Duration | float:
         # TODO: Duration.divide() docstring
         return left / right
 
-    def __mul__(self, other: int | float) -> Duration:
+    def __mul__(self, other: float) -> Duration:
         # TODO: This is much simpler than the Noda Time implementation
         if isinstance(other, int | float):
             return self.from_nanoseconds(self.to_nanoseconds() * other)
         return NotImplemented  # type: ignore[unreachable]
 
-    def __rmul__(self, other: int | float) -> Duration:
+    def __rmul__(self, other: float) -> Duration:
         if isinstance(other, int | float):
             return self * other
         return NotImplemented  # type: ignore[unreachable]
 
     @staticmethod
     @overload
-    def multiply(left: Duration, right: int | float) -> Duration: ...
+    def multiply(left: Duration, right: float) -> Duration: ...
 
     @staticmethod
     @overload
-    def multiply(left: int | float, right: Duration) -> Duration: ...
+    def multiply(left: float, right: Duration) -> Duration: ...
 
     @staticmethod
-    def multiply(left: Duration | int | float, right: Duration | int | float) -> Duration:
+    def multiply(left: Duration | float, right: Duration | float) -> Duration:
         # TODO: Cursed isinstance checks are to pacify mypy - can we do better?
         if isinstance(left, Duration) and isinstance(right, int | float):
             return left * right
@@ -634,166 +632,169 @@ class Duration(metaclass=_DurationMeta):
     # endregion IEquatable<Duration> Members
 
     @classmethod
-    def from_days(cls, days: int | float) -> Duration:
+    def from_days(cls, days: float) -> Duration:
         """Returns a ``Duration`` that represents the given number of days, assuming a 'standard' 24-hour day.
 
         :param days: The number of days.
         :return: A ``Duration`` representing the given number of days.
         """
-        if isinstance(days, float):
-            _Preconditions._check_argument_range(
-                "days",
-                days,
-                cls._MIN_DAYS,
-                cls._MAX_DAYS,
-            )
-            return cls.from_nanoseconds(days * PyodaConstants.NANOSECONDS_PER_DAY)
-        return cls._ctor(days=days)
+        if isinstance(days, int):
+            return cls._ctor(days=days)
+        _Preconditions._check_argument_range(
+            "days",
+            days,
+            cls._MIN_DAYS,
+            cls._MAX_DAYS,
+        )
+        return cls.from_nanoseconds(days * PyodaConstants.NANOSECONDS_PER_DAY)
 
     @classmethod
-    def from_hours(cls, hours: int | float) -> Duration:
+    def from_hours(cls, hours: float) -> Duration:
         """Returns a Duration that represents the given number of hours.
 
         :param hours: The number of hours.
         :return: A ``Duration`` representing the number of hours.
         """
-        if isinstance(hours, float):
-            _Preconditions._check_argument_range(
-                "hours",
-                hours,
-                cls._MIN_DAYS * PyodaConstants.HOURS_PER_DAY,
-                (cls._MAX_DAYS + 1) * PyodaConstants.HOURS_PER_DAY - 1,
+        if isinstance(hours, int):
+            return cls.__ctor(
+                units=hours,
+                param_name="hours",
+                min_value=cls._MIN_DAYS * PyodaConstants.HOURS_PER_DAY,
+                max_value=(cls._MAX_DAYS + 1) * PyodaConstants.HOURS_PER_DAY - 1,
+                units_per_day=PyodaConstants.HOURS_PER_DAY,
+                nanos_per_unit=PyodaConstants.NANOSECONDS_PER_HOUR,
             )
-            return cls.from_nanoseconds(hours * PyodaConstants.NANOSECONDS_PER_HOUR)
-        return cls.__ctor(
-            units=hours,
-            param_name="hours",
-            min_value=cls._MIN_DAYS * PyodaConstants.HOURS_PER_DAY,
-            max_value=(cls._MAX_DAYS + 1) * PyodaConstants.HOURS_PER_DAY - 1,
-            units_per_day=PyodaConstants.HOURS_PER_DAY,
-            nanos_per_unit=PyodaConstants.NANOSECONDS_PER_HOUR,
+        _Preconditions._check_argument_range(
+            "hours",
+            hours,
+            cls._MIN_DAYS * PyodaConstants.HOURS_PER_DAY,
+            (cls._MAX_DAYS + 1) * PyodaConstants.HOURS_PER_DAY - 1,
         )
+        return cls.from_nanoseconds(hours * PyodaConstants.NANOSECONDS_PER_HOUR)
 
     @classmethod
-    def from_minutes(cls, minutes: int | float) -> Duration:
+    def from_minutes(cls, minutes: float) -> Duration:
         """Returns a ``Duration`` that represents the given number of minutes.
 
         :param minutes: The number of minutes.
         :return: A ``Duration`` representing the given number of minutes.
         """
-        if isinstance(minutes, float):
-            _Preconditions._check_argument_range(
-                "minutes",
-                minutes,
-                cls._MIN_DAYS * PyodaConstants.MINUTES_PER_DAY,
-                (cls._MAX_DAYS + 1) * PyodaConstants.MINUTES_PER_DAY - 1,
+        if isinstance(minutes, int):
+            return cls.__ctor(
+                units=minutes,
+                param_name="minutes",
+                min_value=cls._MIN_DAYS * PyodaConstants.MINUTES_PER_DAY,
+                max_value=(cls._MAX_DAYS + 1) * PyodaConstants.MINUTES_PER_DAY - 1,
+                units_per_day=PyodaConstants.MINUTES_PER_DAY,
+                nanos_per_unit=PyodaConstants.NANOSECONDS_PER_MINUTE,
             )
-            return cls.from_nanoseconds(minutes * PyodaConstants.NANOSECONDS_PER_MINUTE)
-        return cls.__ctor(
-            units=minutes,
-            param_name="minutes",
-            min_value=cls._MIN_DAYS * PyodaConstants.MINUTES_PER_DAY,
-            max_value=(cls._MAX_DAYS + 1) * PyodaConstants.MINUTES_PER_DAY - 1,
-            units_per_day=PyodaConstants.MINUTES_PER_DAY,
-            nanos_per_unit=PyodaConstants.NANOSECONDS_PER_MINUTE,
+        _Preconditions._check_argument_range(
+            "minutes",
+            minutes,
+            cls._MIN_DAYS * PyodaConstants.MINUTES_PER_DAY,
+            (cls._MAX_DAYS + 1) * PyodaConstants.MINUTES_PER_DAY - 1,
         )
+        return cls.from_nanoseconds(minutes * PyodaConstants.NANOSECONDS_PER_MINUTE)
 
     @classmethod
-    def from_seconds(cls, seconds: int | float) -> Duration:
+    def from_seconds(cls, seconds: float) -> Duration:
         """Returns a ``Duration`` that represents the given number of seconds.
 
         :param seconds: The number of seconds.
         :return: A ``Duration`` representing the given number of seconds.
         """
-        if isinstance(seconds, float):
-            _Preconditions._check_argument_range(
-                "seconds",
-                seconds,
-                cls._MIN_DAYS * PyodaConstants.SECONDS_PER_DAY,
-                (cls._MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1,
+        if isinstance(seconds, int):
+            return cls.__ctor(
+                units=seconds,
+                param_name="seconds",
+                min_value=cls._MIN_DAYS * PyodaConstants.SECONDS_PER_DAY,
+                max_value=(cls._MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1,
+                units_per_day=PyodaConstants.SECONDS_PER_DAY,
+                nanos_per_unit=PyodaConstants.NANOSECONDS_PER_SECOND,
             )
-            return cls.from_nanoseconds(seconds * PyodaConstants.NANOSECONDS_PER_SECOND)
-        return cls.__ctor(
-            units=seconds,
-            param_name="seconds",
-            min_value=cls._MIN_DAYS * PyodaConstants.SECONDS_PER_DAY,
-            max_value=(cls._MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1,
-            units_per_day=PyodaConstants.SECONDS_PER_DAY,
-            nanos_per_unit=PyodaConstants.NANOSECONDS_PER_SECOND,
+        _Preconditions._check_argument_range(
+            "seconds",
+            seconds,
+            cls._MIN_DAYS * PyodaConstants.SECONDS_PER_DAY,
+            (cls._MAX_DAYS + 1) * PyodaConstants.SECONDS_PER_DAY - 1,
         )
+        return cls.from_nanoseconds(seconds * PyodaConstants.NANOSECONDS_PER_SECOND)
 
     @classmethod
-    def from_milliseconds(cls, milliseconds: int | float) -> Duration:
+    def from_milliseconds(cls, milliseconds: float) -> Duration:
         """Returns a ``Duration`` that represents the given number of milliseconds.
 
         :param milliseconds: The number of milliseconds.
         :return: A ``Duration`` representing the given number of milliseconds.
         """
-        if isinstance(milliseconds, float):
-            _Preconditions._check_argument_range(
-                "milliseconds",
-                milliseconds,
-                cls._MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY,
-                (cls._MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY - 1,
+        if isinstance(milliseconds, int):
+            return cls.__ctor(
+                units=milliseconds,
+                param_name="milliseconds",
+                min_value=cls._MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY,
+                max_value=((cls._MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY) - 1,
+                units_per_day=PyodaConstants.MILLISECONDS_PER_DAY,
+                nanos_per_unit=PyodaConstants.NANOSECONDS_PER_MILLISECOND,
             )
-            return cls.from_nanoseconds(milliseconds * PyodaConstants.NANOSECONDS_PER_MILLISECOND)
-        return cls.__ctor(
-            units=milliseconds,
-            param_name="milliseconds",
-            min_value=cls._MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY,
-            max_value=((cls._MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY) - 1,
-            units_per_day=PyodaConstants.MILLISECONDS_PER_DAY,
-            nanos_per_unit=PyodaConstants.NANOSECONDS_PER_MILLISECOND,
+        _Preconditions._check_argument_range(
+            "milliseconds",
+            milliseconds,
+            cls._MIN_DAYS * PyodaConstants.MILLISECONDS_PER_DAY,
+            (cls._MAX_DAYS + 1) * PyodaConstants.MILLISECONDS_PER_DAY - 1,
         )
+        return cls.from_nanoseconds(milliseconds * PyodaConstants.NANOSECONDS_PER_MILLISECOND)
 
     @classmethod
-    def from_ticks(cls, ticks: int | float) -> Duration:
+    def from_ticks(cls, ticks: float) -> Duration:
         """Returns a ``Duration`` that represents the given number of ticks.
 
         :param ticks: The number of ticks.
         :return: A ``Duration`` representing the given number of ticks.
         """
-        if isinstance(ticks, float):
-            _Preconditions._check_argument_range(
-                "ticks",
-                ticks,
-                cls._MIN_DAYS * float(PyodaConstants.TICKS_PER_DAY),
-                (cls._MAX_DAYS + 1) * PyodaConstants.TICKS_PER_DAY - 1,
+        if isinstance(ticks, int):
+            # TODO: FromTicks(long) never throws.
+            #  Noda Time has the following comment:
+            #  "No precondition here, as we cover a wider range than Int64 ticks can handle..."
+            #  If this ever changes, the test_factory_methods_out_of_range test will need changed too.
+            days, tick_of_day = _TickArithmetic.ticks_to_days_and_tick_of_day(ticks)
+            return cls.__ctor(
+                days=days, nano_of_day=tick_of_day * PyodaConstants.NANOSECONDS_PER_TICK, no_validation=True
             )
-            return cls.from_nanoseconds(ticks * PyodaConstants.NANOSECONDS_PER_TICK)
-        # TODO: FromTicks(long) never throws.
-        #  Noda Time has the following comment:
-        #  "No precondition here, as we cover a wider range than Int64 ticks can handle..."
-        #  If this ever changes, the test_factory_methods_out_of_range test will need changed too.
-        days, tick_of_day = _TickArithmetic.ticks_to_days_and_tick_of_day(ticks)
-        return cls.__ctor(days=days, nano_of_day=tick_of_day * PyodaConstants.NANOSECONDS_PER_TICK, no_validation=True)
+
+        _Preconditions._check_argument_range(
+            "ticks",
+            ticks,
+            cls._MIN_DAYS * float(PyodaConstants.TICKS_PER_DAY),
+            (cls._MAX_DAYS + 1) * PyodaConstants.TICKS_PER_DAY - 1,
+        )
+        return cls.from_nanoseconds(ticks * PyodaConstants.NANOSECONDS_PER_TICK)
 
     @classmethod
-    def from_microseconds(cls, microseconds: int | float) -> Duration:
+    def from_microseconds(cls, microseconds: float) -> Duration:
         """Returns a ``Duration`` that represents the given number of microseconds.
 
         :param microseconds: The number of microseconds.
         :return: A ``Duration`` representing the given number of microseconds.
         """
-        if isinstance(microseconds, float):
-            _Preconditions._check_argument_range(
-                "microseconds",
-                microseconds,
-                cls._MIN_DAYS * PyodaConstants.MICROSECONDS_PER_DAY,
-                (cls._MAX_DAYS + 1) * PyodaConstants.MICROSECONDS_PER_DAY - 1,
+        if isinstance(microseconds, int):
+            return cls.__ctor(
+                units=microseconds,
+                param_name="microseconds",
+                min_value=cls._MIN_DAYS * PyodaConstants.MICROSECONDS_PER_DAY,
+                max_value=((cls._MAX_DAYS + 1) * PyodaConstants.MICROSECONDS_PER_DAY) - 1,
+                units_per_day=PyodaConstants.MICROSECONDS_PER_DAY,
+                nanos_per_unit=PyodaConstants.NANOSECONDS_PER_MICROSECOND,
             )
-            return cls.from_nanoseconds(microseconds * PyodaConstants.NANOSECONDS_PER_MICROSECOND)
-        return cls.__ctor(
-            units=microseconds,
-            param_name="microseconds",
-            min_value=cls._MIN_DAYS * PyodaConstants.MICROSECONDS_PER_DAY,
-            max_value=((cls._MAX_DAYS + 1) * PyodaConstants.MICROSECONDS_PER_DAY) - 1,
-            units_per_day=PyodaConstants.MICROSECONDS_PER_DAY,
-            nanos_per_unit=PyodaConstants.NANOSECONDS_PER_MICROSECOND,
+        _Preconditions._check_argument_range(
+            "microseconds",
+            microseconds,
+            cls._MIN_DAYS * PyodaConstants.MICROSECONDS_PER_DAY,
+            (cls._MAX_DAYS + 1) * PyodaConstants.MICROSECONDS_PER_DAY - 1,
         )
+        return cls.from_nanoseconds(microseconds * PyodaConstants.NANOSECONDS_PER_MICROSECOND)
 
     @classmethod
-    def from_nanoseconds(cls, nanoseconds: int | float) -> Duration:  # TODO from_nanoseconds overrides
+    def from_nanoseconds(cls, nanoseconds: float) -> Duration:  # TODO from_nanoseconds overrides
         """Returns a ``Duration`` that represents the given number of nanoseconds.
 
         When nanoseconds is a ``float``, any fractional parts of the value are

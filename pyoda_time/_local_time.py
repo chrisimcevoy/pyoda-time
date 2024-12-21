@@ -19,7 +19,7 @@ from .utility._csharp_compatibility import (
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable, Iterator
 
     from . import LocalDateTime, Offset, OffsetTime, Period
     from ._local_date import LocalDate
@@ -459,7 +459,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param period: The period to subtract. Must not contain any (non-zero) date units.
         :return: The result of subtracting the given period from the time.
         """
-        ...
 
     @staticmethod
     @overload
@@ -472,7 +471,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param rhs: The time to subtract
         :return: The result of subtracting one time from another.
         """
-        ...
 
     @staticmethod
     def subtract(lhs: LocalTime, rhs: LocalTime | Period, /) -> LocalTime | Period:
@@ -485,7 +483,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param period: The period to subtract. Must not contain any (non-zero) date units.
         :return: The result of subtracting the given period from this time.
         """
-        ...
 
     @overload
     def minus(self, time: LocalTime, /) -> Period:
@@ -495,7 +492,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
         :param time: The time to subtract from this
         :return: The difference between the specified time and this one
         """
-        ...
 
     def minus(self, period_or_time: Period | LocalTime, /) -> Period | LocalTime:
         return self - period_or_time
@@ -642,10 +638,10 @@ class LocalTime(metaclass=_LocalTimeMeta):
         """
         return date + self
 
-    def __iter__(self) -> Generator[int, None, None]:
+    def __iter__(self) -> Iterator[int]:
         """Deconstruct this time into its components.
 
-        :return: A generator yielding integers representing the hour, minute, and second components of the time.
+        :return: An iterator of integers representing the hour, minute, and second components of the time.
         """
         yield self.hour
         yield self.minute

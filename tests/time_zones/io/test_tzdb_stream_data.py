@@ -109,7 +109,7 @@ class TestTzdbStreamData:
     def __create_minimal_builder() -> _TzdbStreamData._Builder:
         return _TzdbStreamData._Builder(
             string_pool=[],
-            tzdb_id_map=dict(),
+            tzdb_id_map={},
             tzdb_version="tzdb-version",
             windows_mapping=WindowsZones._ctor(
                 version="cldr-version", tzdb_version="tzdb-version", windows_version="windows-version", map_zones=[]

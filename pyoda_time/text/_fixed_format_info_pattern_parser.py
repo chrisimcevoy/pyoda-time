@@ -26,7 +26,7 @@ class _FixedFormatInfoPatternParser(Generic[T]):
         self.__pattern_parser = pattern_parser
         self.__format_info = format_info
         # TODO: Noda Time uses the Cache class from utility here...
-        self.__cache: Final[dict[str, IPattern[T]]] = dict()
+        self.__cache: Final[dict[str, IPattern[T]]] = {}
 
     def _parse_pattern(self, pattern: str) -> IPattern[T]:
         if not (ret := self.__cache.get(pattern)):

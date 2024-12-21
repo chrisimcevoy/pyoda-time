@@ -12,7 +12,7 @@ from pyoda_time.utility._hash_code_helper import _hash_code_helper
 from pyoda_time.utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Iterator
 
     from pyoda_time._duration import Duration
 
@@ -142,7 +142,7 @@ class Interval:
         """
         return instant in self
 
-    def __iter__(self) -> Generator[Instant | None, None, None]:
+    def __iter__(self) -> Iterator[Instant | None]:
         """Deconstruct this value into its components.
 
         :yields: The start and end ``Instant`` of the interval, or ``None`` if it extends to the start or end of time.

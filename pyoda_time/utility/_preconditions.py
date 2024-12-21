@@ -25,9 +25,7 @@ class _Preconditions:
         return argument
 
     @classmethod
-    def _check_argument_range(
-        cls, param_name: str, value: int | float, min_inclusive: int | float, max_inclusive: int | float
-    ) -> None:
+    def _check_argument_range(cls, param_name: str, value: float, min_inclusive: float, max_inclusive: float) -> None:
         if (value < min_inclusive) or (value > max_inclusive):
             cls._throw_argument_out_of_range_exception(param_name, value, min_inclusive, max_inclusive)
 

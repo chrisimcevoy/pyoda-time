@@ -83,7 +83,7 @@ class _PyodaFormatInfo(metaclass=_PyodaFormatInfoMeta):
         self.__date_time_format: DateTimeFormatInfo = (
             culture_info.date_time_format if date_time_format is None else date_time_format
         )
-        self.__era_descriptions: dict[Era, _EraDescription] = dict()
+        self.__era_descriptions: dict[Era, _EraDescription] = {}
         self.__short_month_names: list[str] | None = None
         self.__short_month_genitive_names: list[str] | None = None
         self.__long_month_names: list[str] | None = None

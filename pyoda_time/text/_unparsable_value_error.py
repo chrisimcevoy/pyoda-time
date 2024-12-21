@@ -11,5 +11,3 @@ from pyoda_time.utility._csharp_compatibility import _sealed
 @final
 class UnparsableValueError(Exception):
     """Exception thrown to indicate that the specified value could not be parsed."""
-
-    pass

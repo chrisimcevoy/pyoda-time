@@ -296,7 +296,7 @@ class TzdbDateTimeZoneSource(IDateTimeZoneSource, metaclass=__TzdbDateTimeZoneSo
 
         territories_by_windows_id = _to_lookup({mz: mz.windows_id for mz in self.windows_mapping.map_zones})
         for key, zones in territories_by_windows_id.items():
-            if len(set(zone.territory for zone in zones)) != len(zones):
+            if len({zone.territory for zone in zones}) != len(zones):
                 raise InvalidPyodaDataError(f"Windows mapping has duplicate territories entries for Windows ID {key}")
             try:
                 primary = next(zone for zone in zones if zone.territory == MapZone.PRIMARY_TERRITORY)

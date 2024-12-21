@@ -45,7 +45,8 @@ class _CalendarId(Enum):
     TAIWANLUNISOLAR = 21
     PERSIAN = 22
     UMALQURA = 23
-    LAST_CALENDAR = 23  # Last calendar ID
+    # Last calendar ID
+    LAST_CALENDAR = 23  # noqa: PIE796
 
     @classmethod
     def from_icu_calendar_name(cls, icu_calendar_name: str) -> _CalendarId:

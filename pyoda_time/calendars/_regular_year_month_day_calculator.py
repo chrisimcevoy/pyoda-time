@@ -27,7 +27,7 @@ class _RegularYearMonthDayCalculator(_YearMonthDayCalculator, abc.ABC):
         months_in_year: int,
         aveage_days_per_10_years: int,
         days_at_start_of_year_1: int,
-    ):
+    ) -> None:
         super().__init__(min_year, max_year, aveage_days_per_10_years, days_at_start_of_year_1)
         self.__months_in_year = months_in_year
 

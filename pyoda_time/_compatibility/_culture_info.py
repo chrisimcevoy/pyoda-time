@@ -156,7 +156,7 @@ class CultureInfo(IFormatProvider, metaclass=__CombinedMeta):  # TODO: ICloneabl
     strings, and formatting for dates and numbers.
     """
 
-    __CACHED_CULTURES_BY_NAME: Final[dict[str, CultureInfo]] = dict()
+    __CACHED_CULTURES_BY_NAME: Final[dict[str, CultureInfo]] = {}
     __GET_CULTURE_LOCK: Final[threading.Lock] = threading.Lock()
     _LOCALE_INVARIANT: Final[int] = 0x007F
 
