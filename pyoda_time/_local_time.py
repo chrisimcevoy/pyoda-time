@@ -19,7 +19,7 @@ from .utility._csharp_compatibility import (
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable, Iterator
 
     from . import LocalDateTime, Offset, OffsetTime, Period
     from ._local_date import LocalDate
@@ -638,10 +638,10 @@ class LocalTime(metaclass=_LocalTimeMeta):
         """
         return date + self
 
-    def __iter__(self) -> Generator[int, None, None]:
+    def __iter__(self) -> Iterator[int]:
         """Deconstruct this time into its components.
 
-        :return: A generator yielding integers representing the hour, minute, and second components of the time.
+        :return: An iterator of integers representing the hour, minute, and second components of the time.
         """
         yield self.hour
         yield self.minute

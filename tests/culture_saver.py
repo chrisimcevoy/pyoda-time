@@ -42,6 +42,7 @@ class _BothSaver(AbstractContextManager[None]):
         __exc_type: type[BaseException] | None,
         __exc_value: BaseException | None,
         __traceback: TracebackType | None,
+        /,
     ) -> bool | None:
         self.__current_culture = self.__old_culture
         self.__new_ui_culture = self.__old_ui_culture

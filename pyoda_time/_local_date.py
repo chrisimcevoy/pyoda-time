@@ -15,7 +15,7 @@ from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable, Iterator
 
     from . import LocalDateTime, LocalTime, Period, YearMonth
     from ._year_month_day import _YearMonthDay
@@ -474,13 +474,13 @@ class LocalDate(metaclass=_LocalDateMeta):
         """
         return _Preconditions._check_not_null(adjuster, "adjuster")(self)
 
-    def __iter__(self) -> Generator[int, None, None]:
+    def __iter__(self) -> Iterator[int]:
         """Deconstructs the current instance into its components.
 
         This enables instances of ``LocalDate`` to be unpacked into year, month
         and day, similar to the equivalent ``LocalDate.Deconstruct`` in Noda Time.
 
-        :return: A generator which yields the "year", "month" and "day" components of this date.
+        :return: An iterator of integers representing the "year", "month" and "day" components of this date.
         """
         yield self.year
         yield self.month
