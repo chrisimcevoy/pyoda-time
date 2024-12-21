@@ -39,7 +39,7 @@ class _YearMonthDayCalculator(abc.ABC):
         max_year: int,
         average_days_per_10_years: int,
         days_at_start_of_year_1: int,
-    ):
+    ) -> None:
         # We should really check the minimum year as well, but constructing it hurts my brain.
         _Preconditions._check_argument(
             max_year < _YearStartCacheEntry._INVALID_ENTRY_YEAR,

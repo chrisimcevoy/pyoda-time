@@ -33,7 +33,7 @@ class _GJYearMonthDayCalculator(_RegularYearMonthDayCalculator, abc.ABC):
         max_year: int,
         average_days_per_10_years: int,
         days_at_start_of_year_1: int,
-    ):
+    ) -> None:
         super().__init__(min_year, max_year, 12, average_days_per_10_years, days_at_start_of_year_1)
 
     def _get_year_month_day_from_year_and_day_of_year(self, year: int, d: int) -> _YearMonthDay:

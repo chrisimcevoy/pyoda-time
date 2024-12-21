@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class _GJEraCalculator(_EraCalculator):
     """Era calculator for Gregorian and Julian calendar systems, which use BC and AD."""
 
-    def __init__(self, ymd_calculator: _YearMonthDayCalculator):
+    def __init__(self, ymd_calculator: _YearMonthDayCalculator) -> None:
         super().__init__(Era.before_common, Era.common)
         self.__max_year_of_bc = 1 - ymd_calculator._min_year
         self.__max_year_of_ad = ymd_calculator._max_year

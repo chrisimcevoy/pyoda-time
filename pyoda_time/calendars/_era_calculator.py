@@ -18,7 +18,7 @@ class _EraCalculator(abc.ABC):
     validated. (Eras should be validated for nullity as well as for the presence of a particular era.)
     """
 
-    def __init__(self, *eras: Era):
+    def __init__(self, *eras: Era) -> None:
         self._eras = eras
 
     @abc.abstractmethod

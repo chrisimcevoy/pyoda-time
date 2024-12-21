@@ -70,7 +70,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         day: int = 1,
         calendar: CalendarSystem = CalendarSystem.iso,
         era: Era | None = None,
-    ):
+    ) -> None:
         """Initialises a new instance of ``LocalDate`` for the given ``year``, ``month`` and ``day`` in a given
         ``calendar``.
 

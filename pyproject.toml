@@ -70,6 +70,7 @@ line-length = 120
 [tool.ruff.lint]
 fixable = ["ALL"]
 ignore = [
+    "ANN401",
     "PLR0911",
     "PLR0912",
     "PLR0913",
@@ -78,10 +79,12 @@ ignore = [
     "PLW2901",
 ]
 select = [
+    "ANN",  # flake8-annotations
     "E",    # pycodestyle (error)
     "F",    # pyflakes
     "FURB", # refurb
     "I",    # isort
+    "PERF", # perflint
     "PL",   # pylint
     "RUF",  # ruff
     "TC",   # flake8-type-checking
