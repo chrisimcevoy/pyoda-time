@@ -32,7 +32,7 @@ class HijriCalendar(Calendar):
         11. Dhu al-Qada    (30 days)
         12. Dhu al-Hijjah  (29 days) {30}
 
-    NOTE
+    NOTE:
     The calculation of the HijriCalendar is based on the absolute date.  And the
     absolute date means the number of days from January 1st, 1 A.D.
     Therefore, we do not support the days before the January 1st, 1 A.D.

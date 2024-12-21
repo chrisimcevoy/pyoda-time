@@ -71,6 +71,30 @@ line-length = 120
 fixable = ["ALL"]
 ignore = [
     "ANN401",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D107",
+    "D200",
+    "D202",
+    "D203",
+    "D205",
+    "D209",
+    "D210",
+    "D211",
+    "D212",
+    "D213",
+    "D400",
+    "D401",
+    "D404",
+    "D405",
+    "D410",
+    "D413",
+    "D415",
+    "D418",
     "PLR0911",
     "PLR0912",
     "PLR0913",
@@ -82,6 +106,7 @@ ignore = [
 select = [
     "ANN",  # flake8-annotations
     "C4",   # flake8-comprehensions
+    "D",    # pydocstyle
     "E",    # pycodestyle (error)
     "F",    # pyflakes
     "FA",   # flake8-future-annotations
