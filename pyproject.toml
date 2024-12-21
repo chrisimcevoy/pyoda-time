@@ -83,6 +83,7 @@ select = [
     "C4",   # flake8-comprehensions
     "E",    # pycodestyle (error)
     "F",    # pyflakes
+    "FA",   # flake8-future-annotations
     "FURB", # refurb
     "I",    # isort
     "PERF", # perflint
