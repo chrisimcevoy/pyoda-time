@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import copy
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pyoda_time._compatibility._culture_data import _CultureData
 from pyoda_time._compatibility._i_format_provider import IFormatProvider
+
+if TYPE_CHECKING:
+    from pyoda_time._compatibility._culture_data import _CultureData
 
 
 class NumberFormatInfo(IFormatProvider):  # TODO: ICloneable

@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, overload
 
+from .utility._preconditions import _Preconditions
+
 if TYPE_CHECKING:
     from . import (
         CalendarSystem,
@@ -17,8 +19,6 @@ if TYPE_CHECKING:
         Offset,
         OffsetDateTime,
     )
-
-from .utility._preconditions import _Preconditions
 
 __all__ = ["ZonedDateTime"]
 
@@ -81,6 +81,8 @@ class ZonedDateTime:
 
         :return: The time zone associated with this value.
         """
+        from ._date_time_zone import DateTimeZone
+
         return self.__zone or DateTimeZone.utc
 
     @property

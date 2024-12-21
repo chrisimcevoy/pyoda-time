@@ -3,6 +3,7 @@
 # as found in the LICENSE.txt file.
 
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -14,9 +15,11 @@ from pyoda_time import (
     LocalDateTime,
     PyodaConstants,
 )
-from pyoda_time._local_instant import _LocalInstant
 from pyoda_time.calendars import Era, WeekYearRules
 from pyoda_time.utility._csharp_compatibility import _towards_zero_division
+
+if TYPE_CHECKING:
+    from pyoda_time._local_instant import _LocalInstant
 
 ISO: CalendarSystem = CalendarSystem.iso
 

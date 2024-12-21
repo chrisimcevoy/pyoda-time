@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Final, _ProtocolMeta, final
+from typing import TYPE_CHECKING, Final, _ProtocolMeta, final
 
 from pyoda_time._i_clock import IClock
-from pyoda_time._instant import Instant
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
+
+if TYPE_CHECKING:
+    from pyoda_time._instant import Instant
 
 
 class __SystemClockMeta(_ProtocolMeta):

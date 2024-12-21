@@ -3,7 +3,6 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
 from typing import (
     TYPE_CHECKING,
     Final,
@@ -15,14 +14,9 @@ from typing import (
     runtime_checkable,
 )
 
-from pyoda_time.text._parse_bucket import _ParseBucket
 from pyoda_time.text._value_cursor import _ValueCursor
 
 from ..._compatibility._string_builder import StringBuilder
-from ..._local_date import LocalDate
-from ..._local_date_time import LocalDateTime
-from ..._local_time import LocalTime
-from ...globalization._pyoda_format_info import _PyodaFormatInfo
 from ...utility._csharp_compatibility import _sealed
 from ...utility._preconditions import _Preconditions
 from .._format_helper import _FormatHelper
@@ -35,6 +29,14 @@ from ._pattern_cursor import _PatternCursor
 from ._pattern_fields import _PatternFields
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping, Sequence
+
+    from pyoda_time.text._parse_bucket import _ParseBucket
+
+    from ..._local_date import LocalDate
+    from ..._local_date_time import LocalDateTime
+    from ..._local_time import LocalTime
+    from ...globalization._pyoda_format_info import _PyodaFormatInfo
     from .._local_date_pattern_parser import _LocalDatePatternParser
     from .._local_time_pattern_parser import _LocalTimePatternParser
 

@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import datetime
 import functools
-from collections.abc import Callable, Generator
 from typing import TYPE_CHECKING, final, overload
 
 from ._pyoda_constants import PyodaConstants
@@ -20,6 +19,8 @@ from .utility._csharp_compatibility import (
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Generator
+
     from . import LocalDateTime, Offset, OffsetTime, Period
     from ._local_date import LocalDate
 

@@ -3,7 +3,6 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Final, final
 
 from .._i_date_time_zone_provider import IDateTimeZoneProvider
@@ -13,6 +12,8 @@ from ._date_time_zone_not_found_error import DateTimeZoneNotFoundError
 from ._invalid_date_time_zone_source_error import InvalidDateTimeZoneSourceError
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from .._date_time_zone import DateTimeZone
     from ._i_date_time_zone_source import IDateTimeZoneSource
 

@@ -3,17 +3,20 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
-from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.text import ParseResult
-from pyoda_time.text._parse_bucket import _ParseBucket
-from pyoda_time.text._value_cursor import _ValueCursor
-from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
-from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 from pyoda_time.utility._csharp_compatibility import _towards_zero_division
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pyoda_time._compatibility._string_builder import StringBuilder
+    from pyoda_time.text._parse_bucket import _ParseBucket
+    from pyoda_time.text._value_cursor import _ValueCursor
+    from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
+    from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 
 T = TypeVar("T")
 

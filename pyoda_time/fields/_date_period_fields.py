@@ -11,9 +11,7 @@ from ._months_period_field import _MonthsPeriodField
 from ._years_period_field import _YearsPeriodField
 
 if TYPE_CHECKING:
-    pass
-
-from ._i_date_period_field import _IDatePeriodField
+    from ._i_date_period_field import _IDatePeriodField
 
 
 class _DatePeriodFields:

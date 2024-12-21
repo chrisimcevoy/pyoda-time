@@ -4,19 +4,23 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Final, final, overload
+from typing import TYPE_CHECKING, Final, final, overload
 
-from ._local_date import LocalDate
 from ._local_time import LocalTime
 from ._offset import Offset
 from ._offset_date_time import OffsetDateTime
 from ._pyoda_constants import PyodaConstants
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 __all__ = ["OffsetTime"]
 
 from .utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
 from .utility._hash_code_helper import _hash_code_helper
+
+if TYPE_CHECKING:
+    from ._local_date import LocalDate
 
 
 @final

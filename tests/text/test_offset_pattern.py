@@ -1,12 +1,12 @@
 # Copyright 2024 The Pyoda Time Authors. All rights reserved.
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
+from typing import TYPE_CHECKING
 
 import pytest
 from _pytest.fixtures import FixtureRequest
 
 from pyoda_time import Offset
-from pyoda_time._compatibility._culture_info import CultureInfo
 from pyoda_time.text import OffsetPattern
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
@@ -17,6 +17,9 @@ from ..helpers import create_negative_offset, create_positive_offset
 from .cultures import Cultures
 from .pattern_test_base import PatternTestBase
 from .pattern_test_data import PatternTestData
+
+if TYPE_CHECKING:
+    from pyoda_time._compatibility._culture_info import CultureInfo
 
 
 class Data(PatternTestData[Offset]):

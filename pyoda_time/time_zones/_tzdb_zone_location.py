@@ -4,13 +4,15 @@
 
 from __future__ import annotations
 
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
-from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from pyoda_time.utility import InvalidPyodaDataError
 from pyoda_time.utility._csharp_compatibility import _sealed
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
+    from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 
 
 @final

@@ -3,22 +3,25 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
-from typing import Final, final
+from typing import TYPE_CHECKING, Final, final
 
 from pyoda_time._annual_date import AnnualDate
 from pyoda_time._calendar_system import CalendarSystem
-from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
 from pyoda_time.text import AnnualDatePattern, InvalidPatternError, ParseResult
-from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._parse_bucket import _ParseBucket
 from pyoda_time.text._text_error_messages import _TextErrorMessages
 from pyoda_time.text.patterns._date_pattern_helper import _DatePatternHelper
 from pyoda_time.text.patterns._i_pattern_parser import _IPatternParser
-from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
 from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping
+
+    from pyoda_time.globalization._pyoda_format_info import _PyodaFormatInfo
+    from pyoda_time.text._i_pattern import IPattern
+    from pyoda_time.text.patterns._pattern_cursor import _PatternCursor
 
 
 def _handle_day_of_month(pattern: _PatternCursor, builder: _SteppedPatternBuilder[AnnualDate]) -> None:

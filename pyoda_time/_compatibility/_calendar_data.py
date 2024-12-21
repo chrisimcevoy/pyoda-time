@@ -4,18 +4,21 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Final, cast, final
+from typing import TYPE_CHECKING, Final, cast, final
 
 from icu import DateFormatSymbols, DateTimePatternGenerator, Locale
 
-from pyoda_time._compatibility._calendar import Calendar
 from pyoda_time._compatibility._calendar_id import _CalendarId
 from pyoda_time._compatibility._globalization_mode import _GlobalizationMode
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.utility._csharp_compatibility import _sealed
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from pyoda_time._compatibility._calendar import Calendar
 
 
 class _CalendarDataType(IntEnum):

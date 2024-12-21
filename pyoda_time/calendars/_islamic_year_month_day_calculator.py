@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, Final, final
 
 from ..utility._csharp_compatibility import _csharp_modulo, _sealed, _towards_zero_division
@@ -13,6 +12,8 @@ from ._islamic_leap_year_pattern import IslamicLeapYearPattern
 from ._regular_year_month_day_calculator import _RegularYearMonthDayCalculator
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from .._year_month_day import _YearMonthDay
 
 

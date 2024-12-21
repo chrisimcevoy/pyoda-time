@@ -3,9 +3,11 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Buffer
 from io import BytesIO
-from typing import BinaryIO
+from typing import TYPE_CHECKING, BinaryIO
+
+if TYPE_CHECKING:
+    from collections.abc import Buffer
 
 
 class _IoStream:

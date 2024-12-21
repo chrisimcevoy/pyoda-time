@@ -3,19 +3,22 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import cast, final
+from typing import TYPE_CHECKING, cast, final
 
 from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time._instant import Instant
 from pyoda_time._offset import Offset
 from pyoda_time.time_zones import ZoneInterval
-from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap
 from pyoda_time.time_zones._standard_daylight_alternating_map import _StandardDaylightAlternatingMap
-from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
-from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 from pyoda_time.utility._csharp_compatibility import _sealed, _towards_zero_division
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pyoda_time.time_zones._i_zone_interval_map import _IZoneIntervalMap
+    from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
+    from pyoda_time.time_zones.io._i_date_time_zone_writer import _IDateTimeZoneWriter
 
 
 @final

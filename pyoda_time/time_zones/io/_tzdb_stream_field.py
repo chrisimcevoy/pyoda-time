@@ -3,15 +3,17 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Sequence
 from io import BytesIO
-from typing import BinaryIO, TypeVar, final
+from typing import TYPE_CHECKING, BinaryIO, TypeVar, final
 
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 
 from ...utility import InvalidPyodaDataError
 from ._date_time_zone_reader import _DateTimeZoneReader
 from ._tzdb_stream_field_id import _TzdbStreamFieldId
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Generator, Sequence
 
 T = TypeVar("T")
 

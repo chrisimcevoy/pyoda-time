@@ -6,12 +6,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, final, overload
 
-from ._calendar_ordinal import _CalendarOrdinal
 from ._year_month_day_calendar import _YearMonthDayCalendar
 from .utility._csharp_compatibility import _sealed
 
 if TYPE_CHECKING:
     from . import CalendarSystem
+    from ._calendar_ordinal import _CalendarOrdinal
 
 
 @final

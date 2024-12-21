@@ -5,17 +5,18 @@
 from __future__ import annotations
 
 import threading
-from collections.abc import Sequence
 from typing import TYPE_CHECKING, Final, TypeVar, cast, final
 
 from .._compatibility._culture_info import CultureInfo
 from .._compatibility._date_time_format_info import DateTimeFormatInfo
-from .._compatibility._i_format_provider import IFormatProvider
 from ..calendars import Era
 from ..utility._cache import _Cache
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from .._annual_date import AnnualDate
+    from .._compatibility._i_format_provider import IFormatProvider
     from .._duration import Duration
     from .._instant import Instant
     from .._local_date import LocalDate

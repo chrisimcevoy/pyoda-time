@@ -5,14 +5,12 @@
 from __future__ import annotations
 
 import copy
-from collections.abc import Sequence
 from enum import IntEnum
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Final, cast, overload
 
 import icu
 
-from pyoda_time._compatibility._calendar import Calendar
 from pyoda_time._compatibility._calendar_data import _CalendarData
 from pyoda_time._compatibility._calendar_id import _CalendarId
 from pyoda_time._compatibility._culture_types import CultureTypes
@@ -23,6 +21,9 @@ from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.utility._csharp_compatibility import _as_span, _private
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from pyoda_time._compatibility._calendar import Calendar
     from pyoda_time._compatibility._culture_info import CultureInfo
     from pyoda_time._compatibility._number_format_info import NumberFormatInfo
 
@@ -348,6 +349,8 @@ class _CultureData(metaclass=_CultureDataMeta):
 
     @classmethod
     def __create_culture_data(cls, culture_name: str, use_user_override: bool) -> _CultureData | None:
+        from ._culture_info import CultureInfo
+
         if _GlobalizationMode._invariant:
             if len(culture_name) > cls.__LOCALE_NAME_MAX_LENGTH or not CultureInfo._verify_culture_name(
                 culture_name, False
@@ -414,6 +417,8 @@ class _CultureData(metaclass=_CultureDataMeta):
     def __init_icu_culture_data_core(self) -> bool:
         """This method uses the sRealName field (which is initialized by the constructor before this is called) to
         initialize the rest of the state of CultureData based on the underlying OS globalization library."""
+        from ._culture_info import CultureInfo
+
         assert self._sRealName is not None
         assert not _GlobalizationMode._invariant
 
@@ -535,6 +540,7 @@ class _CultureData(metaclass=_CultureDataMeta):
 
     @classmethod
     def _get_cultures(cls, types: CultureTypes) -> Sequence[CultureInfo]:
+        from ._culture_info import CultureInfo
         # TODO: ArgumentOutOfRange validation?
 
         # TODO: WindowsOnlyCulture check
@@ -672,6 +678,8 @@ class _CultureData(metaclass=_CultureDataMeta):
         This returns an instance of the default ``System.Globalization.Calendar`` for the locale.
         """
 
+        from ._culture_info import CultureInfo
+
         if _GlobalizationMode._invariant:
             return GregorianCalendar()
 
@@ -684,8 +692,6 @@ class _CultureData(metaclass=_CultureDataMeta):
 
         if default_cal_id == _CalendarId.UNINITIALIZED_VALUE:
             default_cal_id = self._calendar_ids[0]
-
-        from ._culture_info import CultureInfo
 
         return CultureInfo._get_calendar_instance(default_cal_id)
 
@@ -946,10 +952,10 @@ class _CultureData(metaclass=_CultureDataMeta):
 
     @classmethod
     def __icu_enum_cultures(cls, types: CultureTypes) -> Sequence[CultureInfo]:
+        from ._culture_info import CultureInfo
+
         assert not _GlobalizationMode._invariant
         assert not _GlobalizationMode._use_nls
-
-        from ._culture_info import CultureInfo
 
         if not (types & (CultureTypes.NEUTRAL_CULTURES | CultureTypes.SPECIFIC_CULTURES)):
             return []

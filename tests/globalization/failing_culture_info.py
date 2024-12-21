@@ -5,11 +5,13 @@
 from __future__ import annotations
 
 import threading
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 
 from pyoda_time._compatibility._culture_info import CultureInfo, __CombinedMeta
-from pyoda_time._compatibility._date_time_format_info import DateTimeFormatInfo
-from pyoda_time._compatibility._number_format_info import NumberFormatInfo
+
+if TYPE_CHECKING:
+    from pyoda_time._compatibility._date_time_format_info import DateTimeFormatInfo
+    from pyoda_time._compatibility._number_format_info import NumberFormatInfo
 
 
 class _FailingCultureInfoMeta(type):

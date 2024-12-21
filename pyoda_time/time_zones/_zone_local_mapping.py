@@ -7,13 +7,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final
 
 from pyoda_time._ambiguous_time_error import AmbiguousTimeError
-from pyoda_time._local_date_time import LocalDateTime
 from pyoda_time._skipped_time_error import SkippedTimeError
 from pyoda_time._zoned_date_time import ZonedDateTime
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
 
 if TYPE_CHECKING:
     from pyoda_time._date_time_zone import DateTimeZone
+    from pyoda_time._local_date_time import LocalDateTime
     from pyoda_time.time_zones import ZoneInterval
 
 

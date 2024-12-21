@@ -4,8 +4,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import BinaryIO, final
+from typing import TYPE_CHECKING, BinaryIO, final
 
 from pyoda_time._duration import Duration
 from pyoda_time._instant import Instant
@@ -15,6 +14,9 @@ from pyoda_time.time_zones.io._date_time_zone_writer import _DateTimeZoneWriter
 from pyoda_time.time_zones.io._i_date_time_zone_reader import _IDateTimeZoneReader
 from pyoda_time.utility import InvalidPyodaDataError
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants, _int64_overflow, _private, _sealed
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 @final

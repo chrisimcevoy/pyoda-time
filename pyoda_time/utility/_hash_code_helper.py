@@ -4,9 +4,12 @@
 
 from __future__ import annotations
 
-__all__: list[str] = []
+from typing import TYPE_CHECKING
 
-from collections.abc import Hashable
+if TYPE_CHECKING:
+    from collections.abc import Hashable
+
+__all__: list[str] = []
 
 
 def _hash_code_helper(*values: Hashable) -> int:

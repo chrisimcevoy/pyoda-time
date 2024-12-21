@@ -4,13 +4,15 @@
 
 from __future__ import annotations
 
-from typing import Annotated, final
+from typing import TYPE_CHECKING, Annotated, final
 
 from ..utility._csharp_compatibility import _private, _sealed
 from ..utility._preconditions import _Preconditions
-from ._era import Era
 from ._era_calculator import _EraCalculator
-from ._year_month_day_calculator import _YearMonthDayCalculator
+
+if TYPE_CHECKING:
+    from ._era import Era
+    from ._year_month_day_calculator import _YearMonthDayCalculator
 
 
 @final

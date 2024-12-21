@@ -3,13 +3,15 @@
 # as found in the LICENSE.txt file.
 
 from collections.abc import Callable
-from typing import Final, Generic, TypeVar, final
+from typing import TYPE_CHECKING, Final, Generic, TypeVar, final
 
 from ..._compatibility._i_format_provider import IFormatProvider
 from ...globalization._pyoda_format_info import _PyodaFormatInfo
 from ...utility._csharp_compatibility import _sealed
 from .._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
-from .._i_pattern import IPattern
+
+if TYPE_CHECKING:
+    from .._i_pattern import IPattern
 
 T = TypeVar("T")
 

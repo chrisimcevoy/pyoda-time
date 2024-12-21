@@ -40,6 +40,11 @@ dev = [
     "coverage>=7.6.9",
 ]
 
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:"
+]
+
 [tool.docformatter]
 black = true
 recursive = true
@@ -79,6 +84,7 @@ select = [
     "I",    # isort
     "PL",   # pylint
     "RUF",  # ruff
+    "TC",   # flake8-type-checking
     "UP",   # pyupgrade
     "W",    # pycodestyle (warning)
 ]

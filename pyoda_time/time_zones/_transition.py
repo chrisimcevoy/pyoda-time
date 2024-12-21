@@ -3,11 +3,13 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from pyoda_time._instant import Instant
-from pyoda_time._offset import Offset
 from pyoda_time.utility._csharp_compatibility import _private, _sealed
+
+if TYPE_CHECKING:
+    from pyoda_time._instant import Instant
+    from pyoda_time._offset import Offset
 
 
 @final

@@ -5,10 +5,8 @@ from __future__ import annotations
 
 import struct
 import types
-from collections.abc import Callable, Sequence
-from typing import Any, BinaryIO, Final, TypeVar, final
+from typing import TYPE_CHECKING, Any, BinaryIO, Final, TypeVar, final
 
-from pyoda_time._date_time_zone import DateTimeZone
 from pyoda_time.time_zones import TzdbZoneLocation
 from pyoda_time.time_zones._cached_date_time_zone import _CachedDateTimeZone
 from pyoda_time.time_zones._fixed_date_time_zone import _FixedDateTimeZone
@@ -22,6 +20,11 @@ from pyoda_time.time_zones.io._tzdb_stream_field_id import _TzdbStreamFieldId
 from pyoda_time.utility import InvalidPyodaDataError
 from pyoda_time.utility._csharp_compatibility import _sealed
 from pyoda_time.utility._preconditions import _Preconditions
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from pyoda_time._date_time_zone import DateTimeZone
 
 T = TypeVar("T")
 
