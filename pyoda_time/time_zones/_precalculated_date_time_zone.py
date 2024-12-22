@@ -195,7 +195,6 @@ class _PrecalculatedDateTimeZone(DateTimeZone):
     ) -> Offset:
         """Reasonably simple way of computing the maximum/minimum offset from either periods or transitions, with or
         without a tail zone."""
-
         _Preconditions._check_not_null(intervals, "intervals")
         _Preconditions._check_argument(len(intervals) > 0, "intervals", "No intervals specified")
         ret: Offset = intervals[0].wall_offset

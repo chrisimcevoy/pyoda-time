@@ -626,7 +626,6 @@ class Period(metaclass=_PeriodMeta):
         This allows optimizations in DateInterval,
         and for date calculations which just use days - we don't need state or a virtual method invocation.
         """
-
         # We already assume the calendars are the same
         if start._year_month_day == end._year_month_day:
             return 0

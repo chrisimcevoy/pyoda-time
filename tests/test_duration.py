@@ -595,7 +595,6 @@ class TestDurationConstruction:
         * Conversion from e.g ``timedelta.max`` would be impossible with Noda Time's min/max constraints.
         * Pyoda Time's ``Duration`` implementation supports microseconds, Noda Time's does not.
         """
-
         td = timedelta(hours=3, seconds=2, microseconds=1)
         duration = Duration.from_hours(3) + Duration.from_seconds(2) + Duration.from_microseconds(1)
         assert Duration.from_timedelta(td) == duration

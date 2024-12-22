@@ -561,7 +561,6 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
 
         Era names are 1 indexed
         """
-
         if era == Calendar.CURRENT_ERA:
             era = self.calendar._current_era_value
 

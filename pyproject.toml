@@ -71,15 +71,8 @@ line-length = 120
 fixable = ["ALL"]
 ignore = [
     "ANN401",
-    "D100",
-    "D101",
-    "D102",
-    "D103",
     "D104",
-    "D105",
-    "D107",
-    "D200",
-    "D202",
+#    "D202",
     "D203",
     "D205",
     "D209",
@@ -124,3 +117,12 @@ select = [
 ]
 unfixable = []
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D105",
+    "D107",
+]

@@ -33,7 +33,6 @@ class _ValueCursor(_TextCursor):
 
         The cursor is optionally updated to the end of the match.
         """
-
         # TODO: This is very different to the Noda Time implementation!
 
         if len(match) > len(self.value) - self.index:

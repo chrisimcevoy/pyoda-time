@@ -203,7 +203,6 @@ class TestDateTimeZoneCache:
 
     def test_tzdb_iterate_over_ids(self) -> None:
         """Test for issue 7 in [Noda Time] bug tracker."""
-
         # According to bug, this would go bang
         count = len(tuple(DateTimeZoneProviders.tzdb.ids))
 

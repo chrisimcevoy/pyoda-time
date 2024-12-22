@@ -58,7 +58,6 @@ class _CalendarDataMeta(type):
     @classmethod
     def __create_invariant(cls) -> _CalendarData:
         """Invariant Factory."""
-
         #  Set our default/gregorian US calendar data
         # Calendar IDs are 1-based, arrays are 0 based.
         invariant = _CalendarData.__new__(_CalendarData)
@@ -325,7 +324,6 @@ class _CalendarData(metaclass=_CalendarDataMeta):
         http://userguide.icu-project.org/formatparse/datetime
         and https://msdn.microsoft.com/en-us/library/8kb3ddd4(v=vs.110).aspx
         """
-
         destination = StringBuilder()
 
         index = 0

@@ -48,7 +48,6 @@ class Interval:
         :param end: The end ``Instant`` or ``None``.
         :raises ValueError: If ``end`` is earlier than ``start``.
         """
-
         if start is None:
             start = Instant._before_min_value()
         if end is None:

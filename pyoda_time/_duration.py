@@ -803,7 +803,6 @@ class Duration(metaclass=_DurationMeta):
         :param nanoseconds: The number of nanoseconds.
         :return: A ``Duration`` representing the given number of nanoseconds.
         """
-
         _Preconditions._check_argument_range("nanoseconds", nanoseconds, cls._MIN_NANOSECONDS, cls._MAX_NANOSECONDS)
 
         # In Noda Time, the ``double`` overload merely rounds ``nanoseconds`` towards zero
@@ -870,7 +869,6 @@ class Duration(metaclass=_DurationMeta):
 
         :return: A new TimeSpan with the same number of ticks as this Duration.
         """
-
         return datetime.timedelta(
             days=self.days,
             microseconds=_towards_zero_division(self.nanosecond_of_day, PyodaConstants.NANOSECONDS_PER_MICROSECOND),

@@ -1,7 +1,8 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Configuration file for the Sphinx documentation builder.
+
+For the full list of built-in configuration values, see the documentation:
+https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""
 
 from typing import Any
 
@@ -79,7 +80,6 @@ autodoc_default_options = {
 def skip_default_special_methods(app: Sphinx, what: str, name: str, obj: Any, skip: bool, options: Any) -> bool:
     """Custom handler for the autodoc-skip-member event to skip dunder members which are inherited (e.g. from
     object)."""
-
     if hasattr(obj, "__qualname__") and name.startswith("__") and name.endswith("__"):
         # Check if the method is actually implemented in the current class
         # and not inherited from a parent class like `object`
@@ -94,7 +94,6 @@ def process_metaclass_properties(
     app: Sphinx, what: str, name: str, obj: Any, options: dict[str, Any], lines: list[str]
 ) -> None:
     """Custom handler for autodoc-process-docstring event to process 'class properties' defined in a metaclass."""
-
     if what == "class" and hasattr(obj, "__class__"):
         metaclass = type(obj)
 
@@ -156,5 +155,14 @@ def process_metaclass_properties(
 
 
 def setup(app: Sphinx) -> None:
+    """Initialize Sphinx extension hooks for Pyoda Time documentation.
+
+    Connects custom event handlers to the Sphinx application for:
+
+    - Skipping default special methods inherited from base classes during autodoc processing.
+    - Adding properties defined in metaclasses to the documentation with detailed annotations.
+
+    :param app: The Sphinx application instance.
+    """
     app.connect("autodoc-skip-member", skip_default_special_methods)
     app.connect("autodoc-process-docstring", process_metaclass_properties)

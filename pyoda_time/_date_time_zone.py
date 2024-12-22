@@ -77,7 +77,6 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
         :param offset: The offset for the returned time zone
         :return: A fixed time zone with the given offset.
         """
-
         # Unlike in Noda Time, build the cache if it is empty.
         if not cls.__fixed_zone_cache:
             cls.__fixed_zone_cache = cls.__build_fixed_zone_cache()

@@ -85,7 +85,6 @@ class _TimePatternHelper:
         Formatting always uses a dot, but parsing will allow a comma instead, to conform with ISO-8601. This is *not*
         culture sensitive.
         """
-
         # Note: Deliberately *not* using the decimal separator of the culture - see issue 21.
 
         # If the next part of the pattern is an F, then this decimal separator is effectively optional.

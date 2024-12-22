@@ -677,7 +677,6 @@ class _CultureData(metaclass=_CultureDataMeta):
 
         This returns an instance of the default ``System.Globalization.Calendar`` for the locale.
         """
-
         from ._culture_info import CultureInfo
 
         if _GlobalizationMode._invariant:
@@ -988,7 +987,6 @@ class _CultureData(metaclass=_CultureDataMeta):
 
         It accommodates the input length of zero for invariant culture purposes.
         """
-
         index_of_underscore = -1
         index_of_extensions = -1
         if len(subject) == 0:

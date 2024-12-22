@@ -135,7 +135,6 @@ class _SteppedPatternBuilder(Generic[TResult]):
 
     def _validate_used_fields(self) -> None:
         """Validates the combination of fields used."""
-
         # We assume invalid combinations are global across all parsers. The way that
         # the patterns are parsed ensures we never end up with any invalid individual fields
         # (e.g. time fields within a date pattern).
@@ -255,7 +254,6 @@ class _SteppedPatternBuilder(Generic[TResult]):
         failure_selector: Callable[[_ValueCursor, str], ParseResult[TResult]] | None = None,
     ) -> None:
         """Adds text which must be matched exactly when parsing, and appended directly when formatting."""
-
         # Overload 1
         if expected_text is not None and failure is not None:
 
