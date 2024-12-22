@@ -59,7 +59,6 @@ def _to_ticks(obj: datetime.datetime | datetime.timedelta) -> int:
         - https://learn.microsoft.com/en-us/dotnet/api/system.datetimeoffset.ticks
         - https://learn.microsoft.com/en-us/dotnet/api/system.timespan.ticks
     """
-
     if isinstance((dt := obj), datetime.datetime):
         if dt.tzinfo is not None:
             # Treat an aware datetime like a DateTimeOffset, for which the Ticks property completely
@@ -118,25 +117,17 @@ def _private(klass: _Ttype) -> _Ttype:
     This is used to decorate Python classes which have been ported from C#, where the C# class has no public
     constructor.
     """
-
     msg = f"{klass.__name__} is not intended to be initialised directly."
 
     def __init__(self: Any) -> None:
-        """
+        """Raise TypeError if the decorated class has no public constructor.
 
         :raises TypeError: This class is not intended to be instantiated directly.
         """
         raise TypeError(msg)
 
     def __new__(cls: _Ttype) -> _Ttype:
-        """
-
-        :raises TypeError: This class is not intended to be instantiated directly.
-        """
-        raise TypeError(msg)
-
-    def __call__(*_args: Any, **_kwargs: Any) -> _Ttype:
-        """
+        """Raise TypeError if the decorated class has no public constructor.
 
         :raises TypeError: This class is not intended to be instantiated directly.
         """
@@ -145,7 +136,6 @@ def _private(klass: _Ttype) -> _Ttype:
     # Use setattr to stop mypy shouting
     setattr(klass, "__init__", __init__)
     setattr(klass, "__new__", __new__)
-    setattr(klass, "__call__", __call__)
 
     # This is used in sphinx docs to ignore the special methods assigned above.
     setattr(klass, "__no_public_constructor__", True)

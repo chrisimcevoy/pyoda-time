@@ -142,7 +142,6 @@ class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
         Note that although cycle years are usually numbered 1-30, the bit pattern is for 0-29; cycle year 30 is
         represented by bit 0.
         """
-
         # When reading bit patterns, don't forget to read right to left...
         match leap_year_pattern:
             case IslamicLeapYearPattern.BASE15:

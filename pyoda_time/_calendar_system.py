@@ -326,7 +326,6 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
     @classmethod
     def _for_ordinal(cls, ordinal: _CalendarOrdinal) -> CalendarSystem:
         """Fetches a calendar system by its ordinal value, constructing it if necessary."""
-
         # TODO Preconditions.DebugCheckArgument
 
         if calendar := cls.__CALENDAR_BY_ORDINAL.get(ordinal):

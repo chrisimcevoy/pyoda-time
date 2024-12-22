@@ -186,7 +186,6 @@ class _SimpleWeekYearRule(IWeekYearRule):
         weeks can be short) it returns the day when the week-year *would* have started if it were regular. So this
         *always* returns a date on firstDayOfWeek.
         """
-
         # TODO: unchecked
 
         # Need to be slightly careful here, as the week-year can reasonably be (just) outside the calendar year range.

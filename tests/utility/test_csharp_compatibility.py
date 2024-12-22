@@ -71,14 +71,12 @@ def test_foo() -> None:
 @pytest.mark.parametrize("sealed_class", SEALED_CLASSES)
 def test_sealed_class_is_decorated_with_typing_final(sealed_class: type) -> None:
     """Assert that all ``@sealed`` classes are also decorated with ``@typing.final``."""
-
     assert hasattr(sealed_class, "__final__")
 
 
 @pytest.mark.parametrize("sealed_class", SEALED_CLASSES)
 def test_sealed_class_raises_type_error_when_subclassed(sealed_class: type) -> None:
     """Assert that all classes decorated with ``@sealed`` raise TypeError when subclassed."""
-
     with pytest.raises(TypeError) as e:
 
         class Foo(sealed_class):  # type: ignore

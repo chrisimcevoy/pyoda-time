@@ -690,7 +690,6 @@ class LocalTime(metaclass=_LocalTimeMeta):
 
         :return: The equivalent ``datetime.time``.
         """
-
         return datetime.time(
             hour=self.hour,
             minute=self.minute,

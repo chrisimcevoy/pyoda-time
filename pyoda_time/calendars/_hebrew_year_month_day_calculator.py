@@ -102,7 +102,6 @@ class _HebrewYearMonthDayCalculator(_YearMonthDayCalculator):
         https://judaism.stackexchange.com/questions/39053
         for the reasoning behind the rules.
         """
-
         current_year = year_month_day._year
         current_month = year_month_day._month
         target_day = year_month_day._day

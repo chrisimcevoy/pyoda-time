@@ -70,57 +70,56 @@ line-length = 120
 [tool.ruff.lint]
 fixable = ["ALL"]
 ignore = [
-    "ANN401",
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D107",
-    "D200",
-    "D202",
-    "D203",
-    "D205",
-    "D209",
-    "D210",
-    "D211",
-    "D212",
-    "D213",
-    "D400",
-    "D401",
-    "D404",
-    "D405",
-    "D410",
-    "D413",
-    "D415",
-    "D418",
-    "PLR0911",
-    "PLR0912",
-    "PLR0913",
-    "PLR0915",
-    "PLR2004",
-    "PLW2901",
-    "PYI046",
+    "ANN401",   # any-type
+    "D104",     # undocumented-public-package
+    "D203",     # one-blank-line-before-class (conflicts with ruff-format)
+    "D205",     # blank-line-after-summary
+    "D209",     # new-line-after-last-paragraph (conflicts with docformatter)
+    "D212",     # multi-line-summary-first-line
+    "D213",     # multi-line-summary-second-line
+    "D400",     # ends-in-period
+    "D401",     # non-imperative-mood
+    "D404",     # docstring-starts-with-this
+    "D405",     # capitalize-section-name
+    "D410",     # no-blank-line-after-section
+    "D413",     # blank-line-after-last-section
+    "D415",     # ends-in-punctuation
+    "D418",     # overload-with-docstring
+    "PLR0911",  # too-many-return-statements
+    "PLR0912",  # too-many-branches
+    "PLR0913",  # too-many-arguments
+    "PLR0915",  # too-many-statements
+    "PLR2004",  # magic-value-comparison
+    "PLW2901",  # redefined-loop-name
+    "PYI046",   # unused-private-protocol (in the same module as it is declared!)
 ]
 select = [
-    "ANN",  # flake8-annotations
-    "C4",   # flake8-comprehensions
-    "D",    # pydocstyle
-    "E",    # pycodestyle (error)
-    "F",    # pyflakes
-    "FA",   # flake8-future-annotations
-    "FURB", # refurb
-    "I",    # isort
-    "PERF", # perflint
-    "PIE",  # flake8-pie
-    "PL",   # pylint
-    "PYI",  # flake8-pyi
-    "RUF",  # ruff
-    "T20",  # flake8-print
-    "TC",   # flake8-type-checking
-    "UP",   # pyupgrade
-    "W",    # pycodestyle (warning)
+    "ANN",      # flake8-annotations
+    "C4",       # flake8-comprehensions
+    "D",        # pydocstyle
+    "E",        # pycodestyle (error)
+    "F",        # pyflakes
+    "FA",       # flake8-future-annotations
+    "FURB",     # refurb
+    "I",        # isort
+    "PERF",     # perflint
+    "PIE",      # flake8-pie
+    "PL",       # pylint
+    "PYI",      # flake8-pyi
+    "RUF",      # ruff
+    "T20",      # flake8-print
+    "TC",       # flake8-type-checking
+    "UP",       # pyupgrade
+    "W",        # pycodestyle (warning)
 ]
 unfixable = []
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "D100",     # undocumented-public-module
+    "D101",     # undocumented-public-class
+    "D102",     # undocumented-public-method
+    "D103",     # undocumented-public-function
+    "D105",     # undocumented-magic-method
+    "D107",     # undocumented-public-init
+]

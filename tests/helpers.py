@@ -102,7 +102,6 @@ def test_non_generic_compare_to(
     :param equal_value: The value equal to but not the same object as the base value.
     :param greater_values: The values greater than the base value, in ascending order.
     """
-
     # Just type the values as plain IComparable for simplicity
     value_2: IComparable = value
     equal_value_2: IComparable = equal_value
@@ -151,7 +150,6 @@ def test_equals_struct(value: T_IEquatable, equal_value: T_IEquatable, *unequal_
     :param unequal_values: The values not equal to the base value.
     :return:
     """
-
     test_object_equals(value, equal_value, *unequal_values)
     assert value.equals(value)
     assert value.equals(equal_value)

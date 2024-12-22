@@ -382,7 +382,6 @@ class Instant(metaclass=_InstantMeta):
         In most cases applications should use ZonedDateTime to represent a date and time, but this method is useful in
         some situations where an Instant is required, such as time zone testing.
         """
-
         days = LocalDate(year=year, month=month_of_year, day=day_of_month)._days_since_epoch
         nano_of_day = LocalTime(hour=hour_of_day, minute=minute_of_hour, second=second_of_minute).nanosecond_of_day
         return Instant._ctor(days=days, nano_of_day=nano_of_day)

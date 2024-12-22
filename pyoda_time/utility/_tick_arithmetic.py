@@ -14,7 +14,6 @@ class _TickArithmetic:
     def ticks_to_days_and_tick_of_day(ticks: int) -> tuple[int, int]:
         """Cautiously converts a number of ticks (which can have any value) into a number of days and a tick within that
         day."""
-
         from pyoda_time._pyoda_constants import PyodaConstants
 
         if ticks >= 0:
@@ -46,7 +45,6 @@ class _TickArithmetic:
 
         Only call this method from places where there are suitable constraints on the input.
         """
-
         from pyoda_time._pyoda_constants import PyodaConstants
 
         return days * PyodaConstants.TICKS_PER_DAY + tick_of_day

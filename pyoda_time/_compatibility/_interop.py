@@ -19,10 +19,10 @@ def fixup_locale_name(locale_name: str) -> str:
 
 
 def get_locale_name(locale_name: str, canonicalize: bool) -> str:
-    """
+    """Return the ICU local name.
+
     https://github.com/dotnet/runtime/blob/d1747a74705a49700d7c568fdb568704c2bbad58/src/native/libs/System.Globalization.Native/pal_locale.c#L199
     """
-
     # TODO: This is simplified
 
     locale = icu.Locale(locale_name)

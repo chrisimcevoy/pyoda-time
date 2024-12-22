@@ -69,7 +69,6 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the number of seconds is simply multiplied by 1,000 to give the
         number of milliseconds.
         """
-
         return self.__seconds * PyodaConstants.MILLISECONDS_PER_SECOND
 
     @property
@@ -79,7 +78,6 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the number of seconds is simply multiplied by 10,000,000 to give
         the number of ticks.
         """
-
         return self.__seconds * PyodaConstants.TICKS_PER_SECOND
 
     @property
@@ -89,7 +87,6 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the number of seconds is simply multiplied by 1,000,000,000 to
         give the number of nanoseconds.
         """
-
         return self.__seconds * PyodaConstants.NANOSECONDS_PER_SECOND
 
     @staticmethod
@@ -343,7 +340,6 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the given number of milliseconds is simply divided by 1,000 to
         give the number of seconds - any remainder is truncated.
         """
-
         _Preconditions._check_argument_range(
             "milliseconds", milliseconds, cls.__MIN_MILLISECONDS, cls.__MAX_MILLISECONDS
         )
@@ -360,7 +356,6 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the given number of ticks is simply divided
         by 10,000,000 to give the number of seconds - any remainder is truncated.
         """
-
         _Preconditions._check_argument_range("ticks", ticks, cls.__MIN_TICKS, cls.__MAX_TICKS)
         return cls._ctor(seconds=_towards_zero_division(ticks, PyodaConstants.TICKS_PER_SECOND))
 
@@ -375,7 +370,6 @@ class Offset(metaclass=_OffsetMeta):
         Offsets are only accurate to second precision; the given number of nanoseconds is simply divided by
         1,000,000,000 to give the number of seconds - any remainder is truncated towards zero.
         """
-
         _Preconditions._check_argument_range("nanoseconds", nanoseconds, cls.__MIN_NANOSECONDS, cls.__MAX_NANOSECONDS)
         return cls._ctor(seconds=_towards_zero_division(nanoseconds, PyodaConstants.NANOSECONDS_PER_SECOND))
 
@@ -387,7 +381,6 @@ class Offset(metaclass=_OffsetMeta):
         :return: An offset representing the given value.
         :raises ValueError: The specified number of hours is outside the range of [-18, +18].
         """
-
         _Preconditions._check_argument_range("hours", hours, cls.__MIN_HOURS, cls.__MAX_HOURS)
         return cls._ctor(seconds=hours * PyodaConstants.SECONDS_PER_HOUR)
 
@@ -405,7 +398,6 @@ class Offset(metaclass=_OffsetMeta):
         negative. For example, to obtain "three hours and ten minutes behind UTC" you might call
         ``Offset.from_hours_and_minutes(-3, -10)``.
         """
-
         return cls.from_seconds(hours * PyodaConstants.SECONDS_PER_HOUR + minutes * PyodaConstants.SECONDS_PER_MINUTE)
 
     # endregion

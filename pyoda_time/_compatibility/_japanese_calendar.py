@@ -78,7 +78,6 @@ class JapaneseCalendar(Calendar):
         '_' marks the space between the japanese era name, japanese abbreviated era name
             english name, and abbreviated english names.
         """
-
         # See if we need to build it
         if cls.__s_japanese_era_info is None:
             if _GlobalizationMode._use_nls:
