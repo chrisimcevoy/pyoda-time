@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-__version__ = "0.9.3"
+__version__ = "0.10.0"
 
 __all__: list[str] = [
     "AmbiguousTimeError",

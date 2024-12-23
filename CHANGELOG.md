@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.3...v0.10.0) (2024-12-23)
+
+
+### Features
+
+* Implement `OffsetDateTime.with_offset` ([#233](https://github.com/chrisimcevoy/pyoda-time/issues/233)) ([a115b89](https://github.com/chrisimcevoy/pyoda-time/commit/a115b899d5699cf10353e4295bf9f912d3cfdf73))
+
 ## [0.9.3](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.2...v0.9.3) (2024-12-18)
 
 
