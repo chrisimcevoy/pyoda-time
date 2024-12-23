@@ -114,6 +114,40 @@ class OffsetDateTime:
 
         return Instant._from_untrusted_duration(self.__to_elapsed_time_since_epoch())
 
+    def with_offset(self, offset: Offset) -> OffsetDateTime:
+        """Creates a new OffsetDateTime representing the instant in time in the same calendar, but with a different
+        offset. The local date and time is adjusted accordingly.
+
+        :param offset: The new offset to use.
+        :return: The converted OffsetDateTime.
+        """
+        from ._offset_time import OffsetTime
+
+        # TODO: unchecked
+        # Slight change to the normal operation, as it's *just* about plausible that we change day
+        # twice in one direction or the other.
+        days = 0
+        nanos = self.__offset_time.nanosecond_of_day + offset.nanoseconds - self.__offset_time._offset_nanoseconds
+        if nanos >= PyodaConstants.NANOSECONDS_PER_DAY:
+            days += 1
+            nanos -= PyodaConstants.NANOSECONDS_PER_DAY
+            if nanos >= PyodaConstants.NANOSECONDS_PER_DAY:
+                days += 1
+                nanos -= PyodaConstants.NANOSECONDS_PER_DAY
+        elif nanos < 0:
+            days -= 1
+            nanos += PyodaConstants.NANOSECONDS_PER_DAY
+            if nanos < 0:
+                days -= 1
+                nanos += PyodaConstants.NANOSECONDS_PER_DAY
+        return OffsetDateTime._ctor(
+            local_date=self.__local_date if days == 0 else self.__local_date.plus_days(days),
+            offset_time=OffsetTime._ctor(
+                nanosecond_of_day=nanos,
+                offset_seconds=offset.seconds,
+            ),
+        )
+
     def __to_elapsed_time_since_epoch(self) -> Duration:
         # Equivalent to LocalDateTime.ToLocalInstant().Minus(offset)
         days: int = self.__local_date._days_since_epoch
