@@ -37,7 +37,7 @@ class TestSystemClock:
         assert (pyoda_ticks - stdlib_now_ticks) < Duration.from_seconds(1).bcl_compatible_ticks
 
     def test_sanity(self) -> None:
-        minimum_expected = Instant.from_utc(2019, 8, 1, 0, 0)
-        maximum_expected = Instant.from_utc(2025, 1, 1, 0, 0)
+        minimum_expected = Instant.from_utc(2024, 8, 1, 0, 0)
+        maximum_expected = Instant.from_utc(2030, 1, 1, 0, 0)
         now = SystemClock.instance.get_current_instant()
         assert minimum_expected.to_unix_time_ticks() < now.to_unix_time_ticks() < maximum_expected.to_unix_time_ticks()
