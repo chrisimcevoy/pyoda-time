@@ -41,7 +41,7 @@ repos:
         args: ["--in-place", "--config", "./pyproject.toml"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.14.0'
+    rev: 'v1.14.1'
     hooks:
     -   id: mypy
         additional_dependencies: [
