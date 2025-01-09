@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, final
 
-from pyoda_time.utility._csharp_compatibility import _private, _sealed
+from pyoda_time.utility._csharp_compatibility import _sealed
 from pyoda_time.utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 @final
 @_sealed
-@_private
 class SkippedTimeError(ValueError):
     """Exception thrown to indicate that the specified local time doesn't exist in a particular time zone due to
     daylight saving time changes.
