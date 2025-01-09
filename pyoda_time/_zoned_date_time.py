@@ -6,7 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, overload
 
-from .utility._preconditions import _Preconditions
+from pyoda_time._duration import Duration
+from pyoda_time.utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
     from . import (
@@ -76,6 +77,11 @@ class ZonedDateTime:
         self.__zone: DateTimeZone = _Preconditions._check_not_null(zone, "zone")
 
     @property
+    def offset(self) -> Offset:
+        """The offset of the local representation of this value from UTC."""
+        return self.__offset_date_time.offset
+
+    @property
     def zone(self) -> DateTimeZone:
         """Gets the time zone associated with this value.
 
@@ -92,9 +98,17 @@ class ZonedDateTime:
         The returned ``LocalDateTime`` will have the same calendar system and return the same values for each of the
         calendar properties (Year, MonthOfYear and so on), but will not be associated with any particular time zone.
 
-        :return:
+        :return: The local date and time represented by this zoned date and time.
         """
         return self.__offset_date_time.local_date_time
+
+    @property
+    def calendar(self) -> CalendarSystem:
+        """Gets the calendar system associated with this zoned date and time.
+
+        :return: The calendar system associated with this zoned date and time.
+        """
+        return self.__offset_date_time.calendar
 
     @property
     def date(self) -> LocalDate:
@@ -155,6 +169,20 @@ class ZonedDateTime:
         if not isinstance(other, ZonedDateTime):
             return NotImplemented
         return self.__offset_date_time == other.__offset_date_time and self.__zone == other.__zone
+
+    def __add__(self, other: Duration) -> ZonedDateTime:
+        """Returns a new ``ZonedDateTime`` with the time advanced by the given duration.
+
+        Note that due to daylight saving time changes this may not advance the local time by the same amount.
+
+        The returned value retains the calendar system and time zone of ``self``.
+
+        :param other: The duration to add.
+        :return: A new value with the time advanced by the given duration, in the same calendar system and time zone.
+        """
+        if not isinstance(other, Duration):
+            return NotImplemented  # type: ignore[unreachable]
+        return ZonedDateTime(instant=self.to_instant() + other, zone=self.zone, calendar=self.calendar)
 
     # endregion
 

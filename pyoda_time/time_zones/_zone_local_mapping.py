@@ -157,6 +157,24 @@ class ZoneLocalMapping:
             case _:
                 raise RuntimeError("Can't happen")
 
+    def last(self) -> ZonedDateTime:
+        """Returns a ``ZonedDateTime`` which maps to the original ``LocalDateTime`` in the mapped ``DateTimeZone``:
+        either the single result if the mapping is unambiguous, or the later result if the local date/time occurs twice
+        in the time zone due to a time zone offset change such as an autumnal daylight saving transition.
+
+        :raises SkippedTimeError: The local date/time was skipped in the time zone.
+        :return: The unambiguous result of mapping a local date/time in a time zone.
+        """
+        match self.count:
+            case 0:
+                raise SkippedTimeError(self.local_date_time, self.zone)
+            case 1:
+                return self.__build_zoned_date_time(self.early_interval)
+            case 2:
+                return self.__build_zoned_date_time(self.late_interval)
+            case _:
+                raise RuntimeError("Can't happen")
+
     def __build_zoned_date_time(self, interval: ZoneInterval) -> ZonedDateTime:
         return ZonedDateTime._ctor(
             offset_date_time=self.local_date_time.with_offset(interval.wall_offset), zone=self.zone

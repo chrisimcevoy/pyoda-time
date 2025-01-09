@@ -75,6 +75,14 @@ class OffsetDateTime:
         raise TypeError
 
     @property
+    def calendar(self) -> CalendarSystem:
+        """Gets the calendar system associated with this offset date and time.
+
+        :return: The calendar system associated with this offset date and time.
+        """
+        return self.__local_date.calendar
+
+    @property
     def year(self) -> int:
         """Gets the year of this offset date and time.
 
@@ -86,23 +94,55 @@ class OffsetDateTime:
 
     @property
     def nanosecond_of_day(self) -> int:
+        """Gets the nanosecond of this offset date and time within the day, in the range 0 to 86,399,999,999,999
+        inclusive.
+
+        :return: The nanosecond of this offset date and time within the day, in the range 0 to 86,399,999,999,999
+            inclusive.
+        """
         return self.__offset_time.nanosecond_of_day
 
     @property
     def local_date_time(self) -> LocalDateTime:
+        """Returns the local date and time represented within this offset date and time.
+
+        :return: The local date and time represented within this offset date and time.
+        """
         from . import LocalDateTime
 
         return LocalDateTime._ctor(local_date=self.date, local_time=self.time_of_day)
 
     @property
     def date(self) -> LocalDate:
+        """Gets the local date represented by this offset date and time.
+
+        The returned `LocalDate` will have the same calendar system and return the same values for each of the
+        date-based calendar properties (Year, MonthOfYear and so on), but will not have any offset information.
+
+        :return: The local date represented by this offset date and time.
+        """
         return self.__local_date
 
     @property
     def time_of_day(self) -> LocalTime:
+        """Gets the time portion of this offset date and time.
+
+        The returned `LocalTime` will return the same values for each of the time-based properties (Hour, Minute and
+        so on), but will not have any offset information.
+
+        :return: The time portion of this offset date and time.
+        """
         from . import LocalTime
 
         return LocalTime._ctor(nanoseconds=self.nanosecond_of_day)
+
+    @property
+    def offset(self) -> Offset:
+        """Gets the offset from UTC.
+
+        :return: The offset from UTC.
+        """
+        return self.__offset_time.offset
 
     def to_instant(self) -> Instant:
         """Converts this offset date and time to an instant in time by subtracting the offset from the local date and
