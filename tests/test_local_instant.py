@@ -25,7 +25,7 @@ class TestLocalInstant:
     def test_minus_offset_zero_is_neutral_element(self) -> None:
         sample_instant = Instant._ctor(days=1, nano_of_day=23456)
         sample_local_instant = _LocalInstant._ctor(days=1, nano_of_day=23456)
-        assert sample_local_instant.minus(Offset.zero) == sample_instant
+        assert sample_local_instant._minus(Offset.zero) == sample_instant
         assert sample_local_instant._minus_zero_offset() == sample_instant
 
     @pytest.mark.parametrize(

@@ -111,7 +111,7 @@ class _LocalInstant:
 
         return Instant._from_trusted_duration(self.__duration)
 
-    def minus(self, offset: Offset) -> Instant:
+    def _minus(self, offset: Offset) -> Instant:
         """Subtracts the given time zone offset from this local instant, to give an ``Instant``.
 
         This would normally be implemented as an operator, but as the corresponding "plus" operation
@@ -137,7 +137,7 @@ class _LocalInstant:
         days = self.__duration._floor_days
         # If we can do the arithmetic safely, do so.
         if Instant._MIN_DAYS < days < Instant._MAX_DAYS:
-            return self.minus(offset)
+            return self._minus(offset)
         # Handle BeforeMinValue and BeforeMaxValue simply.
         if days < Instant._MIN_DAYS:
             return Instant._before_min_value()
