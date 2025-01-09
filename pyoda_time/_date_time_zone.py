@@ -243,7 +243,7 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
         # If the local interval occurs before the zone interval we're looking at starts,
         # we need to find the earlier one; otherwise this interval must come after the gap, and
         # it's therefore the one we want.
-        if local_instant.minus(guess_interval.wall_offset) < guess_interval._raw_start:
+        if local_instant._minus(guess_interval.wall_offset) < guess_interval._raw_start:
             return self.get_zone_interval(guess_interval.start - Duration.epsilon)
         return guess_interval
 
@@ -252,7 +252,7 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
         guess_interval = self.get_zone_interval(guess)
         # If the local interval occurs before the zone interval we're looking at starts,
         # it's the one we're looking for. Otherwise, we need to find the next interval.
-        if local_instant.minus(guess_interval.wall_offset) < guess_interval._raw_start:
+        if local_instant._minus(guess_interval.wall_offset) < guess_interval._raw_start:
             return guess_interval
         else:
             # Will definitely be valid - there can't be a gap after an infinite interval.

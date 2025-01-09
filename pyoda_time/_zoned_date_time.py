@@ -57,7 +57,7 @@ class ZonedDateTime:
 
         offset_date_time: OffsetDateTime
         if local_date_time is not None and offset is not None:
-            candidate_instant = local_date_time._to_local_instant().minus(offset)
+            candidate_instant = local_date_time._to_local_instant()._minus(offset)
             correct_offset: Offset = zone.get_utc_offset(candidate_instant)
             if correct_offset != offset:
                 raise ValueError(

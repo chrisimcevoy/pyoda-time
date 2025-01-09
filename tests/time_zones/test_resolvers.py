@@ -74,7 +74,7 @@ class TestResolvers:
         )
 
         gap = mapping.late_interval.wall_offset.ticks - mapping.early_interval.wall_offset.ticks
-        expected = TIME_IN_TRANSITION._to_local_instant().minus(mapping.late_interval.wall_offset).plus_ticks(gap)
+        expected = TIME_IN_TRANSITION._to_local_instant()._minus(mapping.late_interval.wall_offset).plus_ticks(gap)
         assert resolved.to_instant() == expected
         assert resolved.offset == mapping.late_interval.wall_offset
         assert resolved.zone == GAP_ZONE
