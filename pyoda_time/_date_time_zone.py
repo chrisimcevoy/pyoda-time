@@ -6,18 +6,26 @@ from __future__ import annotations
 
 import abc
 import threading
-from typing import TYPE_CHECKING, Final, _ProtocolMeta
+from typing import TYPE_CHECKING, Final, _ProtocolMeta, overload
 
 from ._duration import Duration
+from ._instant import Instant
 from ._offset import Offset
+from ._offset_date_time import OffsetDateTime
 from ._pyoda_constants import PyodaConstants
+from ._skipped_time_error import SkippedTimeError
+from ._zoned_date_time import ZonedDateTime
+from .time_zones import Resolvers, ZoneLocalMappingResolver
 from .time_zones._i_zone_interval_map import _IZoneIntervalMap
 from .time_zones._zone_local_mapping import ZoneLocalMapping
 from .utility._csharp_compatibility import _csharp_modulo, _towards_zero_division
 from .utility._preconditions import _Preconditions
 
 if TYPE_CHECKING:
-    from ._instant import Instant
+    from collections.abc import Generator
+
+    from ._interval import Interval
+    from ._local_date import LocalDate
     from ._local_date_time import LocalDateTime
     from ._local_instant import _LocalInstant
     from .time_zones._zone_interval import ZoneInterval
@@ -197,6 +205,92 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
 
     # region Conversion between local dates/times and ZonedDateTime
 
+    def at_start_of_day(self, date: LocalDate) -> ZonedDateTime:
+        """Returns the earliest valid `ZonedDateTime` with the given local date.
+
+        If midnight exists unambiguously on the given date, it is returned.
+        If the given date has an ambiguous start time (e.g. the clocks go back from 1am to midnight)
+        then the earlier ZonedDateTime is returned. If the given date has no midnight (e.g. the clocks
+        go forward from midnight to 1am) then the earliest valid value is returned; this will be the instant
+        of the transition.
+
+        :param date: The local date to map in this time zone.
+        :raises SkippedTimeError: The entire day was skipped due to a very large time zone transition. (This is
+            extremely rare.)
+        :return: The `ZonedDateTime` representing the earliest time in the given date, in this time zone.
+        """
+        midnight: LocalDateTime = date.at_midnight()
+        mapping = self.map_local(local_date_time=midnight)
+        match mapping.count:
+            # Midnight doesn't exist. Maybe we just skip to 1am (or whatever), or maybe the whole day is missed.
+            case 0:
+                interval = mapping.late_interval
+                # Safe to use Start, as it can't extend to the start of time.
+                offset_date_time = OffsetDateTime._ctor(
+                    instant=interval.start, offset=interval.wall_offset, calendar=date.calendar
+                )
+                # It's possible that the entire day is skipped. For example, Samoa skipped December 30th 2011.
+                # We know the two values are in the same calendar here, so we just need to check the YearMonthDay.
+                if offset_date_time._year_month_day != date._year_month_day:
+                    raise SkippedTimeError(local_date_time=midnight, zone=self)
+                return ZonedDateTime._ctor(offset_date_time=offset_date_time, zone=self)
+            # Unambiguous or occurs twice, we can just use the offset from the earlier interval.
+            case 1 | 2:
+                return ZonedDateTime._ctor(
+                    offset_date_time=midnight.with_offset(mapping.early_interval.wall_offset), zone=self
+                )
+            case _:
+                raise RuntimeError("This won't happen.")
+
+    def resolve_local(self, local_date_time: LocalDateTime, resolver: ZoneLocalMappingResolver) -> ZonedDateTime:
+        """Maps the given ``LocalDateTime`` to the corresponding ``ZonedDateTime``, following the given
+        ``ZoneLocalMappingResolver`` to handle ambiguity and skipped times.
+
+        This is a convenience method for calling ``map_local`` and passing the result to the resolver.
+        Common options for resolvers are provided in the static ``Resolvers`` class.
+
+        See ``at_strictly`` and ``at_leniently`` for alternative ways to map a local time to a specific instant.
+
+        :param local_date_time: The local date and time to map in this time zone.
+        :param resolver: The resolver to apply to the mapping.
+        :return: The result of resolving the mapping.
+        """
+        _Preconditions._check_not_null(resolver, "resolver")
+        return resolver(self.map_local(local_date_time=local_date_time))
+
+    def at_strictly(self, local_date_time: LocalDateTime) -> ZonedDateTime:
+        """Maps the given ``LocalDateTime`` to the corresponding ``ZonedDateTime``, if and only if that mapping is
+        unambiguous in this time zone.  Otherwise, ``SkippedTimeError`` or ``AmbiguousTimeException`` is thrown,
+        depending on whether the mapping is ambiguous or the local date/time is skipped entirely.
+
+        See ``at_leniently`` and ``resolve_local(LocalDateTime, ZoneLocalMappingResolver)`` for alternative ways to map
+        a local time to a specific instant.
+
+        :param local_date_time: The local date and time to map into this time zone.
+        :raises SkippedTimeError: The given local date/time is skipped in this time zone.
+        :raises AmbiguousTimeError: The given local date/time is ambiguous in this time zone.
+        :return: The unambiguous matching ``ZonedDateTime`` if it exists.
+        """
+        return self.resolve_local(
+            local_date_time=local_date_time,
+            resolver=Resolvers.strict_resolver,
+        )
+
+    def at_leniently(self, local_date_time: LocalDateTime) -> ZonedDateTime:
+        """Maps the given ``LocalDateTime`` to the corresponding ``ZonedDateTime`` in a lenient manner.
+
+        Ambiguous values map to the earlier of the alternatives, and "skipped" values are shifted forward by the
+        duration of the "gap".
+
+        See ``at_strictly`` and ``resolve_local(LocalDateTime, ZoneLocalMappingResolver) for alternative ways to map a
+        local time to a specific instant.
+
+        :param local_date_time: The local date/time to map.
+        :return: The unambiguous mapping if there is one, the earlier result if the mapping is ambiguous, or the
+        forward-shifted value if the given local date/time is skipped.
+        """
+        return self.resolve_local(local_date_time=local_date_time, resolver=Resolvers.lenient_resolver)
+
     # endregion
 
     def __get_earlier_matching_interval(
@@ -287,3 +381,39 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
             _towards_zero_division(-cls.__FIXED_ZONE_CACHE_MINIMUM_SECONDS, cls.__FIXED_ZONE_CACHE_GRANULARITY_SECONDS)
         ] = cls.utc
         return ret
+
+    @overload
+    def get_zone_intervals(self, *, start: Instant, end: Instant) -> Generator[ZoneInterval]: ...
+
+    @overload
+    def get_zone_intervals(self, *, interval: Interval) -> Generator[ZoneInterval]: ...
+
+    # TODO:
+    #  @overload
+    #  def get_zone_intervals(self, *, interval: Interval, options: ZoneEqualityComparer.Options) -> Generator[ZoneInterval]:  # noqa: E501
+    #      ...
+
+    def get_zone_intervals(
+        self,
+        *,
+        interval: Interval | None = None,
+        start: Instant | None = None,
+        end: Instant | None = None,
+    ) -> Generator[ZoneInterval]:
+        if start is not None and end is not None and interval is None:
+            from ._interval import Interval
+
+            interval = Interval(start=start, end=end)
+        if interval is not None:
+
+            def gen() -> Generator[ZoneInterval]:
+                current = interval.start if interval.has_start else Instant.min_value
+                end = interval._raw_end
+                while current < end:
+                    zone_interval = self.get_zone_interval(current)
+                    yield zone_interval
+                    # If this is the end of time, this will just fail on the next comparison.
+                    current = zone_interval._raw_end
+
+            return gen()
+        raise TypeError("Called with incorrect arguments")

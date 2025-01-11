@@ -17,7 +17,7 @@ from .utility._preconditions import _Preconditions
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
-    from . import LocalDateTime, LocalTime, Period, YearMonth
+    from . import DateTimeZone, LocalDateTime, LocalTime, Period, YearMonth, ZonedDateTime
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
 
@@ -355,6 +355,20 @@ class LocalDate(metaclass=_LocalDateMeta):
         This avoids duplicate calendar checks.
         """
         return self.calendar._compare(self._year_month_day, other._year_month_day)
+
+    def at_start_of_day_in_zone(self, zone: DateTimeZone) -> ZonedDateTime:
+        """Resolves this local date into a ``ZonedDateTime`` in the given time zone representing the start of this date
+        in the given zone.
+
+        This is a convenience method for calling ``DateTimeZone.at_start_of_day(LocalDate)``.
+
+        :param zone: The time zone to map this local date into
+        :raises SkippedTimeError: The entire day was skipped due to a very large time zone transition.
+        (This is extremely rare.)
+        :return: The ``ZonedDateTime`` representing the earliest time on this date, in the given time zone.
+        """
+        _Preconditions._check_not_null(zone, "zone")
+        return zone.at_start_of_day(self)
 
     def with_calendar(self, calendar: CalendarSystem) -> LocalDate:
         """Creates a new LocalDate representing the same physical date, but in a different calendar.

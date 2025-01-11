@@ -20,14 +20,9 @@ if TYPE_CHECKING:
     from ._delegates import AmbiguousTimeResolver, SkippedTimeResolver, ZoneLocalMappingResolver
 
 
-class Resolvers:
-    """Commonly-used implementations of the delegates used in resolving a ``LocalDateTime`` to a ``ZonedDateTime``, and
-    a method to combine two "partial" resolvers into a full one.
-
-    This class contains predefined implementations of ``ZoneLocalMappingResolver``, ``AmbiguousTimeResolver``, and
-    ``SkippedTimeResolver``, along with ``CreateMappingResolver``, which produces a ``ZoneLocalMappingResolver``
-    from instances of the other two.
-    """
+class __ResolversMeta(type):
+    __strict_resolver: ZoneLocalMappingResolver | None = None
+    __lenient_resolver: ZoneLocalMappingResolver | None = None
 
     @staticmethod
     def return_earlier(earlier: ZonedDateTime, later: ZonedDateTime) -> ZonedDateTime:
@@ -109,6 +104,41 @@ class Resolvers:
         _Preconditions._check_not_null(interval_after, "interval_after")
         raise SkippedTimeError(local_date_time, zone)
 
+    @property
+    def strict_resolver(self) -> ZoneLocalMappingResolver:
+        """A ``ZoneLocalMappingResolver`` which only ever succeeds in the (usual) case where the result of the mapping
+        is unambiguous.
+
+        If the mapping is ambiguous or skipped, this raises ``SkippedTimeError`` or ``AmbiguousTimeError`` as
+        appropriate.
+
+        This resolver combines ``throw_when_ambiguous`` and ``throw_when_skipped``.
+
+        :return: A ``ZoneLocalMappingResolver`` which only ever succeeds in the (usual) case where the result of the
+            mapping is unambiguous.
+        """
+        if (strict_resolver := self.__strict_resolver) is None:
+            strict_resolver = self.__strict_resolver = self.create_mapping_resolver(
+                ambiguous_time_resolver=self.throw_when_ambiguous, skipped_time_resolver=self.throw_when_skipped
+            )
+        return strict_resolver
+
+    @property
+    def lenient_resolver(self) -> ZoneLocalMappingResolver:
+        """A ``ZoneLocalMappingResolver`` which never raises an exception due to ambiguity or skipped time.
+
+        Ambiguity is handled by returning the earlier occurrence, and skipped times are shifted forward by the duration
+        of the gap. This resolver combines ``return_earlier`` and ``return_forward_shifted``.
+
+        :return: A ``ZoneLocalMappingResolver`` which never throws an exception due to ambiguity or skipped time.
+        """
+        if (lenient_resolver := self.__lenient_resolver) is None:
+            lenient_resolver = self.__lenient_resolver = self.create_mapping_resolver(
+                ambiguous_time_resolver=self.return_earlier,
+                skipped_time_resolver=self.return_forward_shifted,
+            )
+        return lenient_resolver
+
     @staticmethod
     def create_mapping_resolver(
         ambiguous_time_resolver: AmbiguousTimeResolver, skipped_time_resolver: SkippedTimeResolver
@@ -140,3 +170,13 @@ class Resolvers:
                     raise ValueError("Mapping has count outside range 0-2; should not happen.")
 
         return func
+
+
+class Resolvers(metaclass=__ResolversMeta):
+    """Commonly-used implementations of the delegates used in resolving a ``LocalDateTime`` to a ``ZonedDateTime``, and
+    a method to combine two "partial" resolvers into a full one.
+
+    This class contains predefined implementations of ``ZoneLocalMappingResolver``, ``AmbiguousTimeResolver``, and
+    ``SkippedTimeResolver``, along with ``CreateMappingResolver``, which produces a ``ZoneLocalMappingResolver``
+    from instances of the other two.
+    """
