@@ -111,9 +111,9 @@ class PatternTestData(Generic[T]):
         assert not result.success, "Expected parsing to fail, but it succeeded"
         with pytest.raises(UnparsableValueError) as e:
             result.get_value_or_throw()
-        assert str(e.value).startswith(
-            expected_message
-        ), f"Expected message to start with {expected_message}; was actually {e.value!s}"
+        assert str(e.value).startswith(expected_message), (
+            f"Expected message to start with {expected_message}; was actually {e.value!s}"
+        )
 
     # TODO: def __repr__() & delete parametrize ids= in tests
 

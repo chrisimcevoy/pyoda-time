@@ -8,12 +8,13 @@ import datetime
 import functools
 from typing import TYPE_CHECKING, Final, Self, cast, final, overload
 
+from ._calendar_system import CalendarSystem
 from ._duration import Duration
+from ._offset_date_time import OffsetDateTime
 from ._pyoda_constants import PyodaConstants
 
 if TYPE_CHECKING:
     from . import (
-        CalendarSystem,
         DateTimeZone,
         Offset,
         ZonedDateTime,
@@ -486,15 +487,6 @@ class Instant(metaclass=_InstantMeta):
 
     # endregion
 
-    def in_utc(self) -> ZonedDateTime:
-        from . import DateTimeZone, LocalDate, OffsetDateTime, OffsetTime, ZonedDateTime
-
-        offset_date_time = OffsetDateTime._ctor(
-            local_date=LocalDate._ctor(days_since_epoch=self.__duration._floor_days),
-            offset_time=OffsetTime._ctor(nanosecond_of_day_zero_offset=self.__duration._nanosecond_of_floor_day),
-        )
-        return ZonedDateTime._ctor(offset_date_time=offset_date_time, zone=DateTimeZone.utc)
-
     def __repr__(self) -> str:
         from pyoda_time._compatibility._culture_info import CultureInfo
         from pyoda_time.text import InstantPattern
@@ -506,3 +498,30 @@ class Instant(metaclass=_InstantMeta):
         from pyoda_time.text import InstantPattern
 
         return InstantPattern._bcl_support.format(self, format_spec, CultureInfo.current_culture)
+
+    def in_utc(self) -> ZonedDateTime:
+        """Returns the ``ZonedDateTime`` representing the same point in time as this instant, in the UTC time zone and
+        ISO-8601 calendar. This is a shortcut for calling ``in_zone(DateTimeZone)`` with an argument of
+        ``DateTimeZone.utc``.
+
+        :return: A ``ZonedDateTime`` for the same instant, in the UTC time zone and the ISO-8601 calendar.
+        """
+        from . import DateTimeZone, LocalDate, OffsetDateTime, OffsetTime, ZonedDateTime
+
+        # Bypass any determination of offset and arithmetic, as we know the offset is zero.
+        offset_date_time = OffsetDateTime._ctor(
+            local_date=LocalDate._ctor(days_since_epoch=self.__duration._floor_days),
+            offset_time=OffsetTime._ctor(nanosecond_of_day_zero_offset=self.__duration._nanosecond_of_floor_day),
+        )
+        return ZonedDateTime._ctor(offset_date_time=offset_date_time, zone=DateTimeZone.utc)
+
+    def with_offset(self, offset: Offset, calendar: CalendarSystem = CalendarSystem.iso) -> OffsetDateTime:
+        """Returns the ``OffsetDateTime`` representing the same point in time as this instant, with the specified UTC
+        offset and calendar system (defaulting to ``CalendarSystem.iso``).
+
+        :param offset: The offset from UTC with which to represent this instant.
+        :param calendar: The calendar system in which to represent this instant. (defaults to ``CalendarSystem.iso``).
+        :return: An ``OffsetDateTime`` for the same instant, with the given offset and calendar.
+        """
+        _Preconditions._check_not_null(calendar, "calendar")
+        return OffsetDateTime._ctor(instant=self, offset=offset, calendar=calendar)

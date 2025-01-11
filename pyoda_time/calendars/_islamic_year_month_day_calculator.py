@@ -165,4 +165,4 @@ class _IslamicYearMonthDayCalculator(_RegularYearMonthDayCalculator):
                 return cls.__DAYS_AT_CIVIL_EPOCH
             case _:
                 # TODO: ArgumentOutOfRangeException?
-                raise ValueError(f"Epoch {getattr(epoch, "name", epoch)} not recognised")
+                raise ValueError(f"Epoch {getattr(epoch, 'name', epoch)} not recognised")

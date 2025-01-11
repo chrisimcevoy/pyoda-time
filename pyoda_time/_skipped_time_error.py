@@ -56,7 +56,7 @@ class SkippedTimeError(ValueError):
         :param zone: The time zone in which the local date/time does not exist.
         """
         super().__init__(
-            f"Local time {local_date_time} is invalid in time zone {_Preconditions._check_not_null(zone, "zone").id}"
+            f"Local time {local_date_time} is invalid in time zone {_Preconditions._check_not_null(zone, 'zone').id}"
         )
         self.__local_date_time = local_date_time
         self.__zone = zone

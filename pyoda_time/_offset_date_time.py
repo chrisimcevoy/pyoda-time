@@ -10,10 +10,11 @@ from ._duration import Duration
 from ._pyoda_constants import PyodaConstants
 
 if TYPE_CHECKING:
-    from . import LocalDate, LocalDateTime, LocalTime, OffsetTime
+    from . import IsoDayOfWeek, LocalDate, LocalDateTime, LocalTime, OffsetTime
     from ._calendar_system import CalendarSystem
     from ._instant import Instant
     from ._offset import Offset
+    from ._year_month_day import _YearMonthDay
 
 
 __all__ = ["OffsetDateTime"]
@@ -91,6 +92,66 @@ class OffsetDateTime:
         :return: The year of this offset date and time.
         """
         return self.__local_date.year
+
+    @property
+    def month(self) -> int:
+        """Gets the month of this offset date and time within the year.
+
+        :return: The month of this offset date and time within the year.
+        """
+        return self.__local_date.month
+
+    @property
+    def day(self) -> int:
+        """Gets the day of this offset date and time within the month.
+
+        :return: The day of this offset date and time within the month.
+        """
+        return self.__local_date.day
+
+    @property
+    def _year_month_day(self) -> _YearMonthDay:
+        return self.__local_date._year_month_day
+
+    @property
+    def day_of_week(self) -> IsoDayOfWeek:
+        """Gets the week day of this offset date and time expressed as an ``IsoDayOfWeek``.
+
+        :return: The week day of this offset date and time expressed as an ``IsoDayOfWeek``.
+        """
+        return self.__local_date.day_of_week
+
+    @property
+    def day_of_year(self) -> int:
+        """Gets the day of this offset date and time within the year.
+
+        :return: The day of this offset date and time within the year.
+        """
+        return self.__local_date.day_of_year
+
+    @property
+    def hour(self) -> int:
+        """Gets the hour of day of this offset date and time, in the range 0 to 23 inclusive.
+
+        :return: The hour of day of this offset date and time, in the range 0 to 23 inclusive.
+        """
+        return self.__offset_time.hour
+
+    @property
+    def minute(self) -> int:
+        """Gets the minute of this offset date and time, in the range 0 to 59 inclusive.
+
+        :return: The minute of this offset date and time, in the range 0 to 59 inclusive.
+        """
+        return self.__offset_time.minute
+
+    @property
+    def second(self) -> int:
+        """Gets the second of this offset date and time within the minute, in the range 0 to 59 inclusive.
+
+        :return: The second of this offset date and time within the minute, in the range 0 to 59 inclusive.
+        """
+        return self.__offset_time.second
 
     @property
     def nanosecond_of_day(self) -> int:

@@ -651,9 +651,9 @@ class _CultureData(metaclass=_CultureDataMeta):
         if _GlobalizationMode._invariant:
             return _CalendarData._invariant
 
-        assert (
-            0 < calendar_id.value <= _CalendarId.LAST_CALENDAR.value
-        ), f"Expect calendarId to be in a valid range, not {calendar_id}"
+        assert 0 < calendar_id.value <= _CalendarId.LAST_CALENDAR.value, (
+            f"Expect calendarId to be in a valid range, not {calendar_id}"
+        )
 
         # arrays are 0 based, calendarIds are 1 based
         calendar_index = calendar_id.value - 1

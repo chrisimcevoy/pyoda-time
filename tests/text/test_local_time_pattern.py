@@ -639,8 +639,8 @@ class TestLocalTimePattern(PatternTestBase[LocalTime]):
             # We'll never do anything "special" with non-ascii characters anyway,
             # so we don't mind if they're not quoted.
             elif ord(cursor.current) < ord("\u0080"):
-                assert (
-                    cursor.current in EXPECTED_CHARACTERS
-                ), f"Pattern '{pattern}' contains unquoted, unexpected characters"
+                assert cursor.current in EXPECTED_CHARACTERS, (
+                    f"Pattern '{pattern}' contains unquoted, unexpected characters"
+                )
         # Check that the pattern parses
         LocalTimePattern.create(pattern, culture)

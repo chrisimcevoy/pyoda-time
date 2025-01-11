@@ -233,7 +233,7 @@ class ZoneInterval:
             self.savings,
         )
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         # TODO: Only the simplest case in the default culture is covered (kind of)
         return f"{self.name}: [{self.__raw_start}, {self._raw_end}) {self.wall_offset} ({self.savings})"
 

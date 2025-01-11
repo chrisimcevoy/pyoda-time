@@ -168,9 +168,9 @@ class TestOffsetOperators:
     def test_operator_plus_non_zero(self) -> None:
         assert THREE_HOURS + THREE_HOURS == helpers.create_positive_offset(6, 0, 0), "THREE_HOURS + THREE_HOURS"
         assert THREE_HOURS + NEGATIVE_THREE_HOURS == Offset.zero, "THREE_HOURS + (-THREE_HOURS)"
-        assert NEGATIVE_TWELVE_HOURS + THREE_HOURS == helpers.create_negative_offset(
-            9, 0, 0
-        ), "-TWELVE_HOURS + THREE_HOURS"
+        assert NEGATIVE_TWELVE_HOURS + THREE_HOURS == helpers.create_negative_offset(9, 0, 0), (
+            "-TWELVE_HOURS + THREE_HOURS"
+        )
 
     # Static method equivalents
 
@@ -180,13 +180,13 @@ class TestOffsetOperators:
         assert Offset.add(Offset.zero, THREE_HOURS) == helpers.create_positive_offset(3, 0, 0), "0 + THREE_HOURS"
 
     def test_method_add_non_zero(self) -> None:
-        assert Offset.add(THREE_HOURS, THREE_HOURS) == helpers.create_positive_offset(
-            6, 0, 0
-        ), "THREE_HOURS + THREE_HOURS"
+        assert Offset.add(THREE_HOURS, THREE_HOURS) == helpers.create_positive_offset(6, 0, 0), (
+            "THREE_HOURS + THREE_HOURS"
+        )
         assert Offset.add(THREE_HOURS, NEGATIVE_THREE_HOURS) == Offset.zero, "THREE_HOURS + (-THREE_HOURS)"
-        assert Offset.add(NEGATIVE_TWELVE_HOURS, THREE_HOURS) == helpers.create_negative_offset(
-            9, 0, 0
-        ), "-TWELVE_HOURS + THREE_HOURS"
+        assert Offset.add(NEGATIVE_TWELVE_HOURS, THREE_HOURS) == helpers.create_negative_offset(9, 0, 0), (
+            "-TWELVE_HOURS + THREE_HOURS"
+        )
 
     # Instance method equivalents
 
@@ -198,9 +198,9 @@ class TestOffsetOperators:
     def test_method_plus_non_zero(self) -> None:
         assert THREE_HOURS.plus(THREE_HOURS) == helpers.create_positive_offset(6, 0, 0), "THREE_HOURS + THREE_HOURS"
         assert THREE_HOURS.plus(NEGATIVE_THREE_HOURS) == Offset.zero, "THREE_HOURS + (-THREE_HOURS)"
-        assert NEGATIVE_TWELVE_HOURS.plus(THREE_HOURS) == helpers.create_negative_offset(
-            9, 0, 0
-        ), "-TWELVE_HOURS + THREE_HOURS"
+        assert NEGATIVE_TWELVE_HOURS.plus(THREE_HOURS) == helpers.create_negative_offset(9, 0, 0), (
+            "-TWELVE_HOURS + THREE_HOURS"
+        )
 
     # endregion
 
@@ -213,12 +213,12 @@ class TestOffsetOperators:
 
     def test_operator_minus_non_zero(self) -> None:
         assert THREE_HOURS - THREE_HOURS == Offset.zero, "THREE_HOURS - THREE_HOURS"
-        assert THREE_HOURS - NEGATIVE_THREE_HOURS == helpers.create_positive_offset(
-            6, 0, 0
-        ), "THREE_HOURS - (-THREE_HOURS)"
-        assert NEGATIVE_TWELVE_HOURS - THREE_HOURS == helpers.create_negative_offset(
-            15, 0, 0
-        ), "-TWELVE_HOURS - THREE_HOURS"
+        assert THREE_HOURS - NEGATIVE_THREE_HOURS == helpers.create_positive_offset(6, 0, 0), (
+            "THREE_HOURS - (-THREE_HOURS)"
+        )
+        assert NEGATIVE_TWELVE_HOURS - THREE_HOURS == helpers.create_negative_offset(15, 0, 0), (
+            "-TWELVE_HOURS - THREE_HOURS"
+        )
 
     # Static method equivalents
 
@@ -229,12 +229,12 @@ class TestOffsetOperators:
 
     def test_subtract_non_zero(self) -> None:
         assert Offset.subtract(THREE_HOURS, THREE_HOURS) == Offset.zero, "THREE_HOURS - THREE_HOURS"
-        assert Offset.subtract(THREE_HOURS, NEGATIVE_THREE_HOURS) == helpers.create_positive_offset(
-            6, 0, 0
-        ), "THREE_HOURS - (-THREE_HOURS)"
-        assert Offset.subtract(NEGATIVE_TWELVE_HOURS, THREE_HOURS) == helpers.create_negative_offset(
-            15, 0, 0
-        ), "-TWELVE_HOURS - THREE_HOURS"
+        assert Offset.subtract(THREE_HOURS, NEGATIVE_THREE_HOURS) == helpers.create_positive_offset(6, 0, 0), (
+            "THREE_HOURS - (-THREE_HOURS)"
+        )
+        assert Offset.subtract(NEGATIVE_TWELVE_HOURS, THREE_HOURS) == helpers.create_negative_offset(15, 0, 0), (
+            "-TWELVE_HOURS - THREE_HOURS"
+        )
 
     # Instance method equivalents
 
@@ -245,11 +245,11 @@ class TestOffsetOperators:
 
     def test_minus_non_zero(self) -> None:
         assert THREE_HOURS.minus(THREE_HOURS) == Offset.zero, "THREE_HOURS - THREE_HOURS"
-        assert THREE_HOURS.minus(NEGATIVE_THREE_HOURS) == helpers.create_positive_offset(
-            6, 0, 0
-        ), "THREE_HOURS - (-THREE_HOURS)"
-        assert NEGATIVE_TWELVE_HOURS.minus(THREE_HOURS) == helpers.create_negative_offset(
-            15, 0, 0
-        ), "-TWELVE_HOURS - THREE_HOURS"
+        assert THREE_HOURS.minus(NEGATIVE_THREE_HOURS) == helpers.create_positive_offset(6, 0, 0), (
+            "THREE_HOURS - (-THREE_HOURS)"
+        )
+        assert NEGATIVE_TWELVE_HOURS.minus(THREE_HOURS) == helpers.create_negative_offset(15, 0, 0), (
+            "-TWELVE_HOURS - THREE_HOURS"
+        )
 
     # endregion
