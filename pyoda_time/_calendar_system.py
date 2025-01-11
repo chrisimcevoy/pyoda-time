@@ -772,5 +772,5 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
                 )
             case _:
                 raise RuntimeError(
-                    f"CalendarOrdinal '{getattr(ordinal, "name", ordinal)}' not mapped to CalendarSystem."
+                    f"CalendarOrdinal '{getattr(ordinal, 'name', ordinal)}' not mapped to CalendarSystem."
                 )

@@ -40,9 +40,9 @@ class TestUmAlQuraYearMonthDayCalculator:
         for year in range(calculator._min_year, calculator._max_year + 1):
             day_of_year = 1
             for month in range(1, 13):
-                assert (
-                    calculator._get_day_of_year(_YearMonthDay._ctor(year=year, month=month, day=1)) == day_of_year
-                ), f"{year=}, {month=}"
+                assert calculator._get_day_of_year(_YearMonthDay._ctor(year=year, month=month, day=1)) == day_of_year, (
+                    f"{year=}, {month=}"
+                )
                 day_of_year += calculator._get_days_in_month(year, month)
 
     def test_get_year_month_day_invalid_value_for_coverage(self) -> None:

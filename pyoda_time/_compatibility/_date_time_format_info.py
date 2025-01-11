@@ -530,9 +530,9 @@ class DateTimeFormatInfo(metaclass=_CombinedMeta):
                 self.__m_genitive_abbreviated_month_names = self._culture_data._abbreviated_genitive_month_names(
                     self.calendar._id
                 )
-                assert (
-                    len(self.__m_genitive_abbreviated_month_names) == 13
-                ), "Expected 13 abbreviated genitive month names in a year"
+                assert len(self.__m_genitive_abbreviated_month_names) == 13, (
+                    "Expected 13 abbreviated genitive month names in a year"
+                )
             return self.__m_genitive_abbreviated_month_names
 
         if self.__genitive_month_names is None:
