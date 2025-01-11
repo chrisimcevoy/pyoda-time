@@ -38,7 +38,7 @@ class TestDateTimeZone:
         assert zone1.max_offset == offset
         assert zone1.min_offset == offset
 
-    def for_offset_uncached_example_outside_cache_range(self) -> None:
+    def test_for_offset_uncached_example_outside_cache_range(self) -> None:
         offset = Offset.from_hours(-14)
         zone1 = DateTimeZone.for_offset(offset)
         zone2 = DateTimeZone.for_offset(offset)
