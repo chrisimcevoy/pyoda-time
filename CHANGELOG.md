@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.3...v0.10.0) (2025-01-12)
+
+
+### Features
+
+* Implement `DateTimeZone` ([#243](https://github.com/chrisimcevoy/pyoda-time/issues/243)) ([78f3c94](https://github.com/chrisimcevoy/pyoda-time/commit/78f3c9481d0ed137035294fdb9c8eecb276f8cbe))
+* Implement `OffsetDateTime.with_offset` ([#233](https://github.com/chrisimcevoy/pyoda-time/issues/233)) ([a115b89](https://github.com/chrisimcevoy/pyoda-time/commit/a115b899d5699cf10353e4295bf9f912d3cfdf73))
+* implement resolvers ([#240](https://github.com/chrisimcevoy/pyoda-time/issues/240)) ([c1b4452](https://github.com/chrisimcevoy/pyoda-time/commit/c1b445256d98db34247d272d8b5e4364f3115f44))
+
+
+### Bug Fixes
+
+* `LocalInstant.Minus()` is internal ([#241](https://github.com/chrisimcevoy/pyoda-time/issues/241)) ([090452a](https://github.com/chrisimcevoy/pyoda-time/commit/090452aaa8baff574b66a89170d6c591de7aca48))
+
+
+### Documentation
+
+* Add examples to the quick start in README.md ([#244](https://github.com/chrisimcevoy/pyoda-time/issues/244)) ([7c97e3d](https://github.com/chrisimcevoy/pyoda-time/commit/7c97e3d5b4300fb525d20257d8b649cdc14dcaeb))
+
 ## [0.9.3](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.2...v0.9.3) (2024-12-18)
 
 
