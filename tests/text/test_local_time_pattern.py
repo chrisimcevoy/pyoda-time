@@ -206,12 +206,6 @@ FORMAT_ONLY_DATA: Final[list[Data]] = [
     Data(LocalTime(14, 15, 16), culture=Cultures.invariant, text="14:15", pattern="t"),
 ]
 
-# TODO: This seems to be unused in Noda Time (https://github.com/nodatime/nodatime/pull/1800)
-DEFAULT_PATTERN_DATA: Final[list[Data]] = []
-
-# TODO: This seems to be unused in Noda Time (https://github.com/nodatime/nodatime/pull/1800)
-TEMPLATE_VALUE_DATA: Final[list[Data]] = []
-
 FORMAT_AND_PARSE_DATA: Final[list[Data]] = [
     Data(LocalTime.midnight, culture=Cultures.en_us, text=".", pattern="%."),
     Data(LocalTime.midnight, culture=Cultures.en_us, text=":", pattern="%:"),
