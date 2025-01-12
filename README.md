@@ -13,23 +13,42 @@ It helps you to think about your data more clearly, and express operations on th
 
 This project is a Python port of [Noda Time](https://github.com/nodatime/nodatime), an alternative DateTime library for .NET (which in turn was inspired by [Joda Time](https://github.com/JodaOrg/joda-time)).
 
-## Installation
+The project goal is to provide a powerful alternative for time management in Python, drawing inspiration from the strengths of Noda Time and adapting them to a Pythonic API.
+
+## Quick Start
+
+### Installation:
 
 ```commandline
 pip install pyoda-time
 ```
 
-## Quick Start
+### Examples:
 
-Coming soon!
+```python
+from pyoda_time import *
 
-In the meantime, [view the docs](https://pyodatime.org/).
+# Instant represents time from epoch
+now: Instant = SystemClock.instance.get_current_instant()
 
-## Project Status
+# Convert an instant to a ZonedDateTime
+now_in_iso_utc: ZonedDateTime = now.in_utc()
 
-Pyoda Time is currently in the pre-alpha stage, with fundamental logic and features being actively developed. 
+# Create a duration
+duration: Duration = Duration.from_minutes(3)
 
-The project goal is to provide a powerful alternative for time management in Python, drawing inspiration from the strengths of Noda Time and adapting them to a Pythonic API.
+# Add it to our ZonedDateTime
+then_in_iso_utc: ZonedDateTime = now_in_iso_utc + duration
+
+# Time zone support
+london = DateTimeZoneProviders.tzdb["Europe/London"]
+
+# Time zone conversions
+local_date = LocalDateTime(2012, 3, 27, 0, 45, 0)
+before = london.at_strictly(local_date)
+```
+
+For more information, see [the docs](https://pyodatime.org/).
 
 ## Contributions
 
