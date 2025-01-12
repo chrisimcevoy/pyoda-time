@@ -9,13 +9,19 @@ import pytest
 
 from pyoda_time import (
     CalendarSystem,
+    DateTimeZone,
+    DateTimeZoneProviders,
     Duration,
     Instant,
     LocalDateTime,
     Offset,
+    OffsetDateTime,
     PyodaConstants,
+    ZonedDateTime,
 )
 from pyoda_time._local_instant import _LocalInstant
+from pyoda_time.calendars import IslamicEpoch, IslamicLeapYearPattern
+from pyoda_time.text import InvalidPatternError
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants, _towards_zero_division
 from tests import helpers
 
@@ -59,17 +65,47 @@ class TestInstant:
         assert actual.to_unix_time_milliseconds() == pytest.approx(expected.to_unix_time_milliseconds(), abs=50)
         assert expected.to_julian_date() == pytest.approx(julian_date, abs=0.000001)
 
-    # TODO def test_from_utc_no_seconds(self):
+    def test_from_utc_no_seconds(self) -> None:
+        via_utc: Instant = DateTimeZone.utc.at_strictly(LocalDateTime(2008, 4, 3, 10, 35, 0)).to_instant()
+        assert Instant.from_utc(2008, 4, 3, 10, 35) == via_utc
 
-    # TODO def test_from_utc_with_seconds(self):
+    def test_from_utc_with_seconds(self) -> None:
+        via_utc: Instant = DateTimeZone.utc.at_strictly(LocalDateTime(2008, 4, 3, 10, 35, 23)).to_instant()
+        assert Instant.from_utc(2008, 4, 3, 10, 35, 23) == via_utc
 
-    # TODO def test_in_utc(self):
+    def test_in_utc(self) -> None:
+        via_instant: ZonedDateTime = Instant.from_utc(2008, 4, 3, 10, 35, 23).in_utc()
+        expected: ZonedDateTime = DateTimeZone.utc.at_strictly(LocalDateTime(2008, 4, 3, 10, 35, 23))
+        assert via_instant == expected
 
-    # TODO def test_in_zone(self):
+    def test_in_zone(self) -> None:
+        london: DateTimeZone = DateTimeZoneProviders.tzdb["Europe/London"]
+        via_instant: ZonedDateTime = Instant.from_utc(2008, 6, 10, 13, 16, 17).in_zone(london)
 
-    # TODO def test_with_offset(self): [requires OffsetDateTime]
+        # London is UTC+1 in the Summer, so the above is 14:16:17 local.
+        local: LocalDateTime = LocalDateTime(2008, 6, 10, 14, 16, 17)
+        expected: ZonedDateTime = london.at_strictly(local)
 
-    # TODO def test_with_offset_non_iso_calendar(self): [requires CalendarSystem.GetIslamicCalendar]
+        assert via_instant == expected
+
+    def test_with_offset(self) -> None:
+        # Jon talks about Noda Time at Leetspeak in Sweden on October 12th 2013, at 13:15 UTC+2
+        instant: Instant = Instant.from_utc(2013, 10, 12, 11, 15)
+        offset: Offset = Offset.from_hours(2)
+        actual: OffsetDateTime = instant.with_offset(offset)
+        expected: OffsetDateTime = OffsetDateTime(LocalDateTime(2013, 10, 12, 13, 15), offset)
+        assert actual == expected
+
+    def test_with_offset_non_iso_calendar(self) -> None:
+        # October 12th 2013 ISO is 1434-12-07 Islamic
+        calendar: CalendarSystem = CalendarSystem.get_islamic_calendar(
+            IslamicLeapYearPattern.BASE15, IslamicEpoch.CIVIL
+        )
+        instant: Instant = Instant.from_utc(2013, 10, 12, 11, 15)
+        offset: Offset = Offset.from_hours(2)
+        actual: OffsetDateTime = instant.with_offset(offset, calendar)
+        expected: OffsetDateTime = OffsetDateTime(LocalDateTime(1434, 12, 7, 13, 15, calendar=calendar), offset)
+        assert actual == expected
 
     def test_from_ticks_since_unix_epoch(self) -> None:
         instant = Instant.from_unix_time_ticks(12345)
@@ -152,7 +188,15 @@ class TestInstant:
         assert Instant.from_unix_time_milliseconds(min_.to_unix_time_milliseconds()) == min_
         assert Instant.from_unix_time_ticks(min_.to_unix_time_ticks()) == min_
 
-    def test_in_zone_with_calendar(self) -> None: ...  # TODO
+    def test_in_zone_with_calendar(self) -> None:
+        coptic_calendar: CalendarSystem = CalendarSystem.coptic
+        london: DateTimeZone = DateTimeZoneProviders.tzdb["Europe/London"]
+        via_instant: ZonedDateTime = Instant.from_utc(2004, 6, 9, 11, 10).in_zone(london, coptic_calendar)
+
+        # Date taken from CopticCalendarSystemTest. Time will be 12:10 (London is UTC+1 in Summer)
+        local: LocalDateTime = LocalDateTime(1720, 10, 2, 12, 10, 0, calendar=coptic_calendar)
+        expected: ZonedDateTime = london.at_strictly(local)
+        assert via_instant == expected
 
     def test_max(self) -> None:
         """This follows the Noda Time test which covers Instant.Max(), but additionally covers support for the max()
@@ -367,7 +411,9 @@ class TestInstant:
 
 
 class TestInstantFormat:
-    # TODO: def test_to_string_invalid_format(self) -> None:
+    def test_to_string_invalid_format(self) -> None:
+        with pytest.raises(InvalidPatternError):
+            f"{PyodaConstants.UNIX_EPOCH:A}"
 
     def test_to_string_min_value(self) -> None:
         self.__test_to_string_base(Instant.min_value, "-9998-01-01T00:00:00Z")

@@ -18,7 +18,7 @@ from pyoda_time import (
     PyodaConstants,
     YearMonth,
 )
-from pyoda_time.text import LocalDateTimePattern
+from pyoda_time.text import LocalDatePattern, LocalDateTimePattern, LocalTimePattern
 from pyoda_time.utility._csharp_compatibility import _CsharpConstants
 
 # June 19th 2010, 2:30:15am
@@ -94,8 +94,25 @@ class TestPeriod:
         with pytest.raises(ValueError):  # TODO: In Noda Time this is ArgumentException
             Period.between(start, end)
 
-    # TODO: [requires LocalDatePattern]
-    #  def test_between_local_dates_single_unit(self, start_text: str, end_text: str, units: PeriodUnits) -> None:
+    @pytest.mark.parametrize(
+        ("start_text", "end_text", "units", "expected_value"),
+        [
+            ("2016-05-16", "2019-03-13", PeriodUnits.YEARS, 2),
+            ("2016-05-16", "2017-07-13", PeriodUnits.MONTHS, 13),
+            ("2016-05-16", "2016-07-13", PeriodUnits.WEEKS, 8),
+            ("2016-05-16", "2016-07-13", PeriodUnits.DAYS, 58),
+        ],
+    )
+    def test_between_local_dates_single_unit(
+        self, start_text: str, end_text: str, units: PeriodUnits, expected_value: int
+    ) -> None:
+        start = LocalDatePattern.iso.parse(start_text).value
+        end = LocalDatePattern.iso.parse(end_text).value
+        actual = Period.between(start, end, units)
+        builder = PeriodBuilder()
+        builder[units] = expected_value
+        expected = builder.build()
+        assert actual == expected
 
     def test_days_between_local_dates_different_calendars_throws(self) -> None:
         start = LocalDate(year=2020, month=6, day=13, calendar=CalendarSystem.iso)
@@ -109,11 +126,39 @@ class TestPeriod:
         expected = 0
         assert Period.days_between(start, end) == expected
 
-    # TODO: [requires LocalDatePattern]
-    #  def test_days_between_local_dates(self, start_text: str, e
+    @pytest.mark.parametrize(
+        ("start_text", "end_text", "expected"),
+        [
+            ("2016-05-16", "2016-05-17", 1),
+            ("2020-06-15", "2020-06-18", 3),
+            ("2016-05-16", "2016-05-26", 10),
+            ("2020-06-15", "2021-06-19", 369),
+            ("2020-03-23", "2020-06-12", 81),
+        ],
+    )
+    def test_days_between_local_dates(self, start_text: str, end_text: str, expected: int) -> None:
+        start = LocalDatePattern.iso.parse(start_text).value
+        end = LocalDatePattern.iso.parse(end_text).value
+        actual = Period.days_between(start, end)
+        assert actual == expected
 
-    # TODO: [requires LocalDatePattern]
-    #  def test_days_between_local_dates_start_date_greater_than_end_date(self):
+    @pytest.mark.parametrize(
+        ("start_text", "end_text", "expected"),
+        [
+            ("2016-05-16", "2016-05-15", -1),
+            ("2020-06-15", "2020-06-12", -3),
+            ("2016-05-16", "2016-05-06", -10),
+            ("2021-06-19", "2020-06-15", -369),
+            ("2020-05-16", "2019-05-16", -366),
+        ],
+    )
+    def test_days_between_local_dates_start_date_greater_than_end_date(
+        self, start_text: str, end_text: str, expected: int
+    ) -> None:
+        start = LocalDatePattern.iso.parse(start_text).value
+        end = LocalDatePattern.iso.parse(end_text).value
+        actual = Period.days_between(start, end)
+        assert actual == expected
 
     def test_between_local_dates_moving_forward_no_leap_years_with_exact_results(self) -> None:
         actual = Period.between(TEST_DATE_1, TEST_DATE_2)
@@ -203,8 +248,27 @@ class TestPeriod:
         with pytest.raises(ValueError):
             Period.between(t1, t2, PeriodUnits.YEARS | PeriodUnits.HOURS)
 
-    # TODO: [requires LocalTimePattern]
-    #  def test_between_local_times_single_unit(self) -> None:
+    @pytest.mark.parametrize(
+        ("start_text", "end_text", "units", "expected_value"),
+        [
+            ("01:02:03", "05:00:00", PeriodUnits.HOURS, 3),
+            ("01:02:03", "03:00:00", PeriodUnits.MINUTES, 117),
+            ("01:02:03", "01:05:02", PeriodUnits.SECONDS, 179),
+            ("01:02:03", "01:02:04.1234", PeriodUnits.MILLISECONDS, 1123),
+            ("01:02:03", "01:02:04.1234", PeriodUnits.TICKS, 11234000),
+            ("01:02:03", "01:02:04.1234", PeriodUnits.NANOSECONDS, 1123400000),
+        ],
+    )
+    def test_between_local_times_single_unit(
+        self, start_text: str, end_text: str, units: PeriodUnits, expected_value: int
+    ) -> None:
+        start = LocalTimePattern.extended_iso.parse(start_text).value
+        end = LocalTimePattern.extended_iso.parse(end_text).value
+        actual = Period.between(start, end, units)
+        builder = PeriodBuilder()
+        builder[units] = expected_value
+        expected = builder.build()
+        assert actual == expected
 
     def test_between_local_times_moving_forwards(self) -> None:
         t1 = LocalTime(hour=10, minute=0)

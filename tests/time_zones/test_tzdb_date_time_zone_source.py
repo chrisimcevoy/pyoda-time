@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from pyoda_time import DateTimeZone, Instant, LocalDateTime, PyodaConstants, ZonedDateTime
+from pyoda_time import DateTimeZone, DateTimeZoneProviders, Instant, LocalDateTime, PyodaConstants, ZonedDateTime
 from pyoda_time.time_zones import TzdbZone1970Location, TzdbZoneLocation
 from pyoda_time.time_zones._tzdb_date_time_zone_source import TzdbDateTimeZoneSource
 from pyoda_time.time_zones.cldr import MapZone, WindowsZones
@@ -155,8 +155,7 @@ class TestTzdbDateTimeZoneSource:
         assert source.tzdb_version.startswith("20")
 
     def test_fixed_date_time_zone_name(self) -> None:
-        # TODO: Use DateTimeZoneProviders here, when it is ported
-        zulu = TzdbDateTimeZoneSource.default.for_id("Etc/Zulu")
+        zulu = DateTimeZoneProviders.tzdb["Etc/Zulu"]
         assert zulu.get_zone_interval(PyodaConstants.UNIX_EPOCH).name == "UTC"
 
     def test_version_id(self) -> None:
