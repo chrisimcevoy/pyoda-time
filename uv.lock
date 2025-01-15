@@ -337,7 +337,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/52/21/4e9b0a3ace3027fc6
 
 [[package]]
 name = "pyoda-time"
-version = "0.9.3"
+version = "0.10.0"
 source = { editable = "." }
 dependencies = [
     { name = "pyicu" },
