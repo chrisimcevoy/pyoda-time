@@ -72,8 +72,24 @@ def assert_valid(func: Callable[..., TOut], *args: TArg) -> TOut:
 
 
 def assert_overflow(func: Callable[[TArg], TOut], param: TArg) -> None:
-    with pytest.raises(OverflowError):
+    """Asserts that the given operation throws one of InvalidOperationException, ArgumentException (including
+    ArgumentOutOfRangeException) or OverflowException.
+
+    (It's hard to always be consistent bearing in mind one method calling another.)
+    """
+    try:
         func(param)
+        pytest.fail(
+            "Expected OverflowException, ArgumentException, ArgumentOutOfRangeException or InvalidOperationException"
+        )
+    except OverflowError:
+        pass
+    except ValueError as e:
+        assert e.__class__ is ValueError, (
+            "Exception should not be a subtype of ArgumentException, other than ArgumentOutOfRangeException"
+        )
+    except RuntimeError:
+        pass
 
 
 def test_compare_to_struct(value: T_IComparable, equal_value: T_IComparable, *greater_values: T_IComparable) -> None:
