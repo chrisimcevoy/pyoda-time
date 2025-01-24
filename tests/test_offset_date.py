@@ -95,8 +95,8 @@ class TestOffsetDate:
 
         actual_date, actual_offset = offset_date  # type: ignore[misc]
 
-        assert actual_date == date  # type: ignore[has-type]
-        assert actual_offset == offset  # type: ignore[has-type]
+        assert actual_date == date  # type: ignore[has-type]  # pragma: no cover
+        assert actual_offset == offset  # type: ignore[has-type]  # pragma: no cover
 
     # TODO: test_xml_serialization_iso() -> None:
     # TODO: test_xml_serialization_bce() -> None:

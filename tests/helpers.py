@@ -79,7 +79,7 @@ def assert_overflow(func: Callable[[TArg], TOut], param: TArg) -> None:
     """
     try:
         func(param)
-        pytest.fail(
+        pytest.fail(  # pragma: no cover
             "Expected OverflowException, ArgumentException, ArgumentOutOfRangeException or InvalidOperationException"
         )
     except OverflowError:
@@ -88,7 +88,7 @@ def assert_overflow(func: Callable[[TArg], TOut], param: TArg) -> None:
         assert e.__class__ is ValueError, (
             "Exception should not be a subtype of ArgumentException, other than ArgumentOutOfRangeException"
         )
-    except RuntimeError:
+    except RuntimeError:  # pragma: no cover
         pass
 
 

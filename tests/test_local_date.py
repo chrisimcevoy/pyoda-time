@@ -204,7 +204,7 @@ class TestLocalDateComparison:
 
     @pytest.mark.skip("Not applicable to Python")
     def test_icomparable_compare_to_same_calendar(self) -> None:
-        pass
+        pass  # pragma: no cover
 
     def test_icomparable_compare_to_null_positive(self) -> None:
         """IComparable.CompareTo returns a positive number for a null input."""
@@ -491,6 +491,12 @@ class TestLocalDatePeriodArithmetic:
         # Use method not operator here to form a valid statement
         with pytest.raises(ValueError):
             LocalDate.subtract(date, period)
+
+    def test_period_addition_method_equivalents(self) -> None:
+        start = LocalDate(2010, 6, 19)
+        period = Period.from_months(3) + Period.from_days(10)
+        assert LocalDate.add(start, period) == start + period
+        assert start.plus(period) == start + period
 
     def test_period_subtraction_method_equivalents(self) -> None:
         start = LocalDate(2010, 6, 19)

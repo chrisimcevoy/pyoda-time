@@ -606,7 +606,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         :raises ValueError: ``target_day_of_week`` is not a valid day of the week (Monday to Sunday).
         """
         if target_day_of_week < IsoDayOfWeek.MONDAY or target_day_of_week > IsoDayOfWeek.SUNDAY:
-            raise ValueError(
+            raise ValueError(  # pragma: no cover
                 f"target_day_of_week must be in the range [{IsoDayOfWeek.MONDAY} to {IsoDayOfWeek.SUNDAY}]"
             )
         # This will throw the desired exception for calendars with different week systems.
@@ -628,7 +628,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         :raises ValueError: ``target_day_of_week`` is not a valid day of the week (Monday to Sunday).
         """
         if target_day_of_week < IsoDayOfWeek.MONDAY or target_day_of_week > IsoDayOfWeek.SUNDAY:
-            raise ValueError(
+            raise ValueError(  # pragma: no cover
                 f"target_day_of_week must be in the range [{IsoDayOfWeek.MONDAY} to {IsoDayOfWeek.SUNDAY}]"
             )
         # This will throw the desired exception for calendars with different week systems.
