@@ -396,6 +396,8 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
     def compare_to(self, other: LocalDateTime | None) -> int:
         if other is None:
             return 1
+        if not isinstance(other, LocalDateTime):
+            raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
         # This will check calendars...
         date_comparison = self.__date.compare_to(other.__date)
         if date_comparison != 0:

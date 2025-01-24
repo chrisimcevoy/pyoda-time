@@ -22,6 +22,7 @@ __all__: list[str] = [
     "LocalDateTime",
     "LocalTime",
     "Offset",
+    "OffsetDate",
     "OffsetDateTime",
     "OffsetTime",
     "Period",
@@ -74,6 +75,7 @@ from ._local_date import LocalDate
 from ._local_date_time import LocalDateTime
 from ._local_time import LocalTime
 from ._offset import Offset
+from ._offset_date import OffsetDate
 from ._offset_date_time import OffsetDateTime
 from ._offset_time import OffsetTime
 from ._period import Period

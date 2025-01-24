@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, final, overload
 from ._calendar_ordinal import _CalendarOrdinal
 from ._calendar_system import CalendarSystem
 from ._iso_day_of_week import IsoDayOfWeek
+from ._period import Period
 from .calendars import Era, WeekYearRules
 from .utility._csharp_compatibility import _sealed
 from .utility._preconditions import _Preconditions
@@ -17,7 +18,7 @@ from .utility._preconditions import _Preconditions
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
-    from . import DateTimeZone, LocalDateTime, LocalTime, Period, YearMonth, ZonedDateTime
+    from . import DateTimeZone, LocalDateTime, LocalTime, Offset, OffsetDate, YearMonth, ZonedDateTime
     from ._year_month_day import _YearMonthDay
     from ._year_month_day_calendar import _YearMonthDayCalendar
 
@@ -60,8 +61,15 @@ class _LocalDateMeta(type):
 @final
 @_sealed
 class LocalDate(metaclass=_LocalDateMeta):
-    """LocalDate is an immutable struct representing a date within the calendar, with no reference to a particular time
-    zone or time of day."""
+    """LocalDate is an immutable object representing a date within the calendar, with no reference to a particular time
+    zone or time of day.
+
+    Values can freely be compared for equality: a value in a different calendar system is not equal to a value in a
+    different calendar system. However, ordering comparisons fail with ``ValueError``; attempting to compare values in
+    different calendars almost always indicates a bug in the calling code.
+
+    The default value of this type is 0001-01-01 (January 1st, 1 C.E.) in the ISO calendar.
+    """
 
     def __init__(
         self,
@@ -99,15 +107,21 @@ class LocalDate(metaclass=_LocalDateMeta):
 
     @classmethod
     @overload
-    def _ctor(cls, *, year_month_day_calendar: _YearMonthDayCalendar) -> LocalDate: ...
+    def _ctor(cls, *, year_month_day_calendar: _YearMonthDayCalendar) -> LocalDate:
+        """Constructs an instance from values which are assumed to already have been validated."""
 
     @classmethod
     @overload
-    def _ctor(cls, *, days_since_epoch: int) -> LocalDate: ...
+    def _ctor(cls, *, days_since_epoch: int) -> LocalDate:
+        """Constructs an instance from the number of days since the unix epoch, in the ISO calendar system."""
 
     @classmethod
     @overload
-    def _ctor(cls, *, days_since_epoch: int, calendar: CalendarSystem) -> LocalDate: ...
+    def _ctor(cls, *, days_since_epoch: int, calendar: CalendarSystem) -> LocalDate:
+        """Constructs an instance from the number of days since the unix epoch, and a calendar system.
+
+        The calendar system is assumed to be non-null, but the days since the epoch are validated.
+        """
 
     @classmethod
     def _ctor(
@@ -161,6 +175,7 @@ class LocalDate(metaclass=_LocalDateMeta):
 
     @property
     def day(self) -> int:
+        """The day of this local date within the month."""
         return self.__year_month_day_calendar._day
 
     @property
@@ -289,6 +304,110 @@ class LocalDate(metaclass=_LocalDateMeta):
             return LocalDateTime._ctor(local_date=self, local_time=other)
         return NotImplemented  # type: ignore[unreachable]
 
+    @staticmethod
+    def add(date: LocalDate, period: Period) -> LocalDate:
+        """Adds the specified period to the date. Fields are added in descending order of significance (years first,
+        then months, and so on). Friendly alternative to ``+``.
+
+        :param date: The date to add the period to.
+        :param period: The period to add. Must not contain any (non-zero) time units.
+        :return: The sum of the given date and period.
+        """
+        return date + period
+
+    def plus(self, period: Period) -> LocalDate:
+        """Adds the specified period to this date. Fields are added in descending order of significance (years first,
+        then months, and so on). Fluent alternative to ``+``.
+
+        :param period: The period to add. Must not contain any (non-zero) time units.
+        :return: The sum of this date and the given period.
+        """
+        return self + period
+
+    @overload
+    def __sub__(self, other: LocalDate) -> Period:
+        """Subtracts one date from another, returning the result as a ``Period`` with units of years, months and days.
+
+        This is simply a convenience operator for calling ``Period.between(LocalDate, LocalDate)``.
+        The calendar systems of the two dates must be the same; an exception will be thrown otherwise.
+
+        :param other: The date to subtract.
+        :return: The result of subtracting one date from another.
+        :exception ValueError: The two dates are not in the same calendar system.
+        """
+
+    @overload
+    def __sub__(self, other: Period) -> LocalDate:
+        """Subtracts the specified period from the date. Fields are subtracted in descending order of significance
+        (years first, then months, and so on). This is a convenience operator over the ``minus(Period)`` method.
+
+        :param other: The period to subtract. Must not contain any (non-zero) time units.
+        :return: The result of subtracting the given period from the date.
+        """
+
+    def __sub__(self, other: LocalDate | Period) -> LocalDate | Period:
+        if isinstance(other, LocalDate):
+            return Period.between(other, self)
+        elif isinstance(other, Period):
+            _Preconditions._check_argument(
+                not other.has_time_component, "period", "Cannot subtract a period with a time component from a date"
+            )
+            return (
+                self.plus_years(-other.years).plus_months(-other.months).plus_weeks(-other.weeks).plus_days(-other.days)
+            )
+        return NotImplemented  # type: ignore[unreachable]
+
+    @staticmethod
+    @overload
+    def subtract(date: LocalDate, period: Period, /) -> LocalDate:
+        """Subtracts the specified period from the date. Fields are subtracted in descending order of significance
+        (years first, then months, and so on). Friendly alternative to ``-``.
+
+        :param date: The date to subtract the period from.
+        :param period: The period to subtract. Must not contain any (non-zero) time units.
+        :return: The result of subtracting the given period from the date.
+        """
+
+    @staticmethod
+    @overload
+    def subtract(lhs: LocalDate, rhs: LocalDate, /) -> Period:
+        """Subtracts one date from another, returning the result as a ``Period`` with units of years, months and days.
+
+        This is simply a convenience method for calling ``Period.between(LocalDate, LocalDate)``.
+        The calendar systems of the two dates must be the same.
+
+        :param lhs: The date to subtract from.
+        :param rhs: The date to subtract.
+        :return: The result of subtracting one date from another.
+        """
+
+    @staticmethod
+    def subtract(date: LocalDate, other: LocalDate | Period, /) -> LocalDate | Period:
+        return date - other
+
+    @overload
+    def minus(self, period: Period, /) -> LocalDate:
+        """Subtracts the specified period from this date. Fields are subtracted in descending order of significance
+        (years first, then months, and so on). Fluent alternative to ``-``.
+
+        :param period: The period to subtract. Must not contain any (non-zero) time units.
+        :return: The result of subtracting the given period from this date.
+        """
+
+    @overload
+    def minus(self, date: LocalDate, /) -> Period:
+        """Subtracts the specified date from this date, returning the result as a ``Period`` with units of years, months
+        and days. Fluent alternative to ``-``.
+
+        The specified date must be in the same calendar system as this.
+
+        :param date: The date to subtract from this.
+        :return: The difference between the specified date and this one.
+        """
+
+    def minus(self, period: LocalDate | Period, /) -> LocalDate | Period:
+        return self - period
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, LocalDate):
             return NotImplemented
@@ -342,6 +461,8 @@ class LocalDate(metaclass=_LocalDateMeta):
     def compare_to(self, other: LocalDate | None) -> int:
         if other is None:
             return 1
+        if not isinstance(other, LocalDate):
+            raise TypeError(f"{self.__class__.__name__} cannot be compared to {other.__class__.__name__}")
         _Preconditions._check_argument(
             self.__calendar_ordinal == other.__calendar_ordinal,
             "other",
@@ -355,6 +476,43 @@ class LocalDate(metaclass=_LocalDateMeta):
         This avoids duplicate calendar checks.
         """
         return self.calendar._compare(self._year_month_day, other._year_month_day)
+
+    @classmethod
+    def max(cls, x: LocalDate, y: LocalDate) -> LocalDate:
+        """Returns the later date of the given two.
+
+        :param x: The first date to compare.
+        :param y: The second date to compare.
+        :raises ValueError: The two dates have different calendar systems.
+        :return: The later date of x or y.
+        """
+        _Preconditions._check_argument(
+            x.calendar == y.calendar, "y", "Only values with the same calendar system can be compared"
+        )
+        return max(x, y)
+
+    @classmethod
+    def min(cls, x: LocalDate, y: LocalDate) -> LocalDate:
+        """Returns the earlier date of the given two.
+
+        :param x: The first date to compare.
+        :param y: The second date to compare.
+        :raises ValueError: The two dates have different calendar systems.
+        :return: The earlier date of x or y.
+        """
+        _Preconditions._check_argument(
+            x.calendar == y.calendar, "y", "Only values with the same calendar system can be compared"
+        )
+        return min(x, y)
+
+    def __hash__(self) -> int:
+        """Returns a hash code for this local date.
+
+        See the type documentation for a description of equality semantics.
+
+        :return: A hash code for this local date.
+        """
+        return hash(self.__year_month_day_calendar)
 
     def at_start_of_day_in_zone(self, zone: DateTimeZone) -> ZonedDateTime:
         """Resolves this local date into a ``ZonedDateTime`` in the given time zone representing the start of this date
@@ -414,11 +572,24 @@ class LocalDate(metaclass=_LocalDateMeta):
         return _DatePeriodFields._months_field.add(self, months)
 
     def plus_days(self, days: int) -> LocalDate:
+        """Returns a new LocalDate representing the current value with the given number of days added.
+
+        This method does not try to maintain the month or year of the current value, so adding 3 days to a value of
+        January 30th will result in a value of February 2nd.
+
+        :param days: The number of days to add.
+        :return: The current value plus the given number of days.
+        """
         from .fields._date_period_fields import _DatePeriodFields
 
         return _DatePeriodFields._days_field.add(self, days)
 
     def plus_weeks(self, weeks: int) -> LocalDate:
+        """Returns a new LocalDate representing the current value with the given number of weeks added.
+
+        :param weeks: The number of weeks to add.
+        :return: The current value plus the given number of weeks.
+        """
         from .fields._date_period_fields import _DatePeriodFields
 
         return _DatePeriodFields._weeks_field.add(self, weeks)
@@ -435,7 +606,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         :raises ValueError: ``target_day_of_week`` is not a valid day of the week (Monday to Sunday).
         """
         if target_day_of_week < IsoDayOfWeek.MONDAY or target_day_of_week > IsoDayOfWeek.SUNDAY:
-            raise ValueError(
+            raise ValueError(  # pragma: no cover
                 f"target_day_of_week must be in the range [{IsoDayOfWeek.MONDAY} to {IsoDayOfWeek.SUNDAY}]"
             )
         # This will throw the desired exception for calendars with different week systems.
@@ -457,7 +628,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         :raises ValueError: ``target_day_of_week`` is not a valid day of the week (Monday to Sunday).
         """
         if target_day_of_week < IsoDayOfWeek.MONDAY or target_day_of_week > IsoDayOfWeek.SUNDAY:
-            raise ValueError(
+            raise ValueError(  # pragma: no cover
                 f"target_day_of_week must be in the range [{IsoDayOfWeek.MONDAY} to {IsoDayOfWeek.SUNDAY}]"
             )
         # This will throw the desired exception for calendars with different week systems.
@@ -466,6 +637,18 @@ class LocalDate(metaclass=_LocalDateMeta):
         if difference >= 0:
             difference -= 7
         return self.plus_days(difference)
+
+    def with_offset(self, offset: Offset) -> OffsetDate:
+        """Returns an ``OffsetDate`` for this local date with the given offset.
+
+        This method is purely a convenient alternative to calling the ``OffsetDate`` constructor directly.
+
+        :param offset: The offset to apply.
+        :return: The result of this date offset by the given amount.
+        """
+        from . import OffsetDate
+
+        return OffsetDate(self, offset)
 
     def at(self, time: LocalTime) -> LocalDateTime:
         """Combines this ``LocalDate`` with the given ``LocalTime`` into a single ``LocalDateTime``.
