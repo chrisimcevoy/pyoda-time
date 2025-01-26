@@ -6,7 +6,16 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from pyoda_time import CalendarSystem, DateTimeZone, DateTimeZoneProviders, LocalDate, LocalDateTime, PyodaConstants
+from pyoda_time import (
+    CalendarSystem,
+    DateAdjusters,
+    DateTimeZone,
+    DateTimeZoneProviders,
+    LocalDate,
+    LocalDateTime,
+    PyodaConstants,
+    TimeAdjusters,
+)
 
 PACIFIC: DateTimeZone = DateTimeZoneProviders.tzdb["America/Los_Angeles"]
 
@@ -65,3 +74,15 @@ class TestLocalDateTime:
         """Using the default constructor is equivalent to January 1st 1970, midnight, UTC, ISO calendar."""
         actual = LocalDateTime()
         assert actual == LocalDateTime(1, 1, 1, 0, 0)
+
+
+class TestLocalDateTimePseudomutators:
+    def test_with_time_adjuster(self) -> None:
+        start = LocalDateTime(2014, 6, 27, 12, 15, 8).plus_nanoseconds(123456789)
+        expected = LocalDateTime(2014, 6, 27, 12, 15, 8)
+        assert start.with_time_adjuster(TimeAdjusters.truncate_to_second) == expected
+
+    def test_with_date_adjuster(self) -> None:
+        start = LocalDateTime(2014, 6, 27, 12, 5, 8).plus_nanoseconds(123456789)
+        expected = LocalDateTime(2014, 6, 30, 12, 5, 8).plus_nanoseconds(123456789)
+        assert start.with_date_adjuster(DateAdjusters.end_of_month) == expected

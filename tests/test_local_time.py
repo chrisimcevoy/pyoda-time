@@ -464,7 +464,7 @@ class TestLocalTimePseudomutators:
     def test_with(self) -> None:
         start = LocalTime.from_hour_minute_second_millisecond_tick(12, 15, 8, 100, 1234)
         expected = LocalTime(12, 15, 8)
-        assert start.with_(TimeAdjusters.truncate_to_second) == expected
+        assert start.with_time_adjuster(TimeAdjusters.truncate_to_second) == expected
 
     def test_plus_minutes_would_overflow_naively(self) -> None:
         start = LocalTime(12, 34, 56)

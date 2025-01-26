@@ -128,7 +128,7 @@ class OffsetDate:
         """
         return OffsetDate(self.__date, offset)
 
-    def with_(self, adjuster: Callable[[LocalDate], LocalDate]) -> OffsetDate:
+    def with_date_adjuster(self, adjuster: Callable[[LocalDate], LocalDate]) -> OffsetDate:
         """Returns this offset date, with the given date adjuster applied to it, maintaining the existing offset.
 
         If the adjuster attempts to construct an invalid date (such as by trying to set a day-of-month of 30 in
@@ -137,7 +137,7 @@ class OffsetDate:
         :param adjuster: The adjuster to apply.
         :return: The adjusted offset date.
         """
-        return OffsetDate(date=self.__date.with_(adjuster), offset=self.__offset)
+        return OffsetDate(date=self.__date.with_date_adjuster(adjuster), offset=self.__offset)
 
     def with_calendar(self, calendar: CalendarSystem) -> OffsetDate:
         """Creates a new ``OffsetDate`` representing the same physical date and offset, but in a different calendar.

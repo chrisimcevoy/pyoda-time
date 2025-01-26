@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
-from pyoda_time import LocalDateTime, Offset, OffsetDateTime
+from pyoda_time import DateAdjusters, LocalDateTime, Offset, OffsetDateTime, TimeAdjusters
 
 
 class TestOffsetDateTime:
@@ -28,3 +28,15 @@ class TestOffsetDateTime:
         assert morning.local_date_time == LocalDateTime(2017, 8, 23, 6, 0, 0)
         back_again = morning.with_offset(Offset.from_hours(-18))
         assert back_again == night
+
+    def test_with_time_adjuster(self) -> None:
+        offset = Offset.from_hours_and_minutes(2, 30)
+        start = LocalDateTime(2014, 6, 27, 12, 5, 8).plus_nanoseconds(123456789).with_offset(offset)
+        expected = LocalDateTime(2014, 6, 27, 12, 5, 8).with_offset(offset)
+        assert start.with_time_adjuster(TimeAdjusters.truncate_to_second) == expected
+
+    def test_with_date_adjuster(self) -> None:
+        offset = Offset.from_hours_and_minutes(2, 30)
+        start = LocalDateTime(2014, 6, 27, 12, 5, 8).plus_nanoseconds(123456789).with_offset(offset)
+        expected = LocalDateTime(2014, 6, 30, 12, 5, 8).plus_nanoseconds(123456789).with_offset(offset)
+        assert start.with_date_adjuster(DateAdjusters.end_of_month) == expected

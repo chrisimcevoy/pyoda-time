@@ -43,7 +43,7 @@ class TestDateAdjusters:
         expected_day: int,
     ) -> None:
         start = LocalDate(year, month, day)
-        actual = start.with_(DateAdjusters.next_or_same(day_of_week))
+        actual = start.with_date_adjuster(DateAdjusters.next_or_same(day_of_week))
         expected = LocalDate(expected_year, expected_month, expected_day)
         assert actual == expected
 
@@ -67,7 +67,7 @@ class TestDateAdjusters:
         expected_day: int,
     ) -> None:
         start = LocalDate(year, month, day)
-        actual = start.with_(DateAdjusters.previous_or_same(day_of_week))
+        actual = start.with_date_adjuster(DateAdjusters.previous_or_same(day_of_week))
         expected = LocalDate(expected_year, expected_month, expected_day)
         assert actual == expected
 
@@ -91,7 +91,7 @@ class TestDateAdjusters:
         expected_day: int,
     ) -> None:
         start = LocalDate(year, month, day)
-        actual = start.with_(DateAdjusters.next(day_of_week))
+        actual = start.with_date_adjuster(DateAdjusters.next(day_of_week))
         expected = LocalDate(expected_year, expected_month, expected_day)
         assert actual == expected
 
@@ -115,14 +115,14 @@ class TestDateAdjusters:
         expected_day: int,
     ) -> None:
         start = LocalDate(year, month, day)
-        actual = start.with_(DateAdjusters.previous(day_of_week))
+        actual = start.with_date_adjuster(DateAdjusters.previous(day_of_week))
         expected = LocalDate(expected_year, expected_month, expected_day)
         assert actual == expected
 
     def test_month_valid(self) -> None:
         adjuster = DateAdjusters.month(2)
         start = LocalDate(2017, 8, 21, CalendarSystem.julian)
-        actual = start.with_(adjuster)
+        actual = start.with_date_adjuster(adjuster)
         expected = LocalDate(2017, 2, 21, CalendarSystem.julian)
         assert actual == expected
 
@@ -130,7 +130,7 @@ class TestDateAdjusters:
         adjuster = DateAdjusters.month(2)
         start = LocalDate(2017, 8, 30, CalendarSystem.julian)
         with pytest.raises(ValueError):
-            start.with_(adjuster)
+            start.with_date_adjuster(adjuster)
 
     def test_iso_day_of_week_adjusters_invalid(self) -> None:
         invalid = IsoDayOfWeek.NONE
@@ -147,7 +147,7 @@ class TestDateAdjusters:
         period = Period.from_months(1) + Period.from_days(3)
         adjuster = DateAdjusters.add_period(period)
         start = LocalDate(2019, 5, 4)
-        assert start.with_(adjuster) == LocalDate(2019, 6, 7)
+        assert start.with_date_adjuster(adjuster) == LocalDate(2019, 6, 7)
 
     def test_add_period_null(self) -> None:
         with pytest.raises(TypeError):
