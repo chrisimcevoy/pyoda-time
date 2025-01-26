@@ -13,6 +13,8 @@ from .utility._preconditions import _Preconditions
 from .utility._tick_arithmetic import _TickArithmetic
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from . import Offset, OffsetDateTime, Period, ZonedDateTime
     from ._iso_day_of_week import IsoDayOfWeek
     from ._local_date import LocalDate
@@ -231,6 +233,28 @@ class LocalDateTime(metaclass=_LocalDateTimeMeta):
         from ._local_instant import _LocalInstant
 
         return _LocalInstant._ctor(days=self.date._days_since_epoch, nano_of_day=self.__time.nanosecond_of_day)
+
+    def with_date_adjuster(self, adjuster: Callable[[LocalDate], LocalDate]) -> LocalDateTime:
+        """Returns this date/time, with the given date adjuster applied to it, maintaining the existing time of day.
+
+        If the adjuster attempts to construct an invalid date (such as by trying to set a day-of-month of 30 in
+        February), any exception thrown by that construction attempt will be propagated through this method.
+
+        :param adjuster: The adjuster to apply.
+        :return: The adjusted date/time.
+        """
+        return self.__date.with_date_adjuster(adjuster=adjuster) + self.__time
+
+    def with_time_adjuster(self, adjuster: Callable[[LocalTime], LocalTime]) -> LocalDateTime:
+        """Returns this date/time, with the given time adjuster applied to it, maintaining the existing date.
+
+        If the adjuster attempts to construct an invalid time, any exception thrown by that construction attempt will be
+        propagated through this method.
+
+        :param adjuster: The adjuster to apply.
+        :return: The adjusted date/time.
+        """
+        return self.__date + self.__time.with_time_adjuster(adjuster=adjuster)
 
     def with_calendar(self, calendar: CalendarSystem) -> LocalDateTime:
         """Creates a new LocalDateTime representing the same physical date and time, but in a different calendar. The

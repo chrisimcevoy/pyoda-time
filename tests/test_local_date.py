@@ -691,4 +691,4 @@ class TestLocalDatePseudomutators:
     def test_with(self) -> None:
         start = LocalDate(2014, 6, 27)
         expected = LocalDate(2014, 6, 30)
-        assert start.with_(DateAdjusters.end_of_month) == expected
+        assert start.with_date_adjuster(DateAdjusters.end_of_month) == expected

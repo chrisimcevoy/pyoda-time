@@ -203,7 +203,7 @@ class OffsetTime:
         """
         return OffsetTime(self.time_of_day, offset)
 
-    def with_(self, adjuster: Callable[[LocalTime], LocalTime]) -> OffsetTime:
+    def with_time_adjuster(self, adjuster: Callable[[LocalTime], LocalTime]) -> OffsetTime:
         """Returns this offset time-of-day, with the given date adjuster applied to it, maintaining the existing offset.
 
         If the adjuster attempts to construct an invalid time-of-day, any exception thrown by that construction attempt
@@ -212,7 +212,7 @@ class OffsetTime:
         :param adjuster: The adjuster to apply.
         :return: The adjusted offset date.
         """
-        return OffsetTime(self.time_of_day.with_(adjuster), self.offset)
+        return OffsetTime(self.time_of_day.with_time_adjuster(adjuster), self.offset)
 
     def on(self, date: LocalDate) -> OffsetDateTime:
         """Combines this ``OffsetTime`` with the given ``LocalDate`` into an ``OffsetDateTime``.

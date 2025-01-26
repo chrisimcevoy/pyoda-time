@@ -73,7 +73,7 @@ class TestOffsetTime:
 
     def test_with_adjuster(self) -> None:
         initial = OffsetTime(LocalTime(14, 15, 12), Offset.from_hours(-5))
-        actual = initial.with_(TimeAdjusters.truncate_to_hour)
+        actual = initial.with_time_adjuster(TimeAdjusters.truncate_to_hour)
         expected = OffsetTime(LocalTime(14), Offset.from_hours(-5))
         assert actual == expected
 

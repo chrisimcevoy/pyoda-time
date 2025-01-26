@@ -660,7 +660,7 @@ class LocalDate(metaclass=_LocalDateMeta):
         """
         return self + time
 
-    def with_(self, adjuster: Callable[[LocalDate], LocalDate]) -> LocalDate:
+    def with_date_adjuster(self, adjuster: Callable[[LocalDate], LocalDate]) -> LocalDate:
         """Returns this date, with the given adjuster applied to it.
 
         If the adjuster attempts to construct an invalid date (such as by trying to set a day-of-month of 30 in

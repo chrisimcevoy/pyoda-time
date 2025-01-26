@@ -10,6 +10,8 @@ from ._duration import Duration
 from ._pyoda_constants import PyodaConstants
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from . import IsoDayOfWeek, LocalDate, LocalDateTime, LocalTime, OffsetTime
     from ._calendar_system import CalendarSystem
     from ._instant import Instant
@@ -256,6 +258,41 @@ class OffsetDateTime:
             self.__offset_time._offset_nanoseconds
         )
         return elapsed_time
+
+    def with_date_adjuster(self, adjuster: Callable[[LocalDate], LocalDate]) -> OffsetDateTime:
+        """Returns this offset date/time, with the given date adjuster applied to it, maintaining the existing time of
+        day and offset.
+
+        If the adjuster attempts to construct an invalid date (such as by trying to set a day-of-month of 30 in
+        February), any exception thrown by that construction attempt will be propagated through this method.
+
+        :param adjuster: The adjuster to apply.
+        :return: The adjusted offset date/time.
+        """
+        return OffsetDateTime._ctor(
+            local_date=self.__local_date.with_date_adjuster(adjuster=adjuster),
+            offset_time=self.__offset_time,
+        )
+
+    def with_time_adjuster(self, adjuster: Callable[[LocalTime], LocalTime]) -> OffsetDateTime:
+        """Returns this offset date/time, with the given time adjuster applied to it, maintaining the existing date and
+        offset.
+
+        If the adjuster attempts to construct an invalid time, any exception thrown by that construction attempt will be
+        propagated through this method.
+
+        :param adjuster: The adjuster to apply.
+        :return: The adjusted offset date/time.
+        """
+        from ._offset_time import OffsetTime
+
+        new_time = self.time_of_day.with_time_adjuster(adjuster=adjuster)
+        return OffsetDateTime._ctor(
+            local_date=self.__local_date,
+            offset_time=OffsetTime._ctor(
+                nanosecond_of_day=new_time.nanosecond_of_day, offset_seconds=self.__offset_time._offset_seconds
+            ),
+        )
 
     # region Operators
 

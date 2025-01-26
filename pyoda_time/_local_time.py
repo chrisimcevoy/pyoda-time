@@ -613,7 +613,7 @@ class LocalTime(metaclass=_LocalTimeMeta):
 
         return _TimePeriodField._nanoseconds._add_local_time(self, nanoseconds)
 
-    def with_(self, adjuster: Callable[[LocalTime], LocalTime]) -> LocalTime:
+    def with_time_adjuster(self, adjuster: Callable[[LocalTime], LocalTime]) -> LocalTime:
         return _Preconditions._check_not_null(adjuster, "adjuster")(self)
 
     def with_offset(self, offset: Offset) -> OffsetTime:

@@ -73,7 +73,7 @@ class TestOffsetDate:
 
     def test_with_adjuster(self) -> None:
         initial = OffsetDate(LocalDate(2016, 6, 19), Offset.from_hours(-5))
-        actual = initial.with_(DateAdjusters.start_of_month)
+        actual = initial.with_date_adjuster(DateAdjusters.start_of_month)
         expected = OffsetDate(LocalDate(2016, 6, 1), Offset.from_hours(-5))
         assert actual == expected
 
