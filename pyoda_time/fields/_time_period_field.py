@@ -88,9 +88,10 @@ class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
         # It's possible that there are better ways to do this, but this at least feels simple.
         if value >= 0:
             if value >= self.__units_per_day:
-                # TODO: checked
+                long_days = _towards_zero_division(value, self.__units_per_day)
                 # If this overflows, that's fine. (An OverflowException is a reasonable outcome.)
-                # days = checked((int) longDays);
+                # TODO: checked
+                days = long_days
                 value = _csharp_modulo(value, self.__units_per_day)
             nanos_to_add = value * self.__unit_nanoseconds
             new_nanos = local_time.nanosecond_of_day + nanos_to_add
@@ -102,11 +103,11 @@ class _TimePeriodField(metaclass=_TimePeriodFieldMeta):
             extra_days += days
             return LocalTime._ctor(nanoseconds=new_nanos), extra_days
         else:
-            if value <= self.__units_per_day:
-                long_days = _towards_zero_division(value, self.__units_per_day)  # noqa
-                # TODO: checked
+            if value <= -self.__units_per_day:
+                long_days = _towards_zero_division(value, self.__units_per_day)
                 # If this overflows, that's fine. (An OverflowException is a reasonable outcome.)
-                # days = checked((int) longDays);
+                # TODO: checked
+                days = long_days
                 value = _csharp_modulo(value, self.__units_per_day)
             nanos_to_add = value * self.__unit_nanoseconds
             new_nanos = local_time.nanosecond_of_day + nanos_to_add
