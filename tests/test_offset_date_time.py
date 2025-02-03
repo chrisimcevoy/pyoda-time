@@ -184,6 +184,37 @@ class TestOffsetDateTime:
         actual = OffsetDateTime.from_aware_datetime(stdlib)
         assert actual == expected
 
+    def test_from_aware_datetime_raises_when_datetime_is_not_aware(self) -> None:
+        # This test does not exist in Noda Time, because DateTimeOffset always has an offset/timespan.
+        # In Python, we have one type (datetime) which may or may not be "aware".
+        dt = datetime(2025, 2, 3)
+        with pytest.raises(ValueError) as e:
+            OffsetDateTime.from_aware_datetime(dt)
+        assert str(e.value) == "aware_datetime must be timezone-aware"
+
+    def test_from_aware_datetime_with_microsecond_granularity_offset(self) -> None:
+        # This test does not exist in Noda Time, because DateTimeOffset's offset/timespan has minute granularity.
+        # In Python, datetime.tzinfo's offset can have microsecond granularity.
+        # (Both Noda Time and Pyoda Time have second granularity)
+        dt = datetime(
+            2025,
+            2,
+            3,
+            3,
+            11,
+            30,
+            tzinfo=timezone(offset=timedelta(hours=1, minutes=2, seconds=3, milliseconds=4, microseconds=5)),
+        )
+        actual = OffsetDateTime.from_aware_datetime(dt)
+        expected = OffsetDateTime(
+            local_date_time=LocalDateTime(2025, 2, 3, 3, 11, 30),
+            offset=Offset.from_hours_and_minutes(1, 2)
+            + Offset.from_seconds(3)
+            + Offset.from_milliseconds(4)
+            + Offset.from_ticks(5 * PyodaConstants.TICKS_PER_MICROSECOND),
+        )
+        assert actual == expected
+
     def test_in_fixed_zone(self) -> None:
         offset = Offset.from_hours(5)
         local = LocalDateTime(2012, 1, 2, 3, 4)

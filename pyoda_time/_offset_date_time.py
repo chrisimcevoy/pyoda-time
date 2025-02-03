@@ -380,7 +380,7 @@ class OffsetDateTime:
             raise ValueError("aware_datetime must be timezone-aware")
 
         if not isinstance(delta := tzinfo.utcoffset(aware_datetime), timedelta):
-            raise ValueError(
+            raise ValueError(  # pragma: no cover
                 f"aware_datetime.tzinfo.utcoffset() must be an instance of timedelta; got {delta.__class__.__name__}"
             )
 
@@ -691,7 +691,7 @@ class OffsetDateTime:
             )
         if isinstance(other, OffsetDateTime):
             return self.to_instant() - other.to_instant()
-        return NotImplemented  # type: ignore[unreachable]
+        return NotImplemented  # type: ignore[unreachable]  # pragma: no cover
 
     def __eq__(self, other: object) -> bool:
         """Implements the operator == (equality).
