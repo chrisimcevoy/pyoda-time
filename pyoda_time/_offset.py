@@ -416,8 +416,8 @@ class Offset(metaclass=_OffsetMeta):
         """Converts the given ``timedelta`` to an offset, with fractional seconds truncated.
 
         :param timedelta: The timedelta to convert
-        :returns: An offset for the same time as the given timedelta. :exception ValueError: The given timedelta falls
-            outside the range of +/- 18 hours.
+        :returns: An offset for the same time as the given timedelta.
+        :raises ValueError: The given timedelta falls outside the range of +/- 18 hours.
         """
         # TODO: Consider introducing a "from_microseconds" constructor?
 
