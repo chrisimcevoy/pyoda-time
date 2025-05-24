@@ -199,8 +199,8 @@ class LocalDatePattern(IPattern[LocalDate], metaclass=__LocalDatePatternMeta):
         :param pattern_text: Pattern text to create the pattern for
         :param culture_info: The culture to use in the pattern
         :param template_value: Maximum two-digit-year in the template to treat as the current century.
-        :return: A pattern for parsing and formatting local dates. :exception InvalidPatternError: The pattern text was
-            invalid.
+        :return: A pattern for parsing and formatting local dates.
+        :exception InvalidPatternError: The pattern text was invalid.
         """
         if template_value is None:
             template_value = cls._DEFAULT_TEMPLATE_VALUE
