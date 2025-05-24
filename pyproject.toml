@@ -92,6 +92,7 @@ ignore = [
     "PLR2004",  # magic-value-comparison
     "PLW2901",  # redefined-loop-name
     "PYI046",   # unused-private-protocol (in the same module as it is declared!)
+    "TC006",    # runtime-cast-value
 ]
 select = [
     "ANN",      # flake8-annotations
