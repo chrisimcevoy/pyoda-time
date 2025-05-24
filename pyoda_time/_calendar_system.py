@@ -314,8 +314,8 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         This method will always return the same reference for the same ID.
 
         :param id_: The ID of the calendar system. This is case-sensitive.
-        :return: The calendar system with the given ID. :exception KeyError: No calendar system for the specified ID can
-            be found.
+        :return: The calendar system with the given ID.
+        :exception KeyError: No calendar system for the specified ID can be found.
         """
         # TODO: transcribe <exception cref="NotSupportedException" /> in docstring
         _Preconditions._check_not_null(id_, "id_")
@@ -545,8 +545,8 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         latest year. (See the BC era in the Gregorian calendar, for example.)
 
         :param era: The era in which to find the greatest year
-        :return: The maximum valid year in the given era. :exception ValueError: era is not an era used in this
-            calendar.
+        :return: The maximum valid year in the given era.
+        :exception ValueError: era is not an era used in this calendar.
         """
         return self.__era_calculator._get_max_year_of_era(era)
 
@@ -558,8 +558,8 @@ class CalendarSystem(metaclass=_CalendarSystemMeta):
         earliest year. (See the BC era in the Gregorian calendar, for example.)
 
         :param era: The era in which to find the greatest year
-        :return: The minimum valid year in the given era. :exception ValueError: era is not an era used in this
-            calendar.
+        :return: The minimum valid year in the given era.
+        :exception ValueError: era is not an era used in this calendar.
         """
         return self.__era_calculator._get_min_year_of_era(era)
 
