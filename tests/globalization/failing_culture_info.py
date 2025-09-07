@@ -48,7 +48,7 @@ class FailingCultureInfo(CultureInfo, metaclass=_CombinedMeta):
         raise NotImplementedError(self.__CULTURE_NOT_SET)
 
     @date_time_format.setter
-    def date_time_format(self, value: DateTimeFormatInfo) -> None:
+    def date_time_format(self, value: DateTimeFormatInfo | None) -> None:
         raise NotImplementedError(self.__CULTURE_NOT_SET)
 
     @property

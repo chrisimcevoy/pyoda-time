@@ -34,9 +34,6 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/PyCQA/docformatter
-    # Workaround for latest release (1.7.5) being incompatible with
-    # pre-commit >= 4.
-    # https://github.com/PyCQA/docformatter/issues/293#issuecomment-2419238424
     rev: "v1.7.7"
     hooks:
       - id: docformatter
@@ -44,7 +41,7 @@ repos:
         args: ["--in-place", "--config", "./pyproject.toml"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.15.0'
+    rev: 'v1.17.1'
     hooks:
     -   id: mypy
         additional_dependencies: [
