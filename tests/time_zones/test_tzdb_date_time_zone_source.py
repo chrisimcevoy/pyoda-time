@@ -322,7 +322,7 @@ class TestTzdbDateTimeZoneSource:
 
     def __populate_zone_fields(self, builder: _TzdbStreamData._Builder, *zone_ids: str) -> None:
         for zone_id in zone_ids:
-            builder._zone_fields[zone_id] = _TzdbStreamField._ctor(_TzdbStreamFieldId.TIME_ZONE, bytes([0]))
+            builder._zone_fields[zone_id] = _TzdbStreamField._ctor(_TzdbStreamFieldId.TIME_ZONE, bytearray([0]))
 
     def __assert_invalid(self, builder: _TzdbStreamData._Builder) -> None:
         stream_data = _TzdbStreamData(builder)

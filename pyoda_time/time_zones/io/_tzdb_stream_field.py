@@ -24,7 +24,7 @@ T = TypeVar("T")
 class _TzdbStreamField:
     """An unparsed field within a stream."""
 
-    __data: bytes
+    __data: bytearray
     __id: _TzdbStreamFieldId
 
     @property
@@ -32,7 +32,7 @@ class _TzdbStreamField:
         return self.__id
 
     @classmethod
-    def _ctor(cls, id_: _TzdbStreamFieldId, data: bytes) -> _TzdbStreamField:
+    def _ctor(cls, id_: _TzdbStreamFieldId, data: bytearray) -> _TzdbStreamField:
         self = super().__new__(cls)
         self.__id = id_
         self.__data = data

@@ -62,7 +62,7 @@ class TestTzdbStreamData:
         ],
     )
     def test_missing_string_pool_2(self, field_id: _TzdbStreamFieldId, handler_method_name: str) -> None:
-        field = _TzdbStreamField._ctor(field_id, bytes([0]))
+        field = _TzdbStreamField._ctor(field_id, bytearray([0]))
         builder = _TzdbStreamData._Builder()
         method: Callable[[_TzdbStreamField], None] = getattr(builder, handler_method_name)
 
@@ -80,7 +80,7 @@ class TestTzdbStreamData:
         ],
     )
     def test_duplicate_field(self, field_id: _TzdbStreamFieldId, handler_method_name: str) -> None:
-        field = _TzdbStreamField._ctor(field_id, bytes([0]))
+        field = _TzdbStreamField._ctor(field_id, bytearray([0]))
         builder = _TzdbStreamData._Builder()
         # Provide an empty string pool if we're not checking for a duplicate string pool
         if field_id != _TzdbStreamFieldId.STRING_POOL:
