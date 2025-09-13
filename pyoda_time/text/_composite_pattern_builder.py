@@ -58,39 +58,40 @@ class CompositePatternBuilder(Generic[T]):  # TODO: IEnumerable<Pattern<T>>
 
     def _build_as_partial(self) -> _IPartialPattern[T]:
         # TODO: Preconditions.DebugCheckState
-        return self.__CompositePattern(self.__patterns, self.__format_predicates)
+        return _CompositePattern(self.__patterns, self.__format_predicates)
 
-    class __CompositePattern(_IPartialPattern[T]):
-        def __init__(self, patterns: list[IPattern[T]], format_predicates: list[Callable[[T], bool]]) -> None:
-            self.__patterns: Final[list[IPattern[T]]] = patterns
-            self.__format_predicates: Final[list[Callable[[T], bool]]] = format_predicates
 
-        def parse(self, text: str) -> ParseResult[T]:
-            for pattern in self.__patterns:
-                result: ParseResult[T] = pattern.parse(text)
-                if result.success or not result._continue_after_error_with_multiple_formats:
-                    return result
-            return ParseResult[T]._no_matching_format(_ValueCursor(text))
+class _CompositePattern(_IPartialPattern[T]):
+    def __init__(self, patterns: list[IPattern[T]], format_predicates: list[Callable[[T], bool]]) -> None:
+        self.__patterns: Final[list[IPattern[T]]] = patterns
+        self.__format_predicates: Final[list[Callable[[T], bool]]] = format_predicates
 
-        def parse_partial(self, cursor: _ValueCursor) -> ParseResult[T]:
-            index = cursor.index
-            for pattern in self.__patterns:
-                cursor.move(index)
-                result: ParseResult[T] = cast(_IPartialPattern[T], pattern).parse_partial(cursor)
-                if result.success or not result._continue_after_error_with_multiple_formats:
-                    return result
+    def parse(self, text: str) -> ParseResult[T]:
+        for pattern in self.__patterns:
+            result: ParseResult[T] = pattern.parse(text)
+            if result.success or not result._continue_after_error_with_multiple_formats:
+                return result
+        return ParseResult[T]._no_matching_format(_ValueCursor(text))
+
+    def parse_partial(self, cursor: _ValueCursor) -> ParseResult[T]:
+        index = cursor.index
+        for pattern in self.__patterns:
             cursor.move(index)
-            return ParseResult[T]._no_matching_format(cursor)
+            result: ParseResult[T] = cast(_IPartialPattern[T], pattern).parse_partial(cursor)
+            if result.success or not result._continue_after_error_with_multiple_formats:
+                return result
+        cursor.move(index)
+        return ParseResult[T]._no_matching_format(cursor)
 
-        def format(self, value: T) -> str:
-            return self.__find_format_pattern(value).format(value)
+    def format(self, value: T) -> str:
+        return self.__find_format_pattern(value).format(value)
 
-        def append_format(self, value: T, builder: StringBuilder) -> StringBuilder:
-            return self.__find_format_pattern(value).append_format(value, builder)
+    def append_format(self, value: T, builder: StringBuilder) -> StringBuilder:
+        return self.__find_format_pattern(value).append_format(value, builder)
 
-        def __find_format_pattern(self, value: T) -> IPattern[T]:
-            for format_predicate in reversed(self.__format_predicates):
-                if format_predicate(value):
-                    return self.__patterns[self.__format_predicates.index(format_predicate)]
-            # TODO: FormatException equivalent?
-            raise RuntimeError("Composite pattern was unable to format value using any of the provided patterns.")
+    def __find_format_pattern(self, value: T) -> IPattern[T]:
+        for format_predicate in reversed(self.__format_predicates):
+            if format_predicate(value):
+                return self.__patterns[self.__format_predicates.index(format_predicate)]
+        # TODO: FormatException equivalent?
+        raise RuntimeError("Composite pattern was unable to format value using any of the provided patterns.")
