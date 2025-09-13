@@ -180,7 +180,7 @@ class _SteppedPatternBuilder(Generic[TResult]):
             for d in delegates:
                 d(result, sb)
 
-        return self.__SteppedPattern(
+        return _SteppedPattern(
             format_actions=multicast_delegate,
             parse_actions=None if self.__format_only else self.__parse_actions,
             bucket_provider=self.__bucket_provider,
@@ -619,76 +619,77 @@ class _SteppedPatternBuilder(Generic[TResult]):
 
         def build_format_action(self, final_fields: _PatternFields) -> Callable[[TResult, StringBuilder], None]: ...
 
-    class __SteppedPattern(_IPartialPattern[TResult]):
-        def __init__(
-            self,
-            format_actions: Callable[[TResult, StringBuilder], None],
-            parse_actions: list[Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]] | None,
-            bucket_provider: Callable[[], _ParseBucket[TResult]],
-            used_fields: _PatternFields,
-            sample: TResult,
-        ) -> None:
-            self.__format_actions: Final[Callable[[TResult, StringBuilder], None]] = format_actions
-            # This will be null if the pattern is only capable of formatting.
-            self.__parse_actions: Final[
-                list[Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]] | None
-            ] = parse_actions
-            self.__bucket_provider: Final[Callable[[], _ParseBucket[TResult]]] = bucket_provider
-            self.__used_fields: Final[_PatternFields] = used_fields
 
-            # Format the sample value to work out the expected length, so we
-            # can use that when creating a StringBuilder. This will definitely not always
-            # be appropriate, but it's a start.
-            builder = StringBuilder()
-            format_actions(sample, builder)
-            self.__expected_length: Final[int] = builder.length
+class _SteppedPattern(_IPartialPattern[TResult]):
+    def __init__(
+        self,
+        format_actions: Callable[[TResult, StringBuilder], None],
+        parse_actions: list[Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]] | None,
+        bucket_provider: Callable[[], _ParseBucket[TResult]],
+        used_fields: _PatternFields,
+        sample: TResult,
+    ) -> None:
+        self.__format_actions: Final[Callable[[TResult, StringBuilder], None]] = format_actions
+        # This will be null if the pattern is only capable of formatting.
+        self.__parse_actions: Final[
+            list[Callable[[_ValueCursor, _ParseBucket[TResult]], ParseResult[TResult] | None]] | None
+        ] = parse_actions
+        self.__bucket_provider: Final[Callable[[], _ParseBucket[TResult]]] = bucket_provider
+        self.__used_fields: Final[_PatternFields] = used_fields
 
-        def parse(self, text: str) -> ParseResult[TResult]:
-            if self.__parse_actions is None:
-                return ParseResult[TResult]._format_only_pattern
-            if text is None:
-                # TODO: The type:ignore here is because text is str, not str|None.
-                #  This faithfully recreates a quirk in the Noda Time implementation
-                #  where the type is string in a non-nullable context, but the code
-                #  checks whether text is null anyway. Can this be safely removed?
-                return ParseResult[TResult]._argument_null("text")  # type: ignore[unreachable]
-            if len(text) == 0:
-                return ParseResult[TResult]._value_string_empty()
+        # Format the sample value to work out the expected length, so we
+        # can use that when creating a StringBuilder. This will definitely not always
+        # be appropriate, but it's a start.
+        builder = StringBuilder()
+        format_actions(sample, builder)
+        self.__expected_length: Final[int] = builder.length
 
-            value_cursor = _ValueCursor(text)
-            # Prime the pump... the value cursor ends up *before* the first character, but
-            # our steps always assume it's *on* the right character.
-            value_cursor.move_next()
-            result = self.parse_partial(value_cursor)
-            if not result.success:
-                return result
-            # Check that we've used up all the text
-            if value_cursor.current != _ValueCursor._NUL:
-                return ParseResult[TResult]._extra_value_characters(value_cursor, value_cursor.remainder)
+    def parse(self, text: str) -> ParseResult[TResult]:
+        if self.__parse_actions is None:
+            return ParseResult[TResult]._format_only_pattern
+        if text is None:
+            # TODO: The type:ignore here is because text is str, not str|None.
+            #  This faithfully recreates a quirk in the Noda Time implementation
+            #  where the type is string in a non-nullable context, but the code
+            #  checks whether text is null anyway. Can this be safely removed?
+            return ParseResult[TResult]._argument_null("text")  # type: ignore[unreachable]
+        if len(text) == 0:
+            return ParseResult[TResult]._value_string_empty()
+
+        value_cursor = _ValueCursor(text)
+        # Prime the pump... the value cursor ends up *before* the first character, but
+        # our steps always assume it's *on* the right character.
+        value_cursor.move_next()
+        result = self.parse_partial(value_cursor)
+        if not result.success:
             return result
+        # Check that we've used up all the text
+        if value_cursor.current != _ValueCursor._NUL:
+            return ParseResult[TResult]._extra_value_characters(value_cursor, value_cursor.remainder)
+        return result
 
-        def format(self, value: TResult) -> str:
-            builder = StringBuilder(capacity=self.__expected_length)
-            # This will call all the actions in the multicast delegate.
-            self.__format_actions(value, builder)
-            return builder.to_string()
+    def format(self, value: TResult) -> str:
+        builder = StringBuilder(capacity=self.__expected_length)
+        # This will call all the actions in the multicast delegate.
+        self.__format_actions(value, builder)
+        return builder.to_string()
 
-        def parse_partial(self, cursor: _ValueCursor) -> ParseResult[TResult]:
-            # At the moment we shouldn't get a partial parse for a format-only pattern, but
-            # let's guard against it for the future.
-            if self.__parse_actions is None:
-                return ParseResult[TResult]._format_only_pattern
+    def parse_partial(self, cursor: _ValueCursor) -> ParseResult[TResult]:
+        # At the moment we shouldn't get a partial parse for a format-only pattern, but
+        # let's guard against it for the future.
+        if self.__parse_actions is None:
+            return ParseResult[TResult]._format_only_pattern
 
-            bucket = self.__bucket_provider()
+        bucket = self.__bucket_provider()
 
-            for action in self.__parse_actions:
-                failure: ParseResult[TResult] | None = action(cursor, bucket)
-                if failure is not None:
-                    return failure
+        for action in self.__parse_actions:
+            failure: ParseResult[TResult] | None = action(cursor, bucket)
+            if failure is not None:
+                return failure
 
-            return bucket.calculate_value(self.__used_fields, cursor.value)
+        return bucket.calculate_value(self.__used_fields, cursor.value)
 
-        def append_format(self, value: TResult, builder: StringBuilder) -> StringBuilder:
-            _Preconditions._check_not_null(builder, "builder")
-            self.__format_actions(value, builder)
-            return builder
+    def append_format(self, value: TResult, builder: StringBuilder) -> StringBuilder:
+        _Preconditions._check_not_null(builder, "builder")
+        self.__format_actions(value, builder)
+        return builder
