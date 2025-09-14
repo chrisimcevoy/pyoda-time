@@ -521,8 +521,8 @@ class LocalDate(metaclass=_LocalDateMeta):
         This is a convenience method for calling ``DateTimeZone.at_start_of_day(LocalDate)``.
 
         :param zone: The time zone to map this local date into
-        :raises SkippedTimeError: The entire day was skipped due to a very large time zone transition.
-        (This is extremely rare.)
+        :raises SkippedTimeError: The entire day was skipped due to a very large time zone transition. (This is
+            extremely rare.)
         :return: The ``ZonedDateTime`` representing the earliest time on this date, in the given time zone.
         """
         _Preconditions._check_not_null(zone, "zone")
