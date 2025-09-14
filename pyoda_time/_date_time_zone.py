@@ -282,12 +282,12 @@ class DateTimeZone(abc.ABC, _IZoneIntervalMap, metaclass=_DateTimeZoneMeta):
         Ambiguous values map to the earlier of the alternatives, and "skipped" values are shifted forward by the
         duration of the "gap".
 
-        See ``at_strictly`` and ``resolve_local(LocalDateTime, ZoneLocalMappingResolver) for alternative ways to map a
+        See ``at_strictly`` and ``resolve_local(LocalDateTime, ZoneLocalMappingResolver)`` for alternative ways to map a
         local time to a specific instant.
 
         :param local_date_time: The local date/time to map.
         :return: The unambiguous mapping if there is one, the earlier result if the mapping is ambiguous, or the
-        forward-shifted value if the given local date/time is skipped.
+            forward-shifted value if the given local date/time is skipped.
         """
         return self.resolve_local(local_date_time=local_date_time, resolver=Resolvers.lenient_resolver)
 

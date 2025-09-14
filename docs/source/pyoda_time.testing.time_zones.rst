@@ -6,5 +6,5 @@ Module contents
 
 .. automodule:: pyoda_time.testing.time_zones
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

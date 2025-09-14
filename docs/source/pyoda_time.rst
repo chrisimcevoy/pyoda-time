@@ -20,5 +20,5 @@ Module contents
 
 .. automodule:: pyoda_time
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
