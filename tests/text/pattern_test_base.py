@@ -2,16 +2,13 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from abc import ABC
-from typing import Generic, TypeVar
 
 from pyoda_time.text._i_pattern import IPattern
 
 from .pattern_test_data import PatternTestData
 
-T = TypeVar("T")
 
-
-class PatternTestBase(ABC, Generic[T]):
+class PatternTestBase[T](ABC):
     @staticmethod
     def test_invalid_patterns(invalid_pattern_data: PatternTestData[T]) -> None:
         invalid_pattern_data.test_invalid_pattern()

@@ -71,7 +71,7 @@ class TestValueCursor(TextCursorTestBase):
         assert value.move_next()
         self._validate_current_character(value, 0, "a")
         assert value.move_next()
-        success, result = value._parse_digits(3, 3)
+        success, _result = value._parse_digits(3, 3)
         assert not success
         self._validate_current_character(value, 1, "1")
 
@@ -141,7 +141,7 @@ class TestValueCursor(TextCursorTestBase):
         # https://www.unicode.org/charts/PDF/U0600.pdf
         value = _ValueCursor("\u0660\u0661")
         value.move_next()
-        success, actual = value._parse_fraction(2, 2, 2)
+        success, _actual = value._parse_fraction(2, 2, 2)
         assert not success
 
     def test_parse_int64_simple(self) -> None:
@@ -283,7 +283,7 @@ class TestValueCursor(TextCursorTestBase):
         # We can cope as far as 9223372036854775807, but the trailing 1 causes a failure.
         value = _ValueCursor("92233720368547758071")
         value.move(0)
-        parse_result, int64 = value._parse_int64()
+        parse_result, _int64 = value._parse_int64()
         assert parse_result is not None  # for mypy purposes
         assert not parse_result.success
         assert isinstance(parse_result.exception, UnparsableValueError)

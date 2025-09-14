@@ -7,7 +7,7 @@ from __future__ import annotations
 import datetime
 from collections import defaultdict
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Final, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Literal
 
 if TYPE_CHECKING:
     import decimal
@@ -16,10 +16,6 @@ if TYPE_CHECKING:
 __all__: list[str] = []
 
 SEALED_CLASSES: Final[list[type]] = []
-
-_Ttype = TypeVar("_Ttype", bound=type)
-_TKey = TypeVar("_TKey")
-_TValue = TypeVar("_TValue")
 
 
 def _as_span(text: str | None, start: int) -> str:
@@ -84,7 +80,7 @@ def _to_ticks(obj: datetime.datetime | datetime.timedelta) -> int:
     )
 
 
-def _to_lookup(mapping: Mapping[_TKey, _TValue]) -> MappingProxyType[_TValue, Sequence[_TKey]]:
+def _to_lookup[TKey, TValue](mapping: Mapping[TKey, TValue]) -> MappingProxyType[TValue, Sequence[TKey]]:
     """Produces a mapping of value->keys, aking to the `.ToLookup()` in dotnet."""
     # TODO: Make this work for other collections, not just dict.
     lookup = defaultdict(list)
@@ -93,7 +89,7 @@ def _to_lookup(mapping: Mapping[_TKey, _TValue]) -> MappingProxyType[_TValue, Se
     return MappingProxyType(lookup)
 
 
-def _sealed(cls: _Ttype) -> _Ttype:
+def _sealed[T: type](cls: T) -> T:
     """Prevents the decorated class from being subclassed.
 
     This is intended to loosely emulate the behaviour of the ``sealed`` keyword in C#.
@@ -111,7 +107,7 @@ def _sealed(cls: _Ttype) -> _Ttype:
     return cls
 
 
-def _private(klass: _Ttype) -> _Ttype:
+def _private[T: type](klass: T) -> T:
     """Prevents the decorated class from being instantiated.
 
     This is used to decorate Python classes which have been ported from C#, where the C# class has no public
@@ -126,7 +122,7 @@ def _private(klass: _Ttype) -> _Ttype:
         """
         raise TypeError(msg)
 
-    def __new__(cls: _Ttype) -> _Ttype:
+    def __new__(cls: T) -> T:
         """Raise TypeError if the decorated class has no public constructor.
 
         :raises TypeError: This class is not intended to be instantiated directly.

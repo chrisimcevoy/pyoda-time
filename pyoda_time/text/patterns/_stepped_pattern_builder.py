@@ -6,9 +6,7 @@ from __future__ import annotations
 from typing import (
     TYPE_CHECKING,
     Final,
-    Generic,
     Protocol,
-    TypeVar,
     final,
     overload,
     runtime_checkable,
@@ -42,16 +40,18 @@ if TYPE_CHECKING:
 
 # TODO: In Noda Time, SteppedPatternBuilder has two generic type parameters:
 #  `SteppedPatternBuilder<TResult, TBucket> where TBucket : ParseBucket<TResult>`
-#  This seems to be impossible to replicate with TypeVar.
+#  This seems to be impossible to replicate with Python's type parameters.
 #  If you do this:
-#  `TBucket = TypeVar(TResult, bound=_ParseBucket)`
+#  `SteppedPatternBuilder[TResult, TBucket: _ParseBucket]`
 #  Then mypy complains that _ParseBucket is missing a type parameter, because it
-#  is itself a generic class.
+#  is itself a generic type.
 #  If you then do this:
-#  `TBucket = TypeVar(TResult, bound=_ParseBucket[TBucket])`
-#  Mypy complains that TResult is unbound, because in the context that TBucket is
-#  declared it really is unbound. Also, PyCharm gives a warning that TypeVar
-#  constraints may not have generic type parameters.
+#  `SteppedPatternBuilder[TResult, TBucket: _ParseBucket[TResult]]`
+#  Then mypy complains because the bound of a type parameter *must* be a concrete (i.e.
+#  not type-parameterised) type.
+#  https://peps.python.org/pep-0484/#type-variables-with-an-upper-bound
+#  https://peps.python.org/pep-0695/#upper-bound-specification
+#  https://typing.python.org/en/latest/spec/generics.html#type-variables-with-an-upper-bound
 #  I tried a bunch of different stuff to make it work, to no avail.
 #  In the end I decided to omit the TBucket type parameter from SteppedPatternBuilder
 #  altogether.
@@ -66,13 +66,10 @@ if TYPE_CHECKING:
 #  Maybe there is a refactor to be had here which is more sympathetic to Python's
 #  static typing limitations...?
 
-TResult = TypeVar("TResult")
-TEmbedded = TypeVar("TEmbedded")
-
 
 @_sealed
 @final
-class _SteppedPatternBuilder(Generic[TResult]):
+class _SteppedPatternBuilder[TResult]:
     """Builder for a pattern which implements parsing and formatting as a sequence of steps applied in turn."""
 
     @property
@@ -170,7 +167,7 @@ class _SteppedPatternBuilder(Generic[TResult]):
             # implements this interface. A close approximation in Python is to check the __self__ attribute
             # of a bound method (if it exists) is an instance of a runtime-checkable Protocol.
             if hasattr(format_action, "__self__") and isinstance(
-                format_action.__self__, self._IPostPatternParseFormatAction
+                format_action.__self__, _IPostPatternParseFormatAction
             ):
                 delegates.append(format_action.__self__.build_format_action(self.__used_fields))
             else:
@@ -588,7 +585,7 @@ class _SteppedPatternBuilder(Generic[TResult]):
             eventual_result_type,
         )
 
-    def _add_embedded_pattern(
+    def _add_embedded_pattern[TEmbedded](
         self,
         embedded_pattern: _IPartialPattern[TEmbedded],
         parse_action: Callable[[_ParseBucket[TResult], TEmbedded], None],
@@ -610,17 +607,18 @@ class _SteppedPatternBuilder(Generic[TResult]):
         self._add_parse_action(parse_action_to_add)
         self._add_format_action(format_action_to_add)
 
-    @runtime_checkable
-    class _IPostPatternParseFormatAction(Protocol):
-        """Hack to handle genitive month names.
 
-        We only know what we need to do *after* we've parsed the whole pattern.
-        """
+@runtime_checkable
+class _IPostPatternParseFormatAction[TResult](Protocol):
+    """Hack to handle genitive month names.
 
-        def build_format_action(self, final_fields: _PatternFields) -> Callable[[TResult, StringBuilder], None]: ...
+    We only know what we need to do *after* we've parsed the whole pattern.
+    """
+
+    def build_format_action(self, final_fields: _PatternFields) -> Callable[[TResult, StringBuilder], None]: ...
 
 
-class _SteppedPattern(_IPartialPattern[TResult]):
+class _SteppedPattern[TResult](_IPartialPattern[TResult]):
     def __init__(
         self,
         format_actions: Callable[[TResult, StringBuilder], None],

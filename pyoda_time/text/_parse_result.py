@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, final, overload
+from typing import TYPE_CHECKING, Any, final, overload
 
 from ..utility._csharp_compatibility import _private, _sealed
 from ..utility._preconditions import _Preconditions
@@ -18,10 +18,6 @@ if TYPE_CHECKING:
     from .._calendar_system import CalendarSystem
     from ..calendars._era import Era
     from ._value_cursor import _ValueCursor
-
-
-T = TypeVar("T")
-TTarget = TypeVar("TTarget")
 
 
 class _ParseResultMeta(type):
@@ -51,7 +47,7 @@ class _ParseResultMeta(type):
 @_private
 @final
 @_sealed
-class ParseResult(Generic[T], metaclass=_ParseResultMeta):
+class ParseResult[T](metaclass=_ParseResultMeta):
     """The result of a parse operation."""
 
     # Invariant: exactly one of value or exceptionProvider is null.
@@ -145,7 +141,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
         """
         return self.__exception_provider is None
 
-    def convert(self, projection: Callable[[T], TTarget]) -> ParseResult[TTarget]:
+    def convert[TTarget](self, projection: Callable[[T], TTarget]) -> ParseResult[TTarget]:
         """Converts this result to a new target type, either by executing the given projection for a success result, or
         propagating the exception provider for failure.
 
@@ -163,7 +159,7 @@ class ParseResult(Generic[T], metaclass=_ParseResultMeta):
             )
         )
 
-    def convert_error(self: ParseResult[T], target_type: type[TTarget]) -> ParseResult[TTarget]:
+    def convert_error[TTarget](self: ParseResult[T], target_type: type[TTarget]) -> ParseResult[TTarget]:
         # TODO: docstring
         if self.success:
             raise RuntimeError("convert_error should not be called on a successful parse result")

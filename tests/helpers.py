@@ -11,7 +11,7 @@ module-level functions.
 """
 
 from collections.abc import Callable, Sequence
-from typing import Any, Protocol, TypeVar
+from typing import Any, Protocol
 
 import pytest
 
@@ -37,41 +37,33 @@ class SupportsComparison(Protocol):
     def __le__(self, other: Any) -> bool: ...
 
 
-T = TypeVar("T")
-TArg = TypeVar("TArg")
-TOut = TypeVar("TOut")
-T_IComparable = TypeVar("T_IComparable", bound=IComparable)
-T_IEquatable = TypeVar("T_IEquatable", bound=IEquatable)
-T_SupportsComparison = TypeVar("T_SupportsComparison", bound=SupportsComparison)
-
-
-def assert_invalid(func: Callable[..., TOut], *args: Any) -> None:
+def assert_invalid[TArg, TOut](func: Callable[..., TOut], *args: TArg) -> None:
     """Asserts that calling func with the specified value(s) raises ValueError."""
     # TODO: In Noda Time ArgumentException is thrown
     with pytest.raises(ValueError):
         func(*args)
 
 
-def assert_argument_null(func: Callable[..., TOut], *args: Any) -> None:
+def assert_argument_null[TArg, TOut](func: Callable[..., TOut], *args: TArg) -> None:
     """Asserts that calling func with the specified value(s) raises TypeError."""
     # TODO: In Noda Time ArgumentNullException is thrown
     with pytest.raises(TypeError):
         func(*args)
 
 
-def assert_out_of_range(func: Callable[..., TOut], *args: TArg) -> None:
+def assert_out_of_range[TArg, TOut](func: Callable[..., TOut], *args: TArg) -> None:
     """Asserts that calling func with the specified value(s) raises ValueError."""
     # TODO: In Noda Time ArgumentOutOfRangeException is thrown
     with pytest.raises(ValueError):
         func(*args)
 
 
-def assert_valid(func: Callable[..., TOut], *args: TArg) -> TOut:
+def assert_valid[TArg, TOut](func: Callable[..., TOut], *args: TArg) -> TOut:
     """Asserts that calling the specified callable with the specified value(s) doesn't raise an exception."""
     return func(*args)
 
 
-def assert_overflow(func: Callable[[TArg], TOut], param: TArg) -> None:
+def assert_overflow[TArg, TOut](func: Callable[[TArg], TOut], param: TArg) -> None:
     """Asserts that the given operation throws one of InvalidOperationException, ArgumentException (including
     ArgumentOutOfRangeException) or OverflowException.
 
@@ -92,7 +84,7 @@ def assert_overflow(func: Callable[[TArg], TOut], param: TArg) -> None:
         pass
 
 
-def test_compare_to_struct(value: T_IComparable, equal_value: T_IComparable, *greater_values: T_IComparable) -> None:
+def test_compare_to_struct[T: IComparable](value: T, equal_value: T, *greater_values: T) -> None:
     """Tests the <see cref="IComparable{T}.CompareTo" /> method for value objects.
 
     :param value: The base value.
@@ -109,9 +101,7 @@ def test_compare_to_struct(value: T_IComparable, equal_value: T_IComparable, *gr
         value = greater_value
 
 
-def test_non_generic_compare_to(
-    value: T_IComparable, equal_value: T_IComparable, *greater_values: T_IComparable
-) -> None:
+def test_non_generic_compare_to[T: IComparable](value: T, equal_value: T, *greater_values: T) -> None:
     """Tests the <see cref="IComparable.CompareTo" /> method - note that this is the non-generic interface.
 
     :param value: The base value.
@@ -142,7 +132,7 @@ def test_non_generic_compare_to(
     assert str(e.value) == f"{value.__class__.__name__} cannot be compared to object"
 
 
-def test_equals_class(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values: T_IEquatable) -> None:
+def test_equals_class[T: IEquatable](value: T, equal_value: T, *unequal_values: T) -> None:
     """Tests the IEquatable.Equals method for reference objects. Also tests the object equals method.
 
     :param value: The base value.
@@ -158,7 +148,7 @@ def test_equals_class(value: T_IEquatable, equal_value: T_IEquatable, *unequal_v
         assert not value.equals(unequal_value)
 
 
-def test_equals_struct(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values: T_IEquatable) -> None:
+def test_equals_struct[T: IEquatable](value: T, equal_value: T, *unequal_values: T) -> None:
     """Tests the IEquatable.Equals method for value objects. Also tests the object equals method.
 
     :param value: The base value.
@@ -174,7 +164,7 @@ def test_equals_struct(value: T_IEquatable, equal_value: T_IEquatable, *unequal_
         assert not value.equals(unequal_value)
 
 
-def test_object_equals(value: T_IEquatable, equal_value: T_IEquatable, *unequal_values: T_IEquatable) -> None:
+def test_object_equals[T: IEquatable](value: T, equal_value: T, *unequal_values: T) -> None:
     _validate_input(value, equal_value, unequal_values, "unequal_values")
     assert not value.equals(None)
     assert value.equals(value)
@@ -186,9 +176,7 @@ def test_object_equals(value: T_IEquatable, equal_value: T_IEquatable, *unequal_
     assert hash(value) == hash(equal_value)
 
 
-def test_operator_comparison(
-    value: T_SupportsComparison, equal_value: T_SupportsComparison, *greater_values: T_SupportsComparison
-) -> None:
+def test_operator_comparison[T: SupportsComparison](value: T, equal_value: T, *greater_values: T) -> None:
     """Tests the less than (<) and greater than (>) operators if they exist on the object.
 
     :param value: The base value.
@@ -227,9 +215,7 @@ def test_operator_comparison(
         value = greater_value
 
 
-def test_operator_comparison_equality(
-    value: T_SupportsComparison, equal_value: T_SupportsComparison, *greater_values: T_SupportsComparison
-) -> None:
+def test_operator_comparison_equality[T: SupportsComparison](value: T, equal_value: T, *greater_values: T) -> None:
     """Tests the equality (==), inequality (!=), less than (<), greater than (>), less than or equals (<=), and greater
     than or equals (>=) operators if they exist on the object.
 
@@ -274,7 +260,7 @@ def test_operator_comparison_equality(
         value = greater_value
 
 
-def test_operator_equality(value: T, equal_value: T, unequal_value: T) -> None:
+def test_operator_equality[T](value: T, equal_value: T, unequal_value: T) -> None:
     """Tests the equality and inequality operators (==, !=) if they exist on the object.
 
     :param value: The base value.
@@ -298,7 +284,7 @@ def test_operator_equality(value: T, equal_value: T, unequal_value: T) -> None:
     assert None != value  # noqa
 
 
-def _validate_input(value: T, equal_value: T, unequal_values: T | Sequence[T], unequal_name: str) -> None:
+def _validate_input[T](value: T, equal_value: T, unequal_values: T | Sequence[T], unequal_name: str) -> None:
     assert value is not None, "Value cannot be null"
     assert equal_value is not None, "equal_value cannot be null"
     # TODO: This assertion seems fine, but... most of the main types in C# (Instant, Duration et al)

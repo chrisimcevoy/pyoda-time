@@ -2,6 +2,8 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 
+from collections import deque
+
 import pytest
 
 from pyoda_time import CalendarSystem, IsoDayOfWeek, LocalDate, LocalDateTime
@@ -272,8 +274,6 @@ class TestIslamicCalendarSystem:
         assert calendar.get_days_in_month(year, month) == expected
 
     def test_get_instance_caching(self) -> None:
-        from collections import deque
-
         queue: deque[CalendarSystem] = deque()
         set_: set[CalendarSystem] = set()
         ids: set[str] = set()

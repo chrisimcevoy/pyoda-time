@@ -10,7 +10,7 @@ from pyoda_time.text._invalid_pattern_exception import InvalidPatternError
 from pyoda_time.text._parse_result import ParseResult
 from pyoda_time.text._text_error_messages import _TextErrorMessages
 from pyoda_time.text.patterns._pattern_fields import _PatternFields
-from pyoda_time.text.patterns._stepped_pattern_builder import _SteppedPatternBuilder
+from pyoda_time.text.patterns._stepped_pattern_builder import _IPostPatternParseFormatAction, _SteppedPatternBuilder
 from pyoda_time.utility._csharp_compatibility import _csharp_modulo, _sealed
 
 if TYPE_CHECKING:
@@ -115,7 +115,7 @@ class _DatePatternHelper:
 
     @final
     @_sealed
-    class _MonthFormatActionHandler(_SteppedPatternBuilder._IPostPatternParseFormatAction):
+    class _MonthFormatActionHandler(_IPostPatternParseFormatAction[T]):
         """Hacky way of building an action which depends on the final set of pattern fields to determine whether to
         format a month using the genitive form or not."""
 
@@ -150,7 +150,7 @@ class _DatePatternHelper:
                 text_values = self.__format_info.long_month_names
 
             def format_action(value: T, sb: StringBuilder) -> None:
-                sb.append(text_values[self.__getter(value)])  # type: ignore[arg-type]
+                sb.append(text_values[self.__getter(value)])
 
             return format_action
 

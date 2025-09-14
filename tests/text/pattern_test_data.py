@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from abc import abstractmethod
-from typing import Any, Final, Generic, TypeVar
+from typing import Any, Final
 
 import pytest
 
@@ -13,10 +13,8 @@ from pyoda_time.text._i_partial_pattern import _IPartialPattern
 from pyoda_time.text._i_pattern import IPattern
 from pyoda_time.text._value_cursor import _ValueCursor
 
-T = TypeVar("T")
 
-
-class PatternTestData(Generic[T]):
+class PatternTestData[T]:
     @property
     @abstractmethod
     def default_template(self) -> T:

@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, overload
 from pyoda_time._duration import Duration
 from pyoda_time.utility._preconditions import _Preconditions
 
+from .utility._hash_code_helper import _hash_code_helper
+
 if TYPE_CHECKING:
     from . import (
         CalendarSystem,
@@ -211,6 +213,19 @@ class ZonedDateTime:
         :return: The instant corresponding to this value.
         """
         return self.__offset_date_time.to_instant()
+
+    # region Equality
+
+    def __hash__(self) -> int:
+        """Computes the hash code for this instance.
+
+        See the type documentation for a description of equality semantics.
+
+        :return: An integer that is the hash code for this instance.
+        """
+        return _hash_code_helper(self.__offset_date_time, self.__zone)
+
+    # endregion
 
     # region Operators
 
