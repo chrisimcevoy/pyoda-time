@@ -3,7 +3,7 @@
 # as found in the LICENSE.txt file.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Generic, TypeVar, final
+from typing import TYPE_CHECKING, Final, final
 
 from ..utility._csharp_compatibility import _sealed
 
@@ -12,12 +12,10 @@ if TYPE_CHECKING:
     from ._i_pattern import IPattern
     from .patterns._i_pattern_parser import _IPatternParser
 
-T = TypeVar("T")
-
 
 @_sealed
 @final
-class _FixedFormatInfoPatternParser(Generic[T]):
+class _FixedFormatInfoPatternParser[T]:
     """A pattern parser for a single format info, which caches patterns by text/style."""
 
     # TODO: This is dramatically simplified compared to Noda Time

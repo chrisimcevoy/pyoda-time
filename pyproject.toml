@@ -85,6 +85,7 @@ ignore = [
     "D413",     # blank-line-after-last-section
     "D415",     # ends-in-punctuation
     "D418",     # overload-with-docstring
+    "PLC0415",  # import-outside-top-level
     "PLR0911",  # too-many-return-statements
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-arguments

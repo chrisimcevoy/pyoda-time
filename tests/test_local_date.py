@@ -91,10 +91,9 @@ class TestLocalDateBasicProperties:
 
     def test_arbitrary_date_properties(self) -> None:
         # This is necessarily different to Noda Time, because it relies on BCL.
-        from datetime import datetime
 
-        stdlib_date = datetime(2011, 3, 5, 0, 0, 0)
-        stdlib_epoch = datetime(1970, 1, 1, 0, 0, 0)
+        stdlib_date = datetime.datetime(2011, 3, 5, 0, 0, 0)
+        stdlib_epoch = datetime.datetime(1970, 1, 1, 0, 0, 0)
         stdlib_seconds = (stdlib_date - stdlib_epoch).total_seconds()
         stdlib_days = _towards_zero_division(stdlib_seconds, PyodaConstants.SECONDS_PER_DAY)
         date = LocalDate._ctor(days_since_epoch=stdlib_days, calendar=CalendarSystem.iso)

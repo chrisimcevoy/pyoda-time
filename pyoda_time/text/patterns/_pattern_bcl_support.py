@@ -3,7 +3,7 @@
 # as found in the LICENSE.txt file.
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Final, Generic, TypeVar, final
+from typing import TYPE_CHECKING, Final, final
 
 from ..._compatibility._i_format_provider import IFormatProvider
 from ...globalization._pyoda_format_info import _PyodaFormatInfo
@@ -13,12 +13,10 @@ from .._fixed_format_info_pattern_parser import _FixedFormatInfoPatternParser
 if TYPE_CHECKING:
     from .._i_pattern import IPattern
 
-T = TypeVar("T")
-
 
 @_sealed
 @final
-class _PatternBclSupport(Generic[T]):
+class _PatternBclSupport[T]:
     """Class providing simple support for the various Parse/TryParse/ParseExact/TryParseExact/Format overloads provided
     by individual types."""
 

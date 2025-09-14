@@ -4,17 +4,14 @@
 from collections import deque
 from collections.abc import Callable
 from threading import Lock
-from typing import Final, Generic, TypeVar, final
+from typing import Final, final
 
 from pyoda_time.utility._csharp_compatibility import _sealed
-
-TKey = TypeVar("TKey")
-TValue = TypeVar("TValue")
 
 
 @_sealed
 @final
-class _Cache(Generic[TKey, TValue]):
+class _Cache[TKey, TValue]:
     """Implements a thread-safe cache with a single computation function.
 
     For simplicity's sake, eviction is currently on a least-recently-added basis (not LRU). This may change in the

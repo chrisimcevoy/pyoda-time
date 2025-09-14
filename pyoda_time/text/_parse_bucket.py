@@ -2,15 +2,12 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
 
 from ._parse_result import ParseResult
 from .patterns._pattern_fields import _PatternFields
 
-T = TypeVar("T")
 
-
-class _ParseBucket(ABC, Generic[T]):
+class _ParseBucket[T](ABC):
     """Base class for "buckets" of parse data - as field values are parsed, they are stored in a bucket,
     then the final value is calculated at the end.
     """

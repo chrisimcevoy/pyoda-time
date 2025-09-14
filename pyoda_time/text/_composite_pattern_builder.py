@@ -2,7 +2,7 @@
 # Use of this source code is governed by the Apache License 2.0,
 # as found in the LICENSE.txt file.
 from collections.abc import Callable, Sequence
-from typing import Final, Generic, TypeVar, cast, final
+from typing import Final, cast, final
 
 from pyoda_time._compatibility._string_builder import StringBuilder
 from pyoda_time.text._i_partial_pattern import _IPartialPattern
@@ -12,12 +12,10 @@ from pyoda_time.text._value_cursor import _ValueCursor
 from pyoda_time.utility._csharp_compatibility import _sealed
 from pyoda_time.utility._preconditions import _Preconditions
 
-T = TypeVar("T")
-
 
 @final
 @_sealed
-class CompositePatternBuilder(Generic[T]):  # TODO: IEnumerable<Pattern<T>>
+class CompositePatternBuilder[T]:  # TODO: IEnumerable<Pattern<T>>
     """A builder for composite patterns.
 
     A composite pattern is a combination of multiple patterns. When parsing, these are checked
@@ -54,14 +52,14 @@ class CompositePatternBuilder(Generic[T]):  # TODO: IEnumerable<Pattern<T>>
         _Preconditions._check_state(
             len(self.__patterns) != 0, "A composite pattern must have at least one component pattern."
         )
-        return self._build_as_partial()
+        return _CompositePattern(self.__patterns, self.__format_predicates)
 
     def _build_as_partial(self) -> _IPartialPattern[T]:
         # TODO: Preconditions.DebugCheckState
-        return _CompositePattern(self.__patterns, self.__format_predicates)
+        return cast(_IPartialPattern[T], self.build())
 
 
-class _CompositePattern(_IPartialPattern[T]):
+class _CompositePattern[T]:
     def __init__(self, patterns: list[IPattern[T]], format_predicates: list[Callable[[T], bool]]) -> None:
         self.__patterns: Final[list[IPattern[T]]] = patterns
         self.__format_predicates: Final[list[Callable[[T], bool]]] = format_predicates
