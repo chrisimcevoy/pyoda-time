@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.11.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.10.0...v0.11.0) (2025-09-20)
+
+
+### Features
+
+* `OffsetDateTime` ([#262](https://github.com/chrisimcevoy/pyoda-time/issues/262)) ([7ea5220](https://github.com/chrisimcevoy/pyoda-time/commit/7ea5220a3268aef4b8d14b8c37161760dd04bd22))
+* Implement `LocalDate`, `OffsetDate` and `DateInterval` ([#252](https://github.com/chrisimcevoy/pyoda-time/issues/252)) ([7783a03](https://github.com/chrisimcevoy/pyoda-time/commit/7783a030b4c2fb03b5b319c929659a8ec1b86e22))
+* Implement `LocalDateTime` ([#260](https://github.com/chrisimcevoy/pyoda-time/issues/260)) ([6329e0c](https://github.com/chrisimcevoy/pyoda-time/commit/6329e0cdc5c0144c578b6916e4d538d1bdc2beb6))
+* standardise `.With()` ports ([#259](https://github.com/chrisimcevoy/pyoda-time/issues/259)) ([397e093](https://github.com/chrisimcevoy/pyoda-time/commit/397e09304898a2e28917cdd1aa5ae70c7e5b5ad6))
+
 ## [0.10.0](https://github.com/chrisimcevoy/pyoda-time/compare/v0.9.3...v0.10.0) (2025-01-12)
 
 
